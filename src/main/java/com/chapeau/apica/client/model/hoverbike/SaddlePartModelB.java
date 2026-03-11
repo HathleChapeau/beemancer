@@ -44,9 +44,9 @@ public class SaddlePartModelB extends HoverbikePartModel {
     private static final ResourceLocation TEXTURE =
             ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/hoverbee/hoverbee_saddle_b.png");
 
-    /** Position des electrodes pour les particules (coordonnees locales) */
-    public static final Vec3 LEFT_ELECTRODE = new Vec3(-4.0, -0.5, 2.75);
-    public static final Vec3 RIGHT_ELECTRODE = new Vec3(4.0, -0.5, 2.75);
+    /** Position des electrodes pour le lightning (coordonnees locales) */
+    public static final Vec3 LEFT_ELECTRODE = new Vec3(-3.0, 0, 0);
+    public static final Vec3 RIGHT_ELECTRODE = new Vec3(3.0, 0, 0);
 
     public SaddlePartModelB(ModelPart root) {
         super(root);
@@ -56,35 +56,21 @@ public class SaddlePartModelB extends HoverbikePartModel {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        // Assise: 6x1x5, centree a l'origine (identique a variante A)
-        root.addOrReplaceChild("seat",
-                CubeListBuilder.create()
-                        .texOffs(0, 0)
-                        .addBox(-3.0F, -0.5F, -2.5F, 6.0F, 1.0F, 5.0F),
-                PartPose.ZERO);
-
-        // Dossier: 5x1x1 (identique a variante A)
-        root.addOrReplaceChild("backrest",
-                CubeListBuilder.create()
-                        .texOffs(0, 6)
-                        .addBox(-2.5F, -0.5F, -0.5F, 5.0F, 1.0F, 1.0F),
-                PartPose.offset(0.0F, -0.5F, 1.75F));
-
-        // Electrode gauche: 7x2x2
+        // Electrode gauche: 1x2x2, centree a -3 sur X (separation de 5 entre les deux)
         root.addOrReplaceChild("electrode_left",
                 CubeListBuilder.create()
-                        .texOffs(0, 8)
-                        .addBox(-3.5F, -1.0F, -1.0F, 7.0F, 2.0F, 2.0F),
-                PartPose.offset(-4.0F, -0.5F, 2.75F));
+                        .texOffs(0, 0)
+                        .addBox(-0.5F, -1.0F, -1.0F, 1.0F, 2.0F, 2.0F),
+                PartPose.offset(-3.0F, 0F, 0F));
 
-        // Electrode droite: 7x2x2
+        // Electrode droite: 1x2x2, centree a +3 sur X (separation de 5 entre les deux)
         root.addOrReplaceChild("electrode_right",
                 CubeListBuilder.create()
-                        .texOffs(0, 8)
-                        .addBox(-3.5F, -1.0F, -1.0F, 7.0F, 2.0F, 2.0F),
-                PartPose.offset(4.0F, -0.5F, 2.75F));
+                        .texOffs(0, 0)
+                        .addBox(-0.5F, -1.0F, -1.0F, 1.0F, 2.0F, 2.0F),
+                PartPose.offset(3.0F, 0F, 0F));
 
-        return LayerDefinition.create(mesh, 32, 16);
+        return LayerDefinition.create(mesh, 16, 8);
     }
 
     @Override

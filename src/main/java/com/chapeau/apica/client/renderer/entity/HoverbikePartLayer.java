@@ -23,6 +23,7 @@
 package com.chapeau.apica.client.renderer.entity;
 
 import com.chapeau.apica.client.animation.AnimationController;
+import com.chapeau.apica.client.animation.AnimationTimer;
 import com.chapeau.apica.client.animation.MoveAnimation;
 import com.chapeau.apica.client.animation.TimingType;
 
@@ -30,11 +31,12 @@ import com.chapeau.apica.client.model.ApicaBeeModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartVariants;
 import com.chapeau.apica.client.model.hoverbike.SaddlePartModelB;
+import com.chapeau.apica.client.renderer.LightningArcRenderer;
 import com.chapeau.apica.common.block.beecreator.BeeBodyType;
 import com.chapeau.apica.common.entity.mount.HoverbikePart;
 import com.chapeau.apica.common.entity.mount.HoverbikeEntity;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -75,7 +77,17 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
         final AnimationController controller = new AnimationController();
         boolean wasEditMode = false;
         boolean editExpanded = false;
+
+        // Lightning arcs for saddle B
+        LightningArcRenderer.LightningArc[] lightningArcs = new LightningArcRenderer.LightningArc[2];
+        int lastArcTick = -1;
     }
+
+    // Lightning arc constants (same as mining laser)
+    private static final int ARC_REFRESH_TICKS = 4;
+    private static final int ARC_NODES = 2;
+    private static final float ARC_AMPLITUDE = 0.08f;
+    private static final float ARC_HALF_WIDTH = 0.035f;
 
     public HoverbikePartLayer(RenderLayerParent<HoverbikeEntity, ApicaBeeModel<HoverbikeEntity>> parent,
                               EntityRendererProvider.Context context) {
@@ -141,9 +153,9 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
             part.renderToBuffer(poseStack, vertexConsumer, packedLight,
                     OverlayTexture.NO_OVERLAY);
 
-            // Spawn lightning particles for saddle variant B
+            // Render lightning arcs for saddle variant B
             if (partType == HoverbikePart.SADDLE && clampedIndex == 1) {
-                spawnElectrodeParticles(entity, bodyType, partialTick);
+                renderElectrodeLightning(poseStack, bufferSource, state);
             }
 
             poseStack.popPose();
@@ -293,67 +305,37 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
         });
     }
 
-    // ========== Electrode lightning particles (Saddle B) ==========
+    // ========== Electrode lightning arcs (Saddle B) ==========
 
     /**
-     * Spawn des particules electriques entre les deux electrodes de la selle B.
-     * Les particules forment un arc entre l'electrode gauche et droite.
+     * Rend des arcs electriques entre les deux electrodes de la selle B.
+     * Utilise le meme systeme que le mining laser (LightningArcRenderer).
      */
-    private void spawnElectrodeParticles(HoverbikeEntity entity, BeeBodyType bodyType, float partialTick) {
-        Level level = entity.level();
-        if (!level.isClientSide()) return;
+    private void renderElectrodeLightning(PoseStack poseStack, MultiBufferSource bufferSource,
+                                           PerEntityState state) {
+        // Positions des electrodes en coordonnees modele (1/16 bloc -> blocs)
+        Vec3 leftElectrode = SaddlePartModelB.LEFT_ELECTRODE.scale(1.0 / 16.0);
+        Vec3 rightElectrode = SaddlePartModelB.RIGHT_ELECTRODE.scale(1.0 / 16.0);
 
-        // Throttle: spawn toutes les 2 ticks
-        if (entity.tickCount % 2 != 0) return;
-
-        // Position de base de la selle dans l'espace monde
-        Vec3 saddlePos = getSaddlePosition(bodyType);
-
-        // Positions des electrodes en coordonnees modele (1/16 bloc)
-        Vec3 leftElectrode = SaddlePartModelB.LEFT_ELECTRODE;
-        Vec3 rightElectrode = SaddlePartModelB.RIGHT_ELECTRODE;
-
-        // Convertir en position monde
-        float yaw = entity.getYRot() * Mth.DEG_TO_RAD;
-        float cos = Mth.cos(-yaw);
-        float sin = Mth.sin(-yaw);
-
-        // Position monde de l'entite
-        double ex = entity.getX();
-        double ey = entity.getY();
-        double ez = entity.getZ();
-
-        // Calculer positions monde des electrodes
-        Vec3 leftWorld = transformToWorld(saddlePos, leftElectrode, ex, ey, ez, cos, sin);
-        Vec3 rightWorld = transformToWorld(saddlePos, rightElectrode, ex, ey, ez, cos, sin);
-
-        // Spawn 2-3 particules le long de l'arc
-        int particleCount = 2 + level.random.nextInt(2);
-        for (int i = 0; i < particleCount; i++) {
-            double t = level.random.nextDouble();
-            double px = Mth.lerp(t, leftWorld.x, rightWorld.x);
-            double py = Mth.lerp(t, leftWorld.y, rightWorld.y) + (level.random.nextDouble() - 0.5) * 0.05;
-            double pz = Mth.lerp(t, leftWorld.z, rightWorld.z);
-
-            level.addParticle(ParticleTypes.ELECTRIC_SPARK, px, py, pz, 0, 0, 0);
+        int currentTick = AnimationTimer.getTicks();
+        if (state.lastArcTick < 0 || (currentTick - state.lastArcTick) >= ARC_REFRESH_TICKS) {
+            RandomSource random = RandomSource.create(currentTick * 31L);
+            for (int i = 0; i < 2; i++) {
+                state.lightningArcs[i] = LightningArcRenderer.generateArc(
+                        leftElectrode, rightElectrode, ARC_NODES, ARC_AMPLITUDE,
+                        ARC_REFRESH_TICKS, false, false, random);
+            }
+            state.lastArcTick = currentTick;
         }
-    }
 
-    /**
-     * Transforme une position locale (modele) en position monde.
-     */
-    private Vec3 transformToWorld(Vec3 partPos, Vec3 localOffset,
-                                   double ex, double ey, double ez,
-                                   float cos, float sin) {
-        // Combiner position de la partie + offset local (en unites modele, 1/16 bloc)
-        double lx = (partPos.x + localOffset.x) / 16.0;
-        double ly = (partPos.y + localOffset.y) / 16.0;
-        double lz = (partPos.z + localOffset.z) / 16.0;
+        // Couleur cyan electrique
+        float r = 0.4f, g = 0.9f, b = 1.0f;
 
-        // Rotation autour de Y (yaw de l'entite)
-        double rx = lx * cos - lz * sin;
-        double rz = lx * sin + lz * cos;
-
-        return new Vec3(ex + rx, ey + ly, ez + rz);
+        for (LightningArcRenderer.LightningArc arc : state.lightningArcs) {
+            if (arc != null) {
+                LightningArcRenderer.renderArc(poseStack, bufferSource, arc,
+                        ARC_HALF_WIDTH, r, g, b, 0.9f);
+            }
+        }
     }
 }
