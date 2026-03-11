@@ -125,14 +125,20 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
             totalCountsByKey.merge(key, stack.getCount(), Integer::sum);
         }
 
+        // [FIX] Position du coffre adjacent: ne peut pas etre une destination d'export
+        // (on ne peut pas exporter vers le coffre d'ou on exporte)
+        BlockPos adjacentPos = getAdjacentPos();
+
         for (Map.Entry<String, ItemStack> entry : templatesByKey.entrySet()) {
             String key = entry.getKey();
             ItemStack template = entry.getValue();
             int totalCount = totalCountsByKey.get(key);
             activeItemKeys.add(key);
 
-            // Verifier que le reseau a de l'espace pour cet item
-            if (controller.getItemAggregator().findSlotForItem(template) == null) {
+            // [FIX] Verifier que le reseau a de l'espace pour cet item
+            // ET que la destination n'est pas le coffre adjacent (self-export interdit)
+            BlockPos dest = controller.getItemAggregator().findSlotForItem(template);
+            if (dest == null || dest.equals(adjacentPos)) {
                 taskManager.reconcileTasksForItem(template, 0, beeCapacity,
                     InterfaceTask.TaskType.EXPORT);
                 continue;
