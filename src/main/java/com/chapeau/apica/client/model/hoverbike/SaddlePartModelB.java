@@ -45,8 +45,8 @@ public class SaddlePartModelB extends HoverbikePartModel {
             ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/hoverbee/hoverbee_saddle_b.png");
 
     /** Position des electrodes pour le lightning (coordonnees locales) */
-    public static final Vec3 LEFT_ELECTRODE = new Vec3(-1.575, -0.5, 2.75);
-    public static final Vec3 RIGHT_ELECTRODE = new Vec3(1.575, -0.5, 2.75);
+    public static final Vec3 LEFT_ELECTRODE = new Vec3(-1.575, -0.5, 1.75);
+    public static final Vec3 RIGHT_ELECTRODE = new Vec3(1.575, -0.5, 1.75);
 
     public SaddlePartModelB(ModelPart root) {
         super(root);
@@ -75,7 +75,7 @@ public class SaddlePartModelB extends HoverbikePartModel {
                 CubeListBuilder.create()
                         .texOffs(0, 8)
                         .addBox(-0.5F, -1.0F, -1.075F, 1.0F, 2.0F, 2.15F),
-                PartPose.offset(-1.575F, -0.5F, 2.75F));
+                PartPose.offset(-1.575F, -0.5F, 1.75F));
 
         // Electrode droite: flip horizontal
         root.addOrReplaceChild("cube_right",
@@ -83,7 +83,7 @@ public class SaddlePartModelB extends HoverbikePartModel {
                         .texOffs(0, 8)
                         .mirror()
                         .addBox(-0.5F, -1.0F, -1.075F, 1.0F, 2.0F, 2.15F),
-                PartPose.offset(1.575F, -0.5F, 2.75F));
+                PartPose.offset(1.575F, -0.5F, 1.75F));
 
         return LayerDefinition.create(mesh, 32, 16);
     }
