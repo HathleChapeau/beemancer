@@ -384,6 +384,9 @@ public class DeliveryPhaseGoal extends Goal {
         }
 
         if (!navigationStarted || bee.getNavigation().isDone()) {
+            // [DEBUG] Log navigation start avec le waypoint actuel
+            LOGGER.info("[Nav] Bee {} phase={} idx={}/{} target={} (waypoints={})",
+                bee.getTaskId(), phase, indexRef[0], waypoints.size(), currentTarget, waypoints);
             bee.getNavigation().moveTo(
                 currentTarget.getX() + 0.5, currentTarget.getY() + 0.5, currentTarget.getZ() + 0.5,
                 1.0 * bee.getFlySpeedMultiplier()
@@ -396,9 +399,12 @@ public class DeliveryPhaseGoal extends Goal {
             navigationStarted = false;
 
             if (indexRef[0] < waypoints.size()) {
+                LOGGER.info("[Nav] Bee {} reached waypoint {} ({}), advancing to idx={}",
+                    bee.getTaskId(), indexRef[0], currentTarget, indexRef[0] + 1);
                 indexRef[0]++;
                 return false;
             }
+            LOGGER.info("[Nav] Bee {} reached final target {}", bee.getTaskId(), currentTarget);
             return true;
         }
         return false;
@@ -484,8 +490,13 @@ public class DeliveryPhaseGoal extends Goal {
     }
 
     private void tickFlyHome() {
+        // [DEBUG] Log homeWaypoints au premier tick de FLY_HOME
+        if (homeIdx[0] == 0 && !navigationStarted) {
+            LOGGER.info("[Phase] Bee {} FLY_HOME start - homeWaypoints: {}, returnPos: {}",
+                bee.getTaskId(), bee.getHomeWaypoints(), bee.getReturnPos());
+        }
         if (navigateWaypoints(bee.getHomeWaypoints(), homeIdx, bee.getReturnPos())) {
-            LOGGER.debug("[Phase] Bee {} arrived home → task complete", bee.getTaskId());
+            LOGGER.info("[Phase] Bee {} arrived home → task complete", bee.getTaskId());
             bee.notifyTaskCompleted();
             bee.discard();
         }
