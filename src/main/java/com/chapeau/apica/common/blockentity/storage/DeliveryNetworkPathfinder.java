@@ -233,27 +233,32 @@ public class DeliveryNetworkPathfinder {
         if (fromPos == null) return List.of();
         if (fromPos.equals(parent.getBlockPos())) return List.of();
 
+        LOGGER.debug("[PathToController] Finding path from {} to controller {}", fromPos, parent.getBlockPos());
+
         // Etape 1: trouver le noeud proprietaire de fromPos
         StorageNetworkRegistry registry = parent.getNetworkRegistry();
         BlockPos ownerNode = registry.getOwner(fromPos);
 
         // Si pas de proprietaire, verifier si c'est un coffre direct du controller
         if (ownerNode == null) {
+            LOGGER.debug("[PathToController] No owner found for {}, checking controller chests", fromPos);
             if (parent.getChestManager().getRegisteredChests().contains(fromPos)) {
+                LOGGER.debug("[PathToController] Position is direct controller chest, returning empty path");
                 return List.of();
             }
+            LOGGER.debug("[PathToController] Position not in registry, returning empty path");
             return List.of();
         }
 
+        LOGGER.debug("[PathToController] Owner node: {}", ownerNode);
+
         // Si le proprietaire est le controller lui-meme, pas de relays a traverser
         if (ownerNode.equals(parent.getBlockPos())) {
+            LOGGER.debug("[PathToController] Owner is controller, returning empty path");
             return List.of();
         }
 
         // Etape 2: BFS depuis ownerNode vers le controller
-        // On construit le chemin dans l'ordre ownerNode → ... → controller
-        // puis on inverse pour avoir controller → ... → ownerNode
-        // et on re-inverse pour le chemin de retour
         if (parent.getLevel() == null) return List.of();
 
         // BFS depuis ownerNode pour trouver le chemin vers le controller
@@ -265,12 +270,17 @@ public class DeliveryNetworkPathfinder {
         // Initialiser avec les voisins du ownerNode
         BlockEntity ownerBe = parent.getLevel().getBlockEntity(ownerNode);
         if (!(ownerBe instanceof INetworkNode ownerNodeEntity)) {
+            LOGGER.debug("[PathToController] Owner {} is not INetworkNode, returning [ownerNode]", ownerNode);
             return List.of(ownerNode);
         }
 
-        for (BlockPos neighbor : ownerNodeEntity.getConnectedNodes()) {
+        Set<BlockPos> ownerNeighbors = ownerNodeEntity.getConnectedNodes();
+        LOGGER.debug("[PathToController] Owner {} has {} connected nodes: {}", ownerNode, ownerNeighbors.size(), ownerNeighbors);
+
+        for (BlockPos neighbor : ownerNeighbors) {
             if (neighbor.equals(parent.getBlockPos())) {
                 // ownerNode est directement connecte au controller
+                LOGGER.debug("[PathToController] Owner {} is directly connected to controller, returning [ownerNode]", ownerNode);
                 return List.of(ownerNode);
             }
             if (!visited.contains(neighbor)) {
@@ -292,10 +302,13 @@ public class DeliveryNetworkPathfinder {
             BlockEntity be = parent.getLevel().getBlockEntity(nodePos);
             if (!(be instanceof INetworkNode node)) continue;
 
-            for (BlockPos neighbor : node.getConnectedNodes()) {
+            Set<BlockPos> nodeNeighbors = node.getConnectedNodes();
+            LOGGER.debug("[PathToController] BFS visiting {}, path so far: {}, neighbors: {}", nodePos, path, nodeNeighbors);
+
+            for (BlockPos neighbor : nodeNeighbors) {
                 if (neighbor.equals(parent.getBlockPos())) {
                     // Trouve! path contient ownerNode → ... → nodePos
-                    // Le chemin de retour EST ce path (du owner vers controller)
+                    LOGGER.debug("[PathToController] Found controller! Final path: {}", path);
                     return path;
                 }
                 if (!visited.contains(neighbor)) {
@@ -307,6 +320,7 @@ public class DeliveryNetworkPathfinder {
         }
 
         // Pas de chemin trouve (reseau deconnecte?)
+        LOGGER.debug("[PathToController] No path found (disconnected?), returning [ownerNode]: {}", ownerNode);
         return List.of(ownerNode);
     }
 
