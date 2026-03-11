@@ -194,8 +194,11 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
             needed = targetQty - currentCount;
         }
 
-        int inTransit = getLockedCount(filterItem);
-        needed = Math.max(0, needed - inTransit);
+        // NOTE: Ne pas soustraire inTransit ici! reconcileTasksForItem() distribue
+        // la demande totale (needed) entre les tasks LOCKED et NEEDED.
+        // Soustraire inTransit causerait une double soustraction: les LOCKED auraient
+        // leur count mis à 0 et seraient annulées alors qu'elles sont en vol.
+        needed = Math.max(0, needed);
 
         taskManager.reconcileTasksForItem(filterItem, needed, beeCapacity,
             InterfaceTask.TaskType.IMPORT);

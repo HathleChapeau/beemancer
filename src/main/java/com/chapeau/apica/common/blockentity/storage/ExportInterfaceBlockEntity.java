@@ -138,10 +138,11 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
                 continue;
             }
 
+            // NOTE: Ne pas soustraire inTransit ici! reconcileTasksForItem() distribue
+            // la demande totale (exportable) entre les tasks LOCKED et NEEDED.
+            // Soustraire inTransit causerait une double soustraction: les LOCKED auraient
+            // leur count mis à 0 et seraient annulées alors qu'elles sont en vol.
             int exportable = Math.max(0, totalCount - keepQty);
-
-            int inTransit = getLockedCount(template);
-            exportable = Math.max(0, exportable - inTransit);
 
             taskManager.reconcileTasksForItem(template, exportable, beeCapacity,
                 InterfaceTask.TaskType.EXPORT);
