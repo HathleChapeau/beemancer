@@ -162,12 +162,12 @@ public class VfxEffect {
 
         float u0 = flipU ? 1 : 0;
         float u1 = flipU ? 0 : 1;
-
+        int lightl = 15728880;
         // Normale non transformee (comme le beam qui n'a pas de rotation dans son pose)
         float nx = normal.x, ny = normal.y, nz = normal.z;
-        vc.addVertex(pose, x0, y0, 0).setColor(r, g, b, a).setUv(u0, 1).setOverlay(ol).setLight(light).setNormal(nx, ny, nz);
-        vc.addVertex(pose, x0, y1, 0).setColor(r, g, b, a).setUv(u0, 0).setOverlay(ol).setLight(light).setNormal(nx, ny, nz);
-        vc.addVertex(pose, x1, y1, 0).setColor(r, g, b, a).setUv(u1, 0).setOverlay(ol).setLight(light).setNormal(nx, ny, nz);
-        vc.addVertex(pose, x1, y0, 0).setColor(r, g, b, a).setUv(u1, 1).setOverlay(ol).setLight(light).setNormal(nx, ny, nz);
+        vc.addVertex(pose, x0, y0, 0).setColor(r, g, b, a).setUv(u0, 1).setOverlay(ol).setLight(lightl).setNormal(nx, ny, nz);
+        vc.addVertex(pose, x0, y1, 0).setColor(r, g, b, a).setUv(u0, 0).setOverlay(ol).setLight(lightl).setNormal(nx, ny, nz);
+        vc.addVertex(pose, x1, y1, 0).setColor(r, g, b, a).setUv(u1, 0).setOverlay(ol).setLight(lightl).setNormal(nx, ny, nz);
+        vc.addVertex(pose, x1, y0, 0).setColor(r, g, b, a).setUv(u1, 1).setOverlay(ol).setLight(lightl).setNormal(nx, ny, nz);
     }
 }
