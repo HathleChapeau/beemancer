@@ -775,21 +775,13 @@ public class ApicaItems {
     public static final DeferredItem<HoverbikePartItem> WING_PROTECTOR_AERODYNAMIC = ITEMS.register("wing_protector_aerodynamic",
             () -> new HoverbikePartItem(new Item.Properties(), HoverbikePart.WING_PROTECTOR, 2));
 
-    // --- HOVERBEE PARTS: CONTROL LEFT ---
-    public static final DeferredItem<HoverbikePartItem> CONTROL_LEFT_STANDARD = ITEMS.register("control_left_standard",
+    // --- HOVERBEE PARTS: CONTROL (unifie, compatible gauche et droite) ---
+    public static final DeferredItem<HoverbikePartItem> CONTROL_STANDARD = ITEMS.register("control_standard",
             () -> new HoverbikePartItem(new Item.Properties(), HoverbikePart.CONTROL_LEFT, 0));
-    public static final DeferredItem<HoverbikePartItem> CONTROL_LEFT_PRECISION = ITEMS.register("control_left_precision",
+    public static final DeferredItem<HoverbikePartItem> CONTROL_PRECISION = ITEMS.register("control_precision",
             () -> new HoverbikePartItem(new Item.Properties(), HoverbikePart.CONTROL_LEFT, 1));
-    public static final DeferredItem<HoverbikePartItem> CONTROL_LEFT_RESPONSIVE = ITEMS.register("control_left_responsive",
+    public static final DeferredItem<HoverbikePartItem> CONTROL_RESPONSIVE = ITEMS.register("control_responsive",
             () -> new HoverbikePartItem(new Item.Properties(), HoverbikePart.CONTROL_LEFT, 2));
-
-    // --- HOVERBEE PARTS: CONTROL RIGHT ---
-    public static final DeferredItem<HoverbikePartItem> CONTROL_RIGHT_STANDARD = ITEMS.register("control_right_standard",
-            () -> new HoverbikePartItem(new Item.Properties(), HoverbikePart.CONTROL_RIGHT, 0));
-    public static final DeferredItem<HoverbikePartItem> CONTROL_RIGHT_EFFICIENT = ITEMS.register("control_right_efficient",
-            () -> new HoverbikePartItem(new Item.Properties(), HoverbikePart.CONTROL_RIGHT, 1));
-    public static final DeferredItem<HoverbikePartItem> CONTROL_RIGHT_BOOSTED = ITEMS.register("control_right_boosted",
-            () -> new HoverbikePartItem(new Item.Properties(), HoverbikePart.CONTROL_RIGHT, 2));
 
     // --- CREATIVE FOCUS (debug tool for hoverbike stats) ---
     public static final DeferredItem<CreativeFocusItem> CREATIVE_FOCUS = ITEMS.register("creative_focus",

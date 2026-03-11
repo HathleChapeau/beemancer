@@ -59,6 +59,20 @@ public class HoverbikePartItem extends Item {
         return variantIndex;
     }
 
+    /**
+     * Verifie si cet item est compatible avec un slot donne.
+     * Les controles unifies (CONTROL_LEFT) sont compatibles avec les deux slots.
+     */
+    public boolean isCompatibleWith(HoverbikePart slot) {
+        if (category == slot) return true;
+        // Controle unifie: compatible avec les deux slots
+        if (category == HoverbikePart.CONTROL_LEFT &&
+                (slot == HoverbikePart.CONTROL_LEFT || slot == HoverbikePart.CONTROL_RIGHT)) {
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public Component getName(ItemStack stack) {
         MutableComponent name = (MutableComponent) super.getName(stack);

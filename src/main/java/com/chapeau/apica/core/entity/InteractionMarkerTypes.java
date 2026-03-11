@@ -146,7 +146,7 @@ public final class InteractionMarkerTypes {
         // Quick swap si le joueur tient une piece compatible (pas d'ouverture de menu)
         ItemStack held = player.getItemInHand(hand);
         if (!held.isEmpty() && held.getItem() instanceof HoverbikePartItem heldPart
-                && heldPart.getCategory() == part) {
+                && heldPart.isCompatibleWith(part)) {
             if (!player.level().isClientSide()) {
                 ItemStack currentOnBike = hoverbike.getPartStack(part).copy();
                 hoverbike.setPartStack(part, held.copy());

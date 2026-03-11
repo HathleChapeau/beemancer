@@ -357,14 +357,10 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.WING_PROTECTOR_STANDARD.get());
         output.accept(ApicaItems.WING_PROTECTOR_HEAVY.get());
         output.accept(ApicaItems.WING_PROTECTOR_AERODYNAMIC.get());
-        // Control Left
-        output.accept(ApicaItems.CONTROL_LEFT_STANDARD.get());
-        output.accept(ApicaItems.CONTROL_LEFT_PRECISION.get());
-        output.accept(ApicaItems.CONTROL_LEFT_RESPONSIVE.get());
-        // Control Right
-        output.accept(ApicaItems.CONTROL_RIGHT_STANDARD.get());
-        output.accept(ApicaItems.CONTROL_RIGHT_EFFICIENT.get());
-        output.accept(ApicaItems.CONTROL_RIGHT_BOOSTED.get());
+        // Control (unifie, compatible gauche et droite)
+        output.accept(ApicaItems.CONTROL_STANDARD.get());
+        output.accept(ApicaItems.CONTROL_PRECISION.get());
+        output.accept(ApicaItems.CONTROL_RESPONSIVE.get());
     }
 
     // =========================================================================
