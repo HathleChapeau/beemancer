@@ -70,11 +70,11 @@ public class SaddlePartModelB extends HoverbikePartModel {
                         .addBox(-2.5F, -0.5F, -0.5F, 5.0F, 1.0F, 1.0F),
                 PartPose.offset(0.0F, -0.5F, 1.75F));
 
-        // Electrode gauche: 1x2x1.15 (X et Z inverses)
+        // Electrode gauche: 1x2x2.15
         root.addOrReplaceChild("cube_left",
                 CubeListBuilder.create()
                         .texOffs(0, 8)
-                        .addBox(-0.5F, -1.0F, -0.575F, 1.0F, 2.0F, 1.15F),
+                        .addBox(-0.5F, -1.0F, -1.075F, 1.0F, 2.0F, 2.15F),
                 PartPose.offset(-1.575F, -0.5F, 2.75F));
 
         // Electrode droite: flip horizontal
@@ -82,7 +82,7 @@ public class SaddlePartModelB extends HoverbikePartModel {
                 CubeListBuilder.create()
                         .texOffs(0, 8)
                         .mirror()
-                        .addBox(-0.5F, -1.0F, -0.575F, 1.0F, 2.0F, 1.15F),
+                        .addBox(-0.5F, -1.0F, -1.075F, 1.0F, 2.0F, 2.15F),
                 PartPose.offset(1.575F, -0.5F, 2.75F));
 
         return LayerDefinition.create(mesh, 32, 16);

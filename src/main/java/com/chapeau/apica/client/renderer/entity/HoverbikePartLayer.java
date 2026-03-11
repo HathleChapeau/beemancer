@@ -95,7 +95,7 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
     // Lightning arc constants (same as mining laser)
     private static final int ARC_REFRESH_TICKS = 4;
     private static final int ARC_NODES = 2;
-    private static final float ARC_AMPLITUDE = 0.08f;
+    private static final float ARC_AMPLITUDE = 0.064f;
     private static final float ARC_HALF_WIDTH = 0.010f;
 
     // Ring constants for Saddle C
