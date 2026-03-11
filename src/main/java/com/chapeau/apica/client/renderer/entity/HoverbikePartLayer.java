@@ -6,13 +6,14 @@
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dependance             | Raison                | Utilisation                    |
- * |------------------------|----------------------|--------------------------------|
- * | HoverbikePartVariants  | Registre variantes   | Selection du modele a rendre   |
- * | HoverbikePartPositions | Positions par body   | Positionnement des parties     |
- * | HoverbikePartEffects   | Effets visuels       | Lightning, ring, connector     |
- * | HoverbikeEditModeHandler| Mode edition        | Animations ecartement/retour   |
- * | ApicaBeeModel          | Modele parent        | Body type + rotation ailes     |
+ * | Dependance                 | Raison                | Utilisation                    |
+ * |----------------------------|----------------------|--------------------------------|
+ * | HoverbikePartVariants      | Registre variantes   | Selection du modele a rendre   |
+ * | HoverbikePartPositions     | Positions par body   | Positionnement des parties     |
+ * | HoverbikeEditModeHandler   | Mode edition         | Animations ecartement/retour   |
+ * | SaddlePartRenderer         | Rendu selle          | Effets selle (lightning, ring) |
+ * | ControlPartRenderer        | Rendu controle       | Effets controle (ring, flip)   |
+ * | WingProtectorPartRenderer  | Rendu protecteurs    | Sync rotation ailes            |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -26,15 +27,16 @@ import com.chapeau.apica.client.model.ApicaBeeModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartVariants;
 import com.chapeau.apica.client.model.hoverbike.SaddlePartModelB;
+import com.chapeau.apica.client.renderer.entity.hoverbike.ControlPartRenderer;
 import com.chapeau.apica.client.renderer.entity.hoverbike.HoverbikeEditModeHandler;
-import com.chapeau.apica.client.renderer.entity.hoverbike.HoverbikePartEffects;
 import com.chapeau.apica.client.renderer.entity.hoverbike.HoverbikePartPositions;
+import com.chapeau.apica.client.renderer.entity.hoverbike.SaddlePartRenderer;
+import com.chapeau.apica.client.renderer.entity.hoverbike.WingProtectorPartRenderer;
 import com.chapeau.apica.common.block.beecreator.BeeBodyType;
 import com.chapeau.apica.common.entity.mount.HoverbikePart;
 import com.chapeau.apica.common.entity.mount.HoverbikeEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -51,9 +53,8 @@ import java.util.Map;
 
 /**
  * Layer de rendu qui itere sur toutes les parties du hoverbike et rend
- * la variante selectionnee de chaque partie. Chaque partie est centree
- * a l'origine dans son modele et positionnee selon le body type courant.
- * En edit mode, chaque partie s'ecarte du centre avec une animation smooth.
+ * la variante selectionnee de chaque partie. Delegue le rendu specifique
+ * a chaque renderer de partie (SaddlePartRenderer, ControlPartRenderer, etc.)
  */
 public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeModel<HoverbikeEntity>> {
 
@@ -66,7 +67,7 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
     /** Etat specifique a une entite. */
     private static class PerEntityState {
         final HoverbikeEditModeHandler.EditModeState editState = new HoverbikeEditModeHandler.EditModeState();
-        final HoverbikePartEffects.LightningState lightningState = new HoverbikePartEffects.LightningState();
+        final SaddlePartRenderer.LightningState lightningState = new SaddlePartRenderer.LightningState();
     }
 
     public HoverbikePartLayer(RenderLayerParent<HoverbikeEntity, ApicaBeeModel<HoverbikeEntity>> parent,
@@ -122,9 +123,9 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
 
         part.setupAnim(entity, 0, 0, ageInTicks, 0, 0);
 
-        // Synchronise rotation des protections d'aile
+        // Wing Protector: sync rotation avec ailes
         if (partType == HoverbikePart.WING_PROTECTOR) {
-            applyWingRotation(part, beeModel.getRightWing(), beeModel.getLeftWing());
+            WingProtectorPartRenderer.syncWingRotation(part, beeModel.getRightWing(), beeModel.getLeftWing());
         }
 
         poseStack.pushPose();
@@ -133,20 +134,19 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
         Vec3 pos = HoverbikePartPositions.getPosition(partType, bodyType);
         poseStack.translate(pos.x / 16.0, pos.y / 16.0, pos.z / 16.0);
 
-        // Flip horizontal pour controle droit
-        boolean isRightControl = partType == HoverbikePart.CONTROL_RIGHT;
+        // Control: flip horizontal pour controle droit
+        boolean isRightControl = ControlPartRenderer.isRightControl(partType);
         if (isRightControl) {
-            poseStack.scale(-1.0f, 1.0f, 1.0f);
+            ControlPartRenderer.applyFlipIfNeeded(poseStack, partType);
         }
 
         // Animation edit mode
         HoverbikeEditModeHandler.applyOffset(poseStack, part, partType, state.editState, isRightControl);
 
-        // Saddle B: cacher connector pour rendu principal
+        // Saddle B: prepare render (cache connector)
         SaddlePartModelB saddleB = null;
-        if (partType == HoverbikePart.SADDLE && clampedIndex == 1 && part instanceof SaddlePartModelB sb) {
-            saddleB = sb;
-            saddleB.getConnector().visible = false;
+        if (partType == HoverbikePart.SADDLE) {
+            saddleB = SaddlePartRenderer.prepareRender(part, clampedIndex);
         }
 
         // Rendu principal du modele
@@ -154,50 +154,19 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
                 RenderType.entityCutoutNoCull(part.getTextureLocation()));
         part.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY);
 
-        // Effets speciaux par variante
-        renderPartEffects(poseStack, bufferSource, packedLight, ageInTicks,
-                partType, clampedIndex, saddleB, state);
+        // Effets speciaux par type de partie
+        switch (partType) {
+            case SADDLE -> SaddlePartRenderer.renderEffects(
+                    poseStack, bufferSource, packedLight, ageInTicks,
+                    clampedIndex, saddleB, state.lightningState);
+
+            case CONTROL_LEFT, CONTROL_RIGHT -> ControlPartRenderer.renderEffects(
+                    poseStack, bufferSource, packedLight, ageInTicks, clampedIndex);
+
+            default -> { /* Pas d'effets speciaux */ }
+        }
 
         poseStack.popPose();
-    }
-
-    private void renderPartEffects(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight,
-                                    float ageInTicks, HoverbikePart partType, int variantIndex,
-                                    SaddlePartModelB saddleB, PerEntityState state) {
-
-        // Saddle B: connector + lightning
-        if (saddleB != null) {
-            saddleB.getConnector().visible = true;
-            HoverbikePartEffects.renderSaddleConnector(poseStack, bufferSource, packedLight, saddleB);
-            HoverbikePartEffects.renderElectrodeLightning(poseStack, bufferSource, state.lightningState);
-        }
-
-        // Saddle C: ring
-        if (partType == HoverbikePart.SADDLE && variantIndex == 2) {
-            HoverbikePartEffects.renderSaddleRing(poseStack, bufferSource, packedLight, ageInTicks);
-        }
-
-        // Control C: ring
-        if ((partType == HoverbikePart.CONTROL_LEFT || partType == HoverbikePart.CONTROL_RIGHT)
-                && variantIndex == 2) {
-            HoverbikePartEffects.renderControlRing(poseStack, bufferSource, packedLight, ageInTicks);
-        }
-    }
-
-    /**
-     * Applique la rotation des ailes du modele parent aux protections d'aile.
-     */
-    private void applyWingRotation(HoverbikePartModel part, ModelPart rightWing, ModelPart leftWing) {
-        try {
-            ModelPart protRight = part.root().getChild("protector_right");
-            ModelPart protLeft = part.root().getChild("protector_left");
-            protRight.yRot = rightWing.yRot;
-            protRight.zRot = rightWing.zRot;
-            protLeft.yRot = leftWing.yRot;
-            protLeft.zRot = leftWing.zRot;
-        } catch (Exception ignored) {
-            // Variantes sans ces enfants: pas de synchro
-        }
     }
 
     /**

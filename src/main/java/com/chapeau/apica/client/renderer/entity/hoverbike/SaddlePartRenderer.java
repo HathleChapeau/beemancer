@@ -1,22 +1,20 @@
 /**
  * ============================================================
- * [HoverbikePartEffects.java]
- * Description: Effets visuels des parties HoverBee (lightning, ring, connector)
+ * [SaddlePartRenderer.java]
+ * Description: Rendu de la selle HoverBee et ses effets (lightning, ring, connector)
  * ============================================================
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
- * | SaddlePartModelB    | Positions electrodes | Lightning arcs saddle B        |
- * | SaddlePartModelC    | Position ring center | Ring effect saddle C           |
- * | ControlPartModelC   | Position ring center | Ring effect control C          |
- * | LightningArcRenderer| Arcs electriques     | Rendu lightning effects        |
- * | AnimationTimer      | Tick count           | Refresh des arcs               |
+ * | SaddlePartModelB    | Modele selle B       | Connector + electrodes         |
+ * | SaddlePartModelC    | Modele selle C       | Ring center                    |
+ * | LightningArcRenderer| Arcs electriques     | Lightning entre electrodes     |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - HoverbikePartLayer.java: Rendu des effets speciaux
+ * - HoverbikePartLayer.java: Rendu des selles
  *
  * ============================================================
  */
@@ -24,7 +22,7 @@ package com.chapeau.apica.client.renderer.entity.hoverbike;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.animation.AnimationTimer;
-import com.chapeau.apica.client.model.hoverbike.ControlPartModelC;
+import com.chapeau.apica.client.model.hoverbike.HoverbikePartModel;
 import com.chapeau.apica.client.model.hoverbike.SaddlePartModelB;
 import com.chapeau.apica.client.model.hoverbike.SaddlePartModelC;
 import com.chapeau.apica.client.renderer.LightningArcRenderer;
@@ -40,16 +38,16 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Rendu des effets visuels speciaux pour les parties du hoverbike:
- * - Lightning arcs entre electrodes (Saddle B)
- * - Connector avec texture placeholder (Saddle B)
- * - Ring rotatif (Saddle C, Control C)
+ * Renderer specifique pour les selles du HoverBee.
+ * Gere les effets speciaux par variante:
+ * - Variante B: connector avec texture rose + arcs lightning entre electrodes
+ * - Variante C: anneau rotatif
  */
-public final class HoverbikePartEffects {
+public final class SaddlePartRenderer {
 
-    private HoverbikePartEffects() {}
+    private SaddlePartRenderer() {}
 
-    // Lightning arc constants
+    // Lightning constants
     private static final int ARC_REFRESH_TICKS = 4;
     private static final int ARC_NODES = 2;
     private static final float ARC_AMPLITUDE = 0.064f;
@@ -62,35 +60,57 @@ public final class HoverbikePartEffects {
     private static final float RING_RADIUS = 0.12f;
     private static final float RING_HALF_DEPTH = 0.015f;
 
-    // ========== Lightning state per entity ==========
-
-    /** Etat des arcs lightning pour une entite. */
+    /** Etat lightning pour une entite. */
     public static class LightningState {
         public LightningArcRenderer.LightningArc[] arcs = new LightningArcRenderer.LightningArc[2];
         public int lastArcTick = -1;
     }
 
-    // ========== Saddle B: Connector ==========
+    /**
+     * Prepare le rendu de la selle B en cachant le connector.
+     * @return Le modele SaddlePartModelB si applicable, null sinon
+     */
+    public static SaddlePartModelB prepareRender(HoverbikePartModel part, int variantIndex) {
+        if (variantIndex == 1 && part instanceof SaddlePartModelB saddleB) {
+            saddleB.getConnector().visible = false;
+            return saddleB;
+        }
+        return null;
+    }
 
     /**
-     * Rend le connecteur entre les electrodes de la selle B avec texture placeholder rose.
+     * Rend les effets de la selle selon la variante.
      */
-    public static void renderSaddleConnector(PoseStack poseStack, MultiBufferSource bufferSource,
-                                              int packedLight, SaddlePartModelB saddleB) {
+    public static void renderEffects(PoseStack poseStack, MultiBufferSource bufferSource,
+                                      int packedLight, float ageInTicks, int variantIndex,
+                                      SaddlePartModelB saddleB, LightningState lightningState) {
+        // Variante B: connector + lightning
+        if (saddleB != null) {
+            saddleB.getConnector().visible = true;
+            renderConnector(poseStack, bufferSource, packedLight, saddleB);
+            renderLightning(poseStack, bufferSource, lightningState);
+        }
+
+        // Variante C: ring
+        if (variantIndex == 2) {
+            renderRing(poseStack, bufferSource, packedLight, ageInTicks);
+        }
+    }
+
+    // ========== Variante B: Connector ==========
+
+    private static void renderConnector(PoseStack poseStack, MultiBufferSource bufferSource,
+                                         int packedLight, SaddlePartModelB saddleB) {
         ModelPart connector = saddleB.getConnector();
         VertexConsumer vc = bufferSource.getBuffer(
                 RenderType.entityCutout(SaddlePartModelB.CONNECTOR_TEXTURE));
-
         connector.render(poseStack, vc, packedLight, OverlayTexture.NO_OVERLAY);
     }
 
-    // ========== Saddle B: Lightning ==========
+    // ========== Variante B: Lightning ==========
 
-    /**
-     * Rend des arcs electriques entre les deux electrodes de la selle B.
-     */
-    public static void renderElectrodeLightning(PoseStack poseStack, MultiBufferSource bufferSource,
-                                                 LightningState state) {
+    private static void renderLightning(PoseStack poseStack, MultiBufferSource bufferSource,
+                                         LightningState state) {
         Vec3 leftElectrode = SaddlePartModelB.LEFT_ELECTRODE.scale(1.0 / 16.0);
         Vec3 rightElectrode = SaddlePartModelB.RIGHT_ELECTRODE.scale(1.0 / 16.0);
 
@@ -105,9 +125,7 @@ public final class HoverbikePartEffects {
             state.lastArcTick = currentTick;
         }
 
-        // Couleur cyan electrique
         float r = 0.4f, g = 0.9f, b = 1.0f;
-
         for (LightningArcRenderer.LightningArc arc : state.arcs) {
             if (arc != null) {
                 LightningArcRenderer.renderArc(poseStack, bufferSource, arc,
@@ -116,36 +134,13 @@ public final class HoverbikePartEffects {
         }
     }
 
-    // ========== Saddle C: Ring ==========
+    // ========== Variante C: Ring ==========
 
-    /**
-     * Rend un anneau rotatif autour de l'axe X pour la selle C.
-     */
-    public static void renderSaddleRing(PoseStack poseStack, MultiBufferSource bufferSource,
-                                         int packedLight, float ageInTicks) {
+    private static void renderRing(PoseStack poseStack, MultiBufferSource bufferSource,
+                                    int packedLight, float ageInTicks) {
         Vec3 center = SaddlePartModelC.RING_CENTER.scale(1.0 / 16.0);
         float rotation = ageInTicks * 0.15f;
 
-        renderRing(poseStack, bufferSource, packedLight, center, rotation, RING_RADIUS);
-    }
-
-    // ========== Control C: Ring ==========
-
-    /**
-     * Rend un anneau rotatif autour de l'axe X pour le controle C.
-     */
-    public static void renderControlRing(PoseStack poseStack, MultiBufferSource bufferSource,
-                                          int packedLight, float ageInTicks) {
-        Vec3 center = ControlPartModelC.RING_CENTER.scale(1.0 / 16.0);
-        float rotation = ageInTicks * 0.14f;
-
-        renderRing(poseStack, bufferSource, packedLight, center, rotation, RING_RADIUS * 0.8f);
-    }
-
-    // ========== Ring rendering (shared) ==========
-
-    private static void renderRing(PoseStack poseStack, MultiBufferSource bufferSource,
-                                    int packedLight, Vec3 center, float rotation, float radius) {
         VertexConsumer vc = bufferSource.getBuffer(RenderType.entityTranslucent(RING_TEXTURE));
         int overlay = OverlayTexture.NO_OVERLAY;
 
@@ -165,10 +160,10 @@ public final class HoverbikePartEffects {
             float cos1 = (float) Math.cos(angle1);
             float sin1 = (float) Math.sin(angle1);
 
-            float y0 = cos0 * radius;
-            float z0 = sin0 * radius;
-            float y1 = cos1 * radius;
-            float z1 = sin1 * radius;
+            float y0 = cos0 * RING_RADIUS;
+            float z0 = sin0 * RING_RADIUS;
+            float y1 = cos1 * RING_RADIUS;
+            float z1 = sin1 * RING_RADIUS;
 
             float ny = (float) Math.cos(angleMid);
             float nz = (float) Math.sin(angleMid);
