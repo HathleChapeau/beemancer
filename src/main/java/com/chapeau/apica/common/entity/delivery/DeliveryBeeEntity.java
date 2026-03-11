@@ -553,7 +553,8 @@ public class DeliveryBeeEntity extends Bee {
         }
         BlockEntity be = level().getBlockEntity(controllerPos);
         if (be instanceof StorageControllerBlockEntity controller) {
-            return controller.getDeliveryManager().getPathfinder().findPathToController(fromPos);
+            // [FIX] Utiliser findPathFromPosition pour une pathfinding basee sur la proximite
+            return controller.getDeliveryManager().getPathfinder().findPathFromPosition(fromPos);
         }
         return List.of();
     }
@@ -572,7 +573,8 @@ public class DeliveryBeeEntity extends Bee {
         }
         BlockEntity be = level().getBlockEntity(controllerPos);
         if (be instanceof StorageControllerBlockEntity controller) {
-            return controller.getDeliveryManager().getPathfinder().findPathBetween(fromPos, toPos);
+            // [FIX] Utiliser findPathBetweenPositions pour une pathfinding basee sur la proximite
+            return controller.getDeliveryManager().getPathfinder().findPathBetweenPositions(fromPos, toPos);
         }
         return List.of();
     }

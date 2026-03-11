@@ -128,9 +128,9 @@ public class DeliveryBeeSpawner {
     boolean spawnDeliveryBee(DeliveryTask task) {
         if (!(parent.getLevel() instanceof ServerLevel serverLevel)) return false;
 
-        // [DEBUG] Log task details for pathfinding diagnosis
-        LOGGER.debug("[Spawner] === Spawning Task {} ===", task.getTaskId());
-        LOGGER.debug("[Spawner] Task type: {}, sourcePos: {}, destPos: {}",
+        // [DEBUG] Log task details for pathfinding diagnosis - INFO level to ensure visibility
+        LOGGER.info("[Spawner] === Spawning Task {} ===", task.getTaskId());
+        LOGGER.info("[Spawner] Task type: {}, sourcePos: {}, destPos: {}",
             task.getInterfaceTaskId() != null ? "INTERFACE" : (task.isPreloaded() ? "PRELOADED" : "DIRECT"),
             task.getSourcePos(), task.getDestPos());
 
@@ -138,8 +138,8 @@ public class DeliveryBeeSpawner {
         StorageNetworkRegistry registry = parent.getNetworkRegistry();
         BlockPos sourceOwner = task.getSourcePos() != null ? registry.getOwner(task.getSourcePos()) : null;
         BlockPos destOwner = task.getDestPos() != null ? registry.getOwner(task.getDestPos()) : null;
-        LOGGER.debug("[Spawner] Source {} owned by: {}", task.getSourcePos(), sourceOwner);
-        LOGGER.debug("[Spawner] Dest {} owned by: {}", task.getDestPos(), destOwner);
+        LOGGER.info("[Spawner] Source {} owned by: {}", task.getSourcePos(), sourceOwner);
+        LOGGER.info("[Spawner] Dest {} owned by: {}", task.getDestPos(), destOwner);
 
         if (!validateTaskTargets(task, serverLevel)) return false;
 
@@ -213,31 +213,33 @@ public class DeliveryBeeSpawner {
         );
         bee.setPreloaded(task.isPreloaded());
 
-        // Calculer les waypoints via relays
+        // [FIX] Calculer les waypoints via la proximite physique aux noeuds du reseau
+        // Cette approche est plus robuste que l'ownership car elle fonctionne meme si
+        // un bloc est enregistre avec le mauvais proprietaire
         List<BlockPos> pathToSource = List.of();
         List<BlockPos> pathToDest = List.of();
 
-        // [FIX] Toujours calculer le chemin vers la source pour le vol visuel
-        // Meme avec G3 pre-extraction, la bee doit visuellement voler au coffre source
+        // Chemin controller → source (interface/coffre)
         if (task.getSourcePos() != null) {
-            pathToSource = pathfinder.findPathToChest(task.getSourcePos(), task.getRequesterPos());
-            LOGGER.debug("[Spawner] Task {} pathToSource (controller→{}): {}",
+            pathToSource = pathfinder.findPathToPosition(task.getSourcePos());
+            LOGGER.info("[Spawner] Task {} pathToSource (controller→{}): {}",
                 task.getTaskId(), task.getSourcePos(), pathToSource);
         }
+
+        // Chemin controller → destination (coffre)
         if (task.getDestPos() != null && !task.getDestPos().equals(parent.getBlockPos())) {
-            pathToDest = pathfinder.findPathToChest(task.getDestPos(), task.getRequesterPos());
-            LOGGER.debug("[Spawner] Task {} pathToDest (controller→{}): {}",
+            pathToDest = pathfinder.findPathToPosition(task.getDestPos());
+            LOGGER.info("[Spawner] Task {} pathToDest (controller→{}): {}",
                 task.getTaskId(), task.getDestPos(), pathToDest);
         }
 
+        // Transit: chemin source → destination via l'ancetre commun
         List<BlockPos> transitWaypoints = pathfinder.computeTransitWaypoints(pathToSource, pathToDest);
-        LOGGER.debug("[Spawner] Task {} transitWaypoints: {}", task.getTaskId(), transitWaypoints);
+        LOGGER.info("[Spawner] Task {} transitWaypoints: {}", task.getTaskId(), transitWaypoints);
 
-        // [FIX] Calculer le chemin de retour correctement: de la destination vers le controller
-        // Au lieu de simplement inverser pathToDest (qui est controller→dest),
-        // on calcule le vrai chemin dest→controller via les relays
-        List<BlockPos> homeWaypoints = pathfinder.findPathToController(task.getDestPos());
-        LOGGER.debug("[Spawner] Task {} homeWaypoints ({}→controller): {}",
+        // Chemin retour: destination → controller
+        List<BlockPos> homeWaypoints = pathfinder.findPathFromPosition(task.getDestPos());
+        LOGGER.info("[Spawner] Task {} homeWaypoints ({}→controller): {}",
             task.getTaskId(), task.getDestPos(), homeWaypoints);
 
         bee.setAllWaypoints(pathToSource, transitWaypoints, homeWaypoints);
@@ -336,17 +338,18 @@ public class DeliveryBeeSpawner {
             List<BlockPos> pathToSource = List.of();
             List<BlockPos> pathToDest = List.of();
 
+            // [FIX] Utiliser findPathToPosition pour une pathfinding basee sur la proximite
             if (!newTask.isPreloaded()) {
-                pathToSource = pathfinder.findPathToChest(newTask.getSourcePos(), newTask.getRequesterPos());
+                pathToSource = pathfinder.findPathToPosition(newTask.getSourcePos());
             }
             if (newTask.getDestPos() != null && !newTask.getDestPos().equals(parent.getBlockPos())) {
-                pathToDest = pathfinder.findPathToChest(newTask.getDestPos(), newTask.getRequesterPos());
+                pathToDest = pathfinder.findPathToPosition(newTask.getDestPos());
             }
 
             List<BlockPos> outboundFromNode = pathfinder.trimPathFromNode(pathToSource, nearestNode);
             List<BlockPos> transitWaypoints = pathfinder.computeTransitWaypoints(pathToSource, pathToDest);
-            // [FIX] Calculer le chemin de retour correctement: de la destination vers le controller
-            List<BlockPos> homeWaypoints = pathfinder.findPathToController(newTask.getDestPos());
+            // [FIX] Chemin de retour basé sur la proximité
+            List<BlockPos> homeWaypoints = pathfinder.findPathFromPosition(newTask.getDestPos());
 
             targetBee.cancelAndRedirect(
                 nearestNode, savingChest,

@@ -90,9 +90,88 @@ public class DeliveryNetworkPathfinder {
     }
 
     /**
+     * [NEW] Trouve le chemin de relais vers une position en utilisant la proximite physique.
+     * Ne depend PAS de l'ownership - trouve le noeud le plus proche physiquement et calcule le chemin.
+     * C'est la methode principale a utiliser pour tous les calculs de waypoints.
+     *
+     * @param targetPos position cible (coffre, interface, terminal, etc.)
+     * @return liste des relays a traverser depuis le controller (vide si target pres du controller)
+     */
+    public List<BlockPos> findPathToPosition(BlockPos targetPos) {
+        if (targetPos == null) return List.of();
+        if (parent.getLevel() == null) return List.of();
+
+        // Trouver le noeud reseau le plus proche de la position cible
+        BlockPos nearestNode = findNearestNetworkNode(Vec3.atCenterOf(targetPos));
+        LOGGER.info("[PathToPosition] Target {} → nearest node: {}", targetPos, nearestNode);
+
+        // Si le plus proche est le controller, pas de relays a traverser
+        if (nearestNode.equals(parent.getBlockPos())) {
+            LOGGER.info("[PathToPosition] Nearest is controller, returning empty path");
+            return List.of();
+        }
+
+        // BFS depuis le controller pour trouver le chemin vers le noeud le plus proche
+        List<BlockPos> path = findRelayPathToNode(nearestNode);
+        LOGGER.info("[PathToPosition] Path to nearest node {}: {}", nearestNode, path);
+        return path;
+    }
+
+    /**
+     * BFS pour trouver le chemin de relays depuis le controller vers un noeud specifique.
+     */
+    private List<BlockPos> findRelayPathToNode(BlockPos targetNode) {
+        if (targetNode == null) return List.of();
+        if (targetNode.equals(parent.getBlockPos())) return List.of();
+        if (parent.getLevel() == null) return List.of();
+
+        Set<BlockPos> visited = new HashSet<>();
+        visited.add(parent.getBlockPos());
+
+        Queue<Map.Entry<BlockPos, List<BlockPos>>> queue = new LinkedList<>();
+        for (BlockPos neighbor : parent.getConnectedNodes()) {
+            if (neighbor.equals(targetNode)) {
+                return List.of(neighbor);
+            }
+            queue.add(Map.entry(neighbor, new ArrayList<>(List.of(neighbor))));
+        }
+
+        while (!queue.isEmpty()) {
+            var entry = queue.poll();
+            BlockPos nodePos = entry.getKey();
+            List<BlockPos> path = entry.getValue();
+
+            if (!visited.add(nodePos)) continue;
+            if (!parent.getLevel().hasChunkAt(nodePos)) continue;
+
+            BlockEntity be = parent.getLevel().getBlockEntity(nodePos);
+            if (!(be instanceof INetworkNode node)) continue;
+
+            for (BlockPos neighbor : node.getConnectedNodes()) {
+                if (neighbor.equals(targetNode)) {
+                    List<BlockPos> result = new ArrayList<>(path);
+                    result.add(neighbor);
+                    return result;
+                }
+                if (!visited.contains(neighbor)) {
+                    List<BlockPos> newPath = new ArrayList<>(path);
+                    newPath.add(neighbor);
+                    queue.add(Map.entry(neighbor, newPath));
+                }
+            }
+        }
+
+        // Pas trouve - le noeud n'est peut-etre pas dans le graphe connecte
+        LOGGER.warn("[PathToPosition] Could not find path to node {}", targetNode);
+        return List.of();
+    }
+
+    /**
      * Trouve le chemin de relais entre le controller et le noeud qui possede un coffre donne.
      * BFS a travers le graphe de noeuds connectes.
+     * @deprecated Utiliser findPathToPosition() qui est plus robuste
      */
+    @Deprecated
     public List<BlockPos> findPathToChest(BlockPos chestPos, BlockPos requesterPos) {
         if (parent.getChestManager().getRegisteredChests().contains(chestPos)) {
             return List.of();
@@ -192,6 +271,35 @@ public class DeliveryNetworkPathfinder {
     }
 
     /**
+     * [NEW] Trouve le chemin de relais depuis une position vers le controller.
+     * Utilise la proximite physique pour determiner le noeud de depart.
+     *
+     * @param fromPos position de depart (coffre, interface, etc.)
+     * @return liste des relays a traverser vers le controller (du plus eloigne au plus proche du controller)
+     */
+    public List<BlockPos> findPathFromPosition(BlockPos fromPos) {
+        if (fromPos == null) return List.of();
+        if (parent.getLevel() == null) return List.of();
+
+        // Trouver le noeud reseau le plus proche de la position de depart
+        BlockPos nearestNode = findNearestNetworkNode(Vec3.atCenterOf(fromPos));
+        LOGGER.info("[PathFromPosition] From {} → nearest node: {}", fromPos, nearestNode);
+
+        // Si le plus proche est le controller, pas de relays a traverser
+        if (nearestNode.equals(parent.getBlockPos())) {
+            LOGGER.info("[PathFromPosition] Nearest is controller, returning empty path");
+            return List.of();
+        }
+
+        // Le chemin depuis nearestNode vers le controller
+        // C'est l'inverse de findPathToPosition, mais on garde le meme ordre de relays
+        // car le chemin est parcouru dans l'ordre: nearestNode → ... → controller
+        List<BlockPos> pathToNearest = findRelayPathToNode(nearestNode);
+        LOGGER.info("[PathFromPosition] Path from {} to controller via relays: {}", nearestNode, pathToNearest);
+        return pathToNearest;
+    }
+
+    /**
      * Calcule les waypoints de transit source -> dest en passant par l'ancetre commun (LCA).
      */
     public List<BlockPos> computeTransitWaypoints(List<BlockPos> pathToSource, List<BlockPos> pathToDest) {
@@ -278,7 +386,7 @@ public class DeliveryNetworkPathfinder {
         if (fromPos == null) return List.of();
         if (fromPos.equals(parent.getBlockPos())) return List.of();
 
-        LOGGER.debug("[PathToController] Finding path from {} to controller {}", fromPos, parent.getBlockPos());
+        LOGGER.info("[PathToController] Finding path from {} to controller {}", fromPos, parent.getBlockPos());
 
         // Etape 1: trouver le noeud proprietaire de fromPos
         StorageNetworkRegistry registry = parent.getNetworkRegistry();
@@ -370,13 +478,104 @@ public class DeliveryNetworkPathfinder {
     }
 
     /**
+     * [NEW] Calcule le chemin entre deux positions en utilisant la proximite physique.
+     * Trouve le noeud le plus proche de chaque position et calcule le chemin entre eux.
+     *
+     * @param fromPos position de depart
+     * @param toPos position d'arrivee
+     * @return liste des relays a traverser (peut etre vide si meme noeud ou adjacent)
+     */
+    public List<BlockPos> findPathBetweenPositions(BlockPos fromPos, BlockPos toPos) {
+        if (fromPos == null || toPos == null) return List.of();
+        if (fromPos.equals(toPos)) return List.of();
+        if (parent.getLevel() == null) return List.of();
+
+        // Trouver les noeuds les plus proches de chaque position
+        BlockPos fromNode = findNearestNetworkNode(Vec3.atCenterOf(fromPos));
+        BlockPos toNode = findNearestNetworkNode(Vec3.atCenterOf(toPos));
+
+        LOGGER.info("[PathBetweenPositions] From {} (nearest: {}) to {} (nearest: {})",
+            fromPos, fromNode, toPos, toNode);
+
+        // Meme noeud: pas de relays a traverser
+        if (fromNode.equals(toNode)) {
+            LOGGER.info("[PathBetweenPositions] Same nearest node, returning empty path");
+            return List.of();
+        }
+
+        // Si l'un est le controller
+        if (fromNode.equals(parent.getBlockPos())) {
+            // Depuis controller vers toNode
+            return findRelayPathToNode(toNode);
+        }
+        if (toNode.equals(parent.getBlockPos())) {
+            // Vers controller depuis fromNode
+            return findRelayPathToNode(fromNode);
+        }
+
+        // BFS depuis fromNode vers toNode
+        Set<BlockPos> visited = new HashSet<>();
+        visited.add(fromNode);
+
+        Queue<Map.Entry<BlockPos, List<BlockPos>>> queue = new LinkedList<>();
+
+        BlockEntity fromBe = parent.getLevel().getBlockEntity(fromNode);
+        if (!(fromBe instanceof INetworkNode fromNodeEntity)) {
+            return List.of(fromNode);
+        }
+
+        for (BlockPos neighbor : fromNodeEntity.getConnectedNodes()) {
+            if (neighbor.equals(toNode)) {
+                return List.of(fromNode, toNode);
+            }
+            if (!visited.contains(neighbor)) {
+                List<BlockPos> path = new ArrayList<>();
+                path.add(fromNode);
+                path.add(neighbor);
+                queue.add(Map.entry(neighbor, path));
+            }
+        }
+
+        while (!queue.isEmpty()) {
+            var entry = queue.poll();
+            BlockPos nodePos = entry.getKey();
+            List<BlockPos> path = entry.getValue();
+
+            if (!visited.add(nodePos)) continue;
+            if (!parent.getLevel().hasChunkAt(nodePos)) continue;
+
+            BlockEntity be = parent.getLevel().getBlockEntity(nodePos);
+            if (!(be instanceof INetworkNode node)) continue;
+
+            for (BlockPos neighbor : node.getConnectedNodes()) {
+                if (neighbor.equals(toNode)) {
+                    List<BlockPos> result = new ArrayList<>(path);
+                    result.add(toNode);
+                    LOGGER.info("[PathBetweenPositions] Found path: {}", result);
+                    return result;
+                }
+                if (!visited.contains(neighbor)) {
+                    List<BlockPos> newPath = new ArrayList<>(path);
+                    newPath.add(neighbor);
+                    queue.add(Map.entry(neighbor, newPath));
+                }
+            }
+        }
+
+        LOGGER.info("[PathBetweenPositions] No path found, returning [fromNode]: {}", fromNode);
+        return List.of(fromNode);
+    }
+
+    /**
      * Calcule le chemin entre deux positions du reseau.
      * Les deux positions doivent etre enregistrees dans le reseau.
+     * @deprecated Utiliser findPathBetweenPositions() qui est plus robuste
      *
      * @param fromPos position de depart
      * @param toPos position d'arrivee
      * @return liste des relays a traverser (peut etre vide si meme proprietaire ou direct)
      */
+    @Deprecated
     public List<BlockPos> findPathBetween(BlockPos fromPos, BlockPos toPos) {
         if (fromPos == null || toPos == null) return List.of();
         if (fromPos.equals(toPos)) return List.of();
