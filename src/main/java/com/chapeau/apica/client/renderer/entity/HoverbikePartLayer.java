@@ -169,15 +169,24 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
 
             applyEditOffset(poseStack, part, animName, state, isRightControl);
 
+            // Saddle B: hide connector during main render
+            boolean isSaddleB = partType == HoverbikePart.SADDLE && clampedIndex == 1;
+            SaddlePartModelB saddleB = null;
+            if (isSaddleB && part instanceof SaddlePartModelB sb) {
+                saddleB = sb;
+                saddleB.getConnector().visible = false;
+            }
+
             VertexConsumer vertexConsumer = bufferSource.getBuffer(
                     RenderType.entityCutoutNoCull(part.getTextureLocation()));
 
             part.renderToBuffer(poseStack, vertexConsumer, packedLight,
                     OverlayTexture.NO_OVERLAY);
 
-            // Render connector and lightning arcs for saddle variant B
-            if (partType == HoverbikePart.SADDLE && clampedIndex == 1) {
-                renderSaddleConnector(poseStack, bufferSource, packedLight, part);
+            // Saddle B: render connector with pink texture, then lightning
+            if (saddleB != null) {
+                saddleB.getConnector().visible = true;
+                renderSaddleConnector(poseStack, bufferSource, packedLight, saddleB);
                 renderElectrodeLightning(poseStack, bufferSource, state);
             }
 
@@ -241,20 +250,20 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
     /** Controle gauche: flanc gauche du corps, mi-hauteur, zone arriere. */
     private static Vec3 getControlLeftPosition(BeeBodyType bodyType) {
         return switch (bodyType) {
-            case DEFAULT -> new Vec3(-4.0, 13.0, 1.0);
-            case ROYAL -> new Vec3(-4.5, 13.0, -3.0);
-            case SEGMENTED -> new Vec3(-4.0, 13.0, 6.0);  // Au milieu de la tail, face west
-            case ARMORED, PUFFY -> new Vec3(-4.5, 13.0, 1.0);
+            case DEFAULT -> new Vec3(-4.0, 19.0, 1.0);
+            case ROYAL -> new Vec3(-4.5, 19.0, -3.0);
+            case SEGMENTED -> new Vec3(-4.0, 19.0, 6.0);  // Au milieu de la tail, face west
+            case ARMORED, PUFFY -> new Vec3(-4.5, 19.0, 1.0);
         };
     }
 
     /** Controle droit: flanc droit du corps, mi-hauteur, zone arriere. */
     private static Vec3 getControlRightPosition(BeeBodyType bodyType) {
         return switch (bodyType) {
-            case DEFAULT -> new Vec3(4.0, 13.0, 1.0);
-            case ROYAL -> new Vec3(4.5, 13.0, -3.0);
-            case SEGMENTED -> new Vec3(4.0, 13.0, 6.0);  // Au milieu de la tail, face east
-            case ARMORED, PUFFY -> new Vec3(4.5, 13.0, 1.0);
+            case DEFAULT -> new Vec3(4.0, 19.0, 1.0);
+            case ROYAL -> new Vec3(4.5, 19.0, -3.0);
+            case SEGMENTED -> new Vec3(4.0, 19.0, 6.0);  // Au milieu de la tail, face east
+            case ARMORED, PUFFY -> new Vec3(4.5, 19.0, 1.0);
         };
     }
 
@@ -382,9 +391,7 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
      * Utilise RenderType.entityCutout pour un rendu sans transparence alpha.
      */
     private void renderSaddleConnector(PoseStack poseStack, MultiBufferSource bufferSource,
-                                        int packedLight, HoverbikePartModel part) {
-        if (!(part instanceof SaddlePartModelB saddleB)) return;
-
+                                        int packedLight, SaddlePartModelB saddleB) {
         ModelPart connector = saddleB.getConnector();
         VertexConsumer vc = bufferSource.getBuffer(
                 RenderType.entityCutout(SaddlePartModelB.CONNECTOR_TEXTURE));
