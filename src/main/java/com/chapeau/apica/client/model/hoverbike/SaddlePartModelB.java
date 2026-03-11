@@ -85,13 +85,6 @@ public class SaddlePartModelB extends HoverbikePartModel {
                         .addBox(-0.575F, -1.0F, -0.5F, 1.15F, 2.0F, 1.0F),
                 PartPose.offset(1.575F, -0.5F, 2.75F));
 
-        // Connecteur: 2x2x1 (pont entre les deux cubes)
-        root.addOrReplaceChild("connector",
-                CubeListBuilder.create()
-                        .texOffs(0, 12)
-                        .addBox(-1.0F, -1.0F, -0.5F, 2.0F, 2.0F, 1.0F),
-                PartPose.offset(0F, -0.5F, 2.75F));
-
         return LayerDefinition.create(mesh, 32, 16);
     }
 

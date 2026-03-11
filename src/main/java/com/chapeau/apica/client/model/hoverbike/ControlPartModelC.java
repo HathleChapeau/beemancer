@@ -62,32 +62,32 @@ public class ControlPartModelC extends HoverbikePartModel {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        // Cube principal 3x3x1, tourne a 45° sur l'axe X
+        // Cube principal 1x3x3, tourne a 45° sur l'axe X
         root.addOrReplaceChild("main_cube",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-1.5F, -1.5F, -0.5F, 3.0F, 3.0F, 1.0F),
+                        .addBox(-0.5F, -1.5F, -1.5F, 1.0F, 3.0F, 3.0F),
                 PartPose.offsetAndRotation(0F, 0F, 0F, ANGLE_45, 0F, 0F));
 
-        // Cube secondaire 2x2x1 (non tourne, devant le cube principal)
+        // Cube secondaire 1x2x2 (non tourne, devant le cube principal)
         root.addOrReplaceChild("secondary_cube",
                 CubeListBuilder.create()
                         .texOffs(0, 4)
-                        .addBox(-1.0F, -1.0F, -0.5F, 2.0F, 2.0F, 1.0F),
+                        .addBox(-0.5F, -1.0F, -1.0F, 1.0F, 2.0F, 2.0F),
                 PartPose.offset(0F, 0F, 1.0F));
 
-        // Barre horizontale 3.5x1x0.5 tournee a 45° sur X
+        // Barre horizontale 0.5x1x3.5 tournee a 45° sur X
         root.addOrReplaceChild("bar_horizontal",
                 CubeListBuilder.create()
                         .texOffs(0, 8)
-                        .addBox(-1.75F, -0.5F, -0.25F, 3.5F, 1.0F, 0.5F),
+                        .addBox(-0.25F, -0.5F, -1.75F, 0.5F, 1.0F, 3.5F),
                 PartPose.offsetAndRotation(0F, 0F, 0F, ANGLE_45, 0F, 0F));
 
-        // Barre verticale 1x3.5x0.5 tournee a 45° sur X
+        // Barre verticale 0.5x3.5x1 tournee a 45° sur X
         root.addOrReplaceChild("bar_vertical",
                 CubeListBuilder.create()
                         .texOffs(0, 10)
-                        .addBox(-0.5F, -1.75F, -0.25F, 1.0F, 3.5F, 0.5F),
+                        .addBox(-0.25F, -1.75F, -0.5F, 0.5F, 3.5F, 1.0F),
                 PartPose.offsetAndRotation(0F, 0F, 0F, ANGLE_45, 0F, 0F));
 
         return LayerDefinition.create(mesh, 16, 16);

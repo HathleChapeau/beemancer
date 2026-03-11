@@ -15,7 +15,6 @@
  * | BeeBodyType         | Type de corps        | Positionnement par body type   |
  * | SaddlePartModelB    | Positions electrodes | Lightning arcs saddle B        |
  * | SaddlePartModelC    | Position ring center | Ring effect saddle C           |
- * | ControlPartModelB   | Positions electrodes | Lightning arcs control B       |
  * | ControlPartModelC   | Position ring center | Ring effect control C          |
  * | LightningArcRenderer| Arcs electriques     | Rendu lightning effects        |
  * ------------------------------------------------------------
@@ -37,7 +36,6 @@ import com.chapeau.apica.client.model.hoverbike.HoverbikePartModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartVariants;
 import com.chapeau.apica.client.model.hoverbike.SaddlePartModelB;
 import com.chapeau.apica.client.model.hoverbike.SaddlePartModelC;
-import com.chapeau.apica.client.model.hoverbike.ControlPartModelB;
 import com.chapeau.apica.client.model.hoverbike.ControlPartModelC;
 import com.chapeau.apica.client.renderer.LightningArcRenderer;
 import com.chapeau.apica.Apica;
@@ -185,12 +183,6 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
             // Render ring effect for saddle variant C
             if (partType == HoverbikePart.SADDLE && clampedIndex == 2) {
                 renderSaddleRing(poseStack, bufferSource, packedLight, ageInTicks);
-            }
-
-            // Render lightning arcs for control variant B
-            if ((partType == HoverbikePart.CONTROL_LEFT || partType == HoverbikePart.CONTROL_RIGHT)
-                    && clampedIndex == 1) {
-                renderControlLightning(poseStack, bufferSource, state);
             }
 
             // Render ring effect for control variant C
@@ -434,36 +426,6 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
         }
 
         poseStack.popPose();
-    }
-
-    // ========== Control lightning arcs (Control B) ==========
-
-    /**
-     * Rend des arcs electriques entre les deux electrodes du controle B.
-     */
-    private void renderControlLightning(PoseStack poseStack, MultiBufferSource bufferSource,
-                                         PerEntityState state) {
-        Vec3 top = ControlPartModelB.ELECTRODE_TOP.scale(1.0 / 16.0);
-        Vec3 bottom = ControlPartModelB.ELECTRODE_BOTTOM.scale(1.0 / 16.0);
-
-        int currentTick = AnimationTimer.getTicks();
-        if (state.lastArcTick < 0 || (currentTick - state.lastArcTick) >= ARC_REFRESH_TICKS) {
-            RandomSource random = RandomSource.create(currentTick * 37L);
-            for (int i = 0; i < 2; i++) {
-                state.lightningArcs[i] = LightningArcRenderer.generateArc(
-                        top, bottom, ARC_NODES, ARC_AMPLITUDE * 0.7f,
-                        ARC_REFRESH_TICKS, false, false, random);
-            }
-            state.lastArcTick = currentTick;
-        }
-
-        float r = 0.4f, g = 0.9f, b = 1.0f;
-        for (LightningArcRenderer.LightningArc arc : state.lightningArcs) {
-            if (arc != null) {
-                LightningArcRenderer.renderArc(poseStack, bufferSource, arc,
-                        ARC_HALF_WIDTH * 0.8f, r, g, b, 0.9f);
-            }
-        }
     }
 
     // ========== Control ring effect (Control C) ==========

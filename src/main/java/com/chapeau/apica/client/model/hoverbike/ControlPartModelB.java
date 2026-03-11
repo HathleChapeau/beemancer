@@ -44,10 +44,6 @@ public class ControlPartModelB extends HoverbikePartModel {
     private static final ResourceLocation TEXTURE =
             ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/hoverbee/hoverbee_control_b.png");
 
-    /** Positions des electrodes pour le lightning (coordonnees locales) */
-    public static final Vec3 ELECTRODE_TOP = new Vec3(0, 1.575, 0);
-    public static final Vec3 ELECTRODE_BOTTOM = new Vec3(0, -1.575, 0);
-
     private HoverbikePart partType = HoverbikePart.CONTROL_LEFT;
 
     public ControlPartModelB(ModelPart root) {
@@ -58,26 +54,26 @@ public class ControlPartModelB extends HoverbikePartModel {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        // Cube haut: 1.15x2x1, centre a Y=+1.575 (separation de 2 avec le bas)
-        root.addOrReplaceChild("cube_top",
+        // Cube avant: 1x2x1.15, centre a Z=-1.575 (separation de 2 avec l'arriere)
+        root.addOrReplaceChild("cube_front",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-0.575F, -1.0F, -0.5F, 1.15F, 2.0F, 1.0F),
-                PartPose.offset(0F, 1.575F, 0F));
+                        .addBox(-0.5F, -1.0F, -0.575F, 1.0F, 2.0F, 1.15F),
+                PartPose.offset(0F, 0F, -1.575F));
 
-        // Cube bas: flip vertical du haut
-        root.addOrReplaceChild("cube_bottom",
+        // Cube arriere: flip du cube avant
+        root.addOrReplaceChild("cube_back",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
                         .mirror()
-                        .addBox(-0.575F, -1.0F, -0.5F, 1.15F, 2.0F, 1.0F),
-                PartPose.offset(0F, -1.575F, 0F));
+                        .addBox(-0.5F, -1.0F, -0.575F, 1.0F, 2.0F, 1.15F),
+                PartPose.offset(0F, 0F, 1.575F));
 
-        // Connecteur: 2x2x1 (pont entre les deux cubes)
+        // Connecteur: 1x2x2 (pont entre les deux cubes)
         root.addOrReplaceChild("connector",
                 CubeListBuilder.create()
                         .texOffs(0, 4)
-                        .addBox(-1.0F, -1.0F, -0.5F, 2.0F, 2.0F, 1.0F),
+                        .addBox(-0.5F, -1.0F, -1.0F, 1.0F, 2.0F, 2.0F),
                 PartPose.ZERO);
 
         return LayerDefinition.create(mesh, 16, 16);
