@@ -65,7 +65,7 @@ public class RailgunItem extends Item implements IMagazineHolder {
     private static final int DEFAULT_COLOR = 0x888888;
 
     /** Ticks de charge base (honey). Royal jelly = /1.4, nectar = /2. */
-    public static final int CHARGE_THRESHOLD = 50;
+    public static final int CHARGE_THRESHOLD = 43;
     /** Portee max en blocs */
     public static final int MAX_RANGE = 48;
     /** Cooldown apres tir en ticks */
