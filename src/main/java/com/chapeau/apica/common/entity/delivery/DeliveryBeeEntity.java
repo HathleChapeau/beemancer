@@ -541,6 +541,43 @@ public class DeliveryBeeEntity extends Bee {
     public ItemStack getDeliveredSnapshot() { return deliveredSnapshot; }
 
     /**
+     * Demande le chemin de retour vers le controller depuis une position donnee.
+     * Utilise le pathfinder du controller pour calculer le chemin via les relays.
+     *
+     * @param fromPos position de depart (doit etre dans le reseau)
+     * @return liste des relays a traverser, ou vide si direct/inaccessible
+     */
+    public List<BlockPos> requestPathToController(BlockPos fromPos) {
+        if (controllerPos == null || level() == null || !level().hasChunkAt(controllerPos)) {
+            return List.of();
+        }
+        BlockEntity be = level().getBlockEntity(controllerPos);
+        if (be instanceof StorageControllerBlockEntity controller) {
+            return controller.getDeliveryManager().getPathfinder().findPathToController(fromPos);
+        }
+        return List.of();
+    }
+
+    /**
+     * Demande le chemin entre deux positions du reseau.
+     * Utilise le pathfinder du controller pour calculer le chemin via les relays.
+     *
+     * @param fromPos position de depart
+     * @param toPos position d'arrivee
+     * @return liste des relays a traverser, ou vide si meme zone/inaccessible
+     */
+    public List<BlockPos> requestPathBetween(BlockPos fromPos, BlockPos toPos) {
+        if (controllerPos == null || level() == null || !level().hasChunkAt(controllerPos)) {
+            return List.of();
+        }
+        BlockEntity be = level().getBlockEntity(controllerPos);
+        if (be instanceof StorageControllerBlockEntity controller) {
+            return controller.getDeliveryManager().getPathfinder().findPathBetween(fromPos, toPos);
+        }
+        return List.of();
+    }
+
+    /**
      * Prend un snapshot des items transportes avant la livraison.
      */
     public void snapshotCarriedItems() {

@@ -42,7 +42,6 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -215,8 +214,11 @@ public class DeliveryBeeSpawner {
         }
 
         List<BlockPos> transitWaypoints = pathfinder.computeTransitWaypoints(pathToSource, pathToDest);
-        List<BlockPos> homeWaypoints = new ArrayList<>(pathToDest);
-        Collections.reverse(homeWaypoints);
+
+        // [FIX] Calculer le chemin de retour correctement: de la destination vers le controller
+        // Au lieu de simplement inverser pathToDest (qui est controller→dest),
+        // on calcule le vrai chemin dest→controller via les relays
+        List<BlockPos> homeWaypoints = pathfinder.findPathToController(task.getDestPos());
 
         bee.setAllWaypoints(pathToSource, transitWaypoints, homeWaypoints);
 
@@ -323,8 +325,8 @@ public class DeliveryBeeSpawner {
 
             List<BlockPos> outboundFromNode = pathfinder.trimPathFromNode(pathToSource, nearestNode);
             List<BlockPos> transitWaypoints = pathfinder.computeTransitWaypoints(pathToSource, pathToDest);
-            List<BlockPos> homeWaypoints = new ArrayList<>(pathToDest);
-            Collections.reverse(homeWaypoints);
+            // [FIX] Calculer le chemin de retour correctement: de la destination vers le controller
+            List<BlockPos> homeWaypoints = pathfinder.findPathToController(newTask.getDestPos());
 
             targetBee.cancelAndRedirect(
                 nearestNode, savingChest,

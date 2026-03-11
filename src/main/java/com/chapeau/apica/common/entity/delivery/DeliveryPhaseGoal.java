@@ -84,6 +84,12 @@ public class DeliveryPhaseGoal extends Goal {
     private final int[] redirectIdx = {0};
     private final int[] savingIdx = {0};
 
+    // Waypoints dynamiques pour les phases de sauvegarde et redirection
+    // Ces waypoints sont calcules a l'entree de la phase via le pathfinder du controller
+    private List<BlockPos> savingWaypoints = List.of();
+    private List<BlockPos> redirectWaypoints = List.of();
+    private List<BlockPos> recallHomeWaypoints = null;
+
     public DeliveryPhaseGoal(DeliveryBeeEntity bee) {
         this.bee = bee;
         this.setFlags(EnumSet.of(Flag.MOVE));
@@ -163,6 +169,9 @@ public class DeliveryPhaseGoal extends Goal {
      * [AU] Recall avec depot automatique: si la bee transporte des items,
      * elle les depose d'abord dans un coffre du reseau avant de rentrer.
      * Comportement general: toute bee idle avec des items les depose.
+     *
+     * [FIX] Toutes les navigations passent maintenant par le pathfinder pour
+     * calculer les trajectoires via les relays du reseau.
      */
     private void handleRecall() {
         // Si la bee a des items, deposer dans un coffre d'abord
@@ -178,11 +187,15 @@ public class DeliveryPhaseGoal extends Goal {
                 if (bee.getSavingChestPos() != null) {
                     setPhase(Phase.SAVING_INVENTORY);
                     savingIdx[0] = 0;
+                    // [FIX] Calculer le chemin vers le coffre de sauvegarde via les relays
+                    savingWaypoints = calculatePathToPosition(bee.getSavingChestPos());
                     navigationStarted = false;
                 } else {
                     // Pas de coffre dispo: retour au controller (items restitues au reseau a l'arrivee)
                     setPhase(Phase.FLY_HOME);
                     homeIdx[0] = 0;
+                    // [FIX] Calculer le chemin de retour depuis la position actuelle
+                    recallHomeWaypoints = calculatePathToController();
                     navigationStarted = false;
                 }
             }
@@ -194,11 +207,14 @@ public class DeliveryPhaseGoal extends Goal {
         } else if (phase != Phase.FLY_HOME) {
             setPhase(Phase.FLY_HOME);
             homeIdx[0] = 0;
+            // [FIX] Calculer le chemin de retour depuis la position actuelle
+            recallHomeWaypoints = calculatePathToController();
             navigationStarted = false;
         }
 
-        // Phase FLY_HOME: retour au controller
-        if (navigateWaypoints(List.of(), homeIdx, bee.getReturnPos())) {
+        // Phase FLY_HOME: retour au controller via les relays
+        List<BlockPos> waypoints = recallHomeWaypoints != null ? recallHomeWaypoints : bee.getHomeWaypoints();
+        if (navigateWaypoints(waypoints, homeIdx, bee.getReturnPos())) {
             bee.returnCarriedItemsToNetwork();
             bee.notifyTaskFailed();
             bee.discard();
@@ -213,6 +229,8 @@ public class DeliveryPhaseGoal extends Goal {
      * Gere l'annulation de tache mid-flight.
      * Si la bee transporte des items -> SAVING_INVENTORY d'abord.
      * Sinon -> REDIRECTING (si nouvelle tache) ou FLY_HOME.
+     *
+     * [FIX] Calcule les waypoints pour chaque phase via le pathfinder.
      */
     private void handleTaskCancellation() {
         cancellationHandled = true;
@@ -223,18 +241,26 @@ public class DeliveryPhaseGoal extends Goal {
             if (savingChest != null) {
                 setPhase(Phase.SAVING_INVENTORY);
                 savingIdx[0] = 0;
+                // [FIX] Calculer le chemin vers le coffre de sauvegarde via les relays
+                savingWaypoints = calculatePathToPosition(savingChest);
             } else {
                 // Pas de coffre disponible: retour au controller pour deposer
                 setPhase(Phase.FLY_HOME);
                 homeIdx[0] = 0;
+                // [FIX] Calculer le chemin de retour depuis la position actuelle
+                recallHomeWaypoints = calculatePathToController();
             }
         } else {
             if (bee.hasNewTask() && bee.getRedirectTarget() != null) {
                 setPhase(Phase.REDIRECTING);
                 redirectIdx[0] = 0;
+                // [FIX] Calculer le chemin vers le noeud de redirection via les relays
+                redirectWaypoints = calculatePathToPosition(bee.getRedirectTarget());
             } else {
                 setPhase(Phase.FLY_HOME);
                 homeIdx[0] = 0;
+                // [FIX] Calculer le chemin de retour depuis la position actuelle
+                recallHomeWaypoints = calculatePathToController();
             }
         }
     }
@@ -242,6 +268,8 @@ public class DeliveryPhaseGoal extends Goal {
     /**
      * Phase SAVING_INVENTORY: la bee vole vers un coffre pour deposer ses items,
      * puis passe a REDIRECTING ou FLY_HOME.
+     *
+     * [FIX] Utilise les waypoints calcules via le pathfinder pour traverser les relays.
      */
     private void tickSavingInventory() {
         BlockPos savingChest = bee.getSavingChestPos();
@@ -249,12 +277,13 @@ public class DeliveryPhaseGoal extends Goal {
             // Fallback: retour au controller
             setPhase(Phase.FLY_HOME);
             homeIdx[0] = 0;
+            recallHomeWaypoints = calculatePathToController();
             navigationStarted = false;
             return;
         }
 
-        // Vol direct vers le coffre (pas de waypoints complexes, bee est invulnerable)
-        if (navigateWaypoints(List.of(), savingIdx, savingChest)) {
+        // Vol vers le coffre via les relays du reseau
+        if (navigateWaypoints(savingWaypoints, savingIdx, savingChest)) {
             // Deposer les items dans le coffre
             if (!bee.level().isClientSide()) {
                 performSavingDeposit(savingChest);
@@ -265,9 +294,13 @@ public class DeliveryPhaseGoal extends Goal {
             if (bee.hasNewTask() && bee.getRedirectTarget() != null) {
                 setPhase(Phase.REDIRECTING);
                 redirectIdx[0] = 0;
+                // [FIX] Calculer le chemin vers le noeud de redirection depuis le coffre
+                redirectWaypoints = bee.requestPathBetween(savingChest, bee.getRedirectTarget());
             } else {
                 setPhase(Phase.FLY_HOME);
                 homeIdx[0] = 0;
+                // [FIX] Calculer le chemin de retour depuis le coffre
+                recallHomeWaypoints = bee.requestPathToController(savingChest);
             }
         }
     }
@@ -302,17 +335,21 @@ public class DeliveryPhaseGoal extends Goal {
     /**
      * Phase REDIRECTING: la bee vole vers le relay/controller le plus proche,
      * puis applique la nouvelle tache et repart vers la source.
+     *
+     * [FIX] Utilise les waypoints calcules via le pathfinder pour traverser les relays.
      */
     private void tickRedirecting() {
         BlockPos redirectTarget = bee.getRedirectTarget();
         if (redirectTarget == null) {
             setPhase(Phase.FLY_HOME);
             homeIdx[0] = 0;
+            recallHomeWaypoints = calculatePathToController();
             navigationStarted = false;
             return;
         }
 
-        if (navigateWaypoints(List.of(), redirectIdx, redirectTarget)) {
+        // Vol vers le noeud de redirection via les relays du reseau
+        if (navigateWaypoints(redirectWaypoints, redirectIdx, redirectTarget)) {
             if (bee.hasNewTask()) {
                 bee.applyNewTask();
                 setPhase(Phase.FLY_TO_SOURCE);
@@ -323,6 +360,8 @@ public class DeliveryPhaseGoal extends Goal {
             } else {
                 setPhase(Phase.FLY_HOME);
                 homeIdx[0] = 0;
+                // [FIX] Calculer le chemin de retour depuis le noeud de redirection
+                recallHomeWaypoints = bee.requestPathToController(redirectTarget);
             }
             navigationStarted = false;
         }
@@ -626,5 +665,72 @@ public class DeliveryPhaseGoal extends Goal {
         } else {
             bee.spawnAtLocation(items);
         }
+    }
+
+    // =========================================================================
+    // PATH CALCULATION HELPERS
+    // =========================================================================
+
+    /**
+     * Calcule le chemin de retour vers le controller depuis la position actuelle de la bee.
+     * Utilise la destination actuelle comme point de reference si disponible,
+     * sinon utilise la source ou la position la plus proche du reseau.
+     *
+     * @return liste des relays a traverser pour revenir au controller
+     */
+    private List<BlockPos> calculatePathToController() {
+        // Determiner la position de reference dans le reseau
+        BlockPos refPos = determineCurrentNetworkPosition();
+        if (refPos == null) {
+            return List.of();
+        }
+        return bee.requestPathToController(refPos);
+    }
+
+    /**
+     * Calcule le chemin vers une position cible depuis la position actuelle de la bee.
+     *
+     * @param targetPos position cible (coffre, noeud, etc.)
+     * @return liste des relays a traverser
+     */
+    private List<BlockPos> calculatePathToPosition(BlockPos targetPos) {
+        if (targetPos == null) {
+            return List.of();
+        }
+        BlockPos refPos = determineCurrentNetworkPosition();
+        if (refPos == null) {
+            return List.of();
+        }
+        return bee.requestPathBetween(refPos, targetPos);
+    }
+
+    /**
+     * Determine la position de reference actuelle de la bee dans le reseau.
+     * Priorise: destination courante > source > controller.
+     *
+     * @return position de reference dans le reseau, ou null si introuvable
+     */
+    private BlockPos determineCurrentNetworkPosition() {
+        // Si on est en phase de livraison, utiliser la destination
+        if (phase == Phase.FLY_TO_DEST || phase == Phase.WAIT_AT_DEST || phase == Phase.FLY_HOME) {
+            if (bee.getDestPos() != null) {
+                return bee.getDestPos();
+            }
+        }
+        // Si on est en phase d'extraction, utiliser la source
+        if (phase == Phase.FLY_TO_SOURCE || phase == Phase.WAIT_AT_SOURCE) {
+            if (bee.getSourcePos() != null) {
+                return bee.getSourcePos();
+            }
+        }
+        // Fallback: utiliser la source ou la destination si disponible
+        if (bee.getSourcePos() != null) {
+            return bee.getSourcePos();
+        }
+        if (bee.getDestPos() != null) {
+            return bee.getDestPos();
+        }
+        // Dernier recours: controller
+        return bee.getControllerPos();
     }
 }

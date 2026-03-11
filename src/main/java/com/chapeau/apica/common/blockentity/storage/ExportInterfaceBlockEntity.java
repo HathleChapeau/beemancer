@@ -29,6 +29,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.IItemHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -49,6 +51,7 @@ import java.util.Set;
  * avec adaptation dynamique du count.
  */
 public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExportInterfaceBlockEntity.class);
 
     public ExportInterfaceBlockEntity(BlockPos pos, BlockState state) {
         super(ApicaBlockEntities.EXPORT_INTERFACE.get(), pos, state);
@@ -63,6 +66,9 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
 
         Set<String> activeItemKeys = new HashSet<>();
 
+        LOGGER.debug("[ExportScan] Starting scan at {}, filterManager.isEmpty={}, globalSelectedSlots={}",
+            worldPosition, filterManager.isEmpty(), getGlobalSelectedSlots());
+
         if (filterManager.isEmpty()) {
             doScanNoFilter(adjacent, controller, beeCapacity, activeItemKeys);
         } else {
@@ -70,6 +76,9 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
                 doScanWithFilter(adjacent, controller, filter, beeCapacity, activeItemKeys);
             }
         }
+
+        LOGGER.debug("[ExportScan] Scan complete, activeItemKeys={}, taskCount={}",
+            activeItemKeys, taskManager.size());
 
         taskManager.cleanupOrphanedTasks(activeItemKeys);
         taskManager.publishTodoTasks(controller);
@@ -81,6 +90,8 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
     private void doScanNoFilter(IItemHandler adjacent, StorageControllerBlockEntity controller,
                                  int beeCapacity, Set<String> activeItemKeys) {
         int[] slots = getGlobalOperableSlots(adjacent);
+        LOGGER.debug("[ExportScan] doScanNoFilter: adjacent.slots={}, operableSlots={}",
+            adjacent.getSlots(), slots.length);
         reconcileExportItems(adjacent, controller, slots, 0, beeCapacity, null, activeItemKeys);
     }
 
@@ -114,7 +125,10 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
         Map<String, Integer> totalCountsByKey = new LinkedHashMap<>();
 
         for (int slot : slots) {
-            if (slot < 0 || slot >= adjacent.getSlots()) continue;
+            if (slot < 0 || slot >= adjacent.getSlots()) {
+                LOGGER.debug("[ExportScan] Slot {} out of bounds (max={})", slot, adjacent.getSlots());
+                continue;
+            }
             ItemStack stack = adjacent.getStackInSlot(slot);
             if (stack.isEmpty()) continue;
 
@@ -123,7 +137,10 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
             String key = itemKey(stack);
             templatesByKey.putIfAbsent(key, stack.copyWithCount(1));
             totalCountsByKey.merge(key, stack.getCount(), Integer::sum);
+            LOGGER.debug("[ExportScan] Found item in slot {}: {}x{}", slot, stack.getCount(), stack.getItem());
         }
+
+        LOGGER.debug("[ExportScan] Total unique items found: {}", templatesByKey.size());
 
         // [FIX] Position du coffre adjacent: ne peut pas etre une destination d'export
         // (on ne peut pas exporter vers le coffre d'ou on exporte)
@@ -138,7 +155,12 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
             // [FIX] Verifier que le reseau a de l'espace pour cet item
             // ET que la destination n'est pas le coffre adjacent (self-export interdit)
             BlockPos dest = controller.getItemAggregator().findSlotForItem(template);
+            LOGGER.debug("[ExportScan] Item {}: findSlotForItem returned {}, adjacentPos={}",
+                template.getItem(), dest, adjacentPos);
+
             if (dest == null || dest.equals(adjacentPos)) {
+                LOGGER.debug("[ExportScan] Item {}: NO VALID DEST (dest={}, adjacent={}), skipping task creation",
+                    template.getItem(), dest, adjacentPos);
                 taskManager.reconcileTasksForItem(template, 0, beeCapacity,
                     InterfaceTask.TaskType.EXPORT);
                 continue;
@@ -150,6 +172,8 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
             // leur count mis à 0 et seraient annulées alors qu'elles sont en vol.
             int exportable = Math.max(0, totalCount - keepQty);
 
+            LOGGER.debug("[ExportScan] Item {}: creating task for {} items (dest={})",
+                template.getItem(), exportable, dest);
             taskManager.reconcileTasksForItem(template, exportable, beeCapacity,
                 InterfaceTask.TaskType.EXPORT);
         }
