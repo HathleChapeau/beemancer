@@ -32,6 +32,8 @@ import com.chapeau.apica.common.block.storage.ControllerStats;
 import com.chapeau.apica.common.block.storage.DeliveryTask;
 import com.chapeau.apica.common.block.storage.InterfaceTask;
 import com.chapeau.apica.common.block.storage.StorageEvents;
+import com.chapeau.apica.common.blockentity.storage.task.AbstractInterfaceTaskHandler;
+import com.chapeau.apica.common.blockentity.storage.task.InterfaceTaskHandlerFactory;
 import com.chapeau.apica.core.multiblock.MultiblockCapabilityProvider;
 import com.chapeau.apica.core.multiblock.MultiblockController;
 import com.chapeau.apica.core.multiblock.MultiblockEvents;
@@ -703,44 +705,19 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
     /**
      * Assigne une bee a une InterfaceTask d'interface.
-     * Trouve le coffre source (import) ou destination (export), cree un DeliveryTask.
+     * Utilise le handler approprié (Import/Export) via la factory.
      * @return true si la task a ete assignee avec succes
      */
     public boolean assignBeeToInterfaceTask(NetworkInterfaceBlockEntity iface, InterfaceTask task) {
         if (level == null) return false;
 
-        if (task.getType() == InterfaceTask.TaskType.IMPORT) {
-            BlockPos chest = deliveryManager.getContainerOps().findChestWithItem(task.getTemplate(), 1);
-            if (chest == null) return false;
-            if (chest.equals(iface.getAdjacentPos())) return false;
+        AbstractInterfaceTaskHandler handler = InterfaceTaskHandlerFactory.getHandler(
+            task.getType(),
+            this,
+            deliveryManager.getContainerOps()
+        );
 
-            DeliveryTask dt = DeliveryTask.builder(
-                    task.getTemplate(), task.getCount(), chest, iface.getBlockPos(),
-                    DeliveryTask.TaskOrigin.AUTOMATION)
-                .requesterPos(iface.getBlockPos())
-                .interfaceTaskId(task.getTaskId())
-                .interfacePos(iface.getBlockPos())
-                .build();
-            deliveryManager.addDeliveryTask(dt);
-            task.lockTask(dt.getTaskId(), level.getGameTime());
-            return true;
-
-        } else {
-            BlockPos dest = itemAggregator.findSlotForItem(task.getTemplate());
-            if (dest == null) return false;
-            if (dest.equals(iface.getAdjacentPos())) return false;
-
-            DeliveryTask dt = DeliveryTask.builder(
-                    task.getTemplate(), task.getCount(), iface.getAdjacentPos(), dest,
-                    DeliveryTask.TaskOrigin.AUTOMATION)
-                .requesterPos(iface.getBlockPos())
-                .interfaceTaskId(task.getTaskId())
-                .interfacePos(iface.getBlockPos())
-                .build();
-            deliveryManager.addDeliveryTask(dt);
-            task.lockTask(dt.getTaskId(), level.getGameTime());
-            return true;
-        }
+        return handler.assignTask(iface, task);
     }
 
     public boolean cancelTask(UUID id) {
