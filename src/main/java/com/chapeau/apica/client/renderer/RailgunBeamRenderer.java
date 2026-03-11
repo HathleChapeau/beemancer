@@ -21,6 +21,7 @@
 package com.chapeau.apica.client.renderer;
 
 import com.chapeau.apica.Apica;
+import com.chapeau.apica.common.item.debug.DebugWandItem;
 import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.tool.RailgunItem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -138,9 +139,9 @@ public class RailgunBeamRenderer {
             Vec3 upDir = new Vec3(camera.getUpVector());
             Vec3 rightDir = lookDir.cross(upDir).normalize();
             beamOrigin = camPos
-                .add(rightDir.scale(fpsRightOffset.x))
-                .add(upDir.scale(fpsUpOffset.y))
-                .add(lookDir.scale(fpsForwardOffset.z));
+                .add(rightDir.scale(fpsRightOffset.x + 0.3f))
+                .add(upDir.scale(fpsUpOffset.y - 0.4f))
+                .add(lookDir.scale(fpsForwardOffset.z + 1.3f));
         } else {
             // TPS: origine world-space fixe
             beamOrigin = tpsBeamOrigin;
