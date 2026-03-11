@@ -192,6 +192,17 @@ public class InterfaceTaskManager {
      */
     public void reconcileTasksForItem(ItemStack template, int totalDesired,
                                        int beeCapacity, InterfaceTask.TaskType type) {
+        reconcileTasksForItem(template, totalDesired, beeCapacity, type, null);
+    }
+
+    /**
+     * Reconcilie les tasks existantes pour un item donne avec la demande actuelle.
+     * Pour les taches EXPORT, sourceSlots indique les slots d'ou extraire.
+     * 4 phases: ajuster LOCKED, annuler LOCKED a 0, ajuster NEEDED, creer NEEDED.
+     */
+    public void reconcileTasksForItem(ItemStack template, int totalDesired,
+                                       int beeCapacity, InterfaceTask.TaskType type,
+                                       int[] sourceSlots) {
         int remaining = Math.max(0, totalDesired);
 
         // Phase 1: Ajuster les tasks LOCKED
@@ -240,7 +251,10 @@ public class InterfaceTaskManager {
         int itemBeeCapacity = Math.min(beeCapacity, template.getMaxStackSize());
         while (remaining > 0) {
             int chunk = Math.min(remaining, itemBeeCapacity);
-            InterfaceTask newTask = new InterfaceTask(type, template, chunk);
+            // [FIX] Pour EXPORT, transmettre les sourceSlots pour extraire du bon slot
+            InterfaceTask newTask = (sourceSlots != null && sourceSlots.length > 0)
+                ? new InterfaceTask(type, template, chunk, sourceSlots)
+                : new InterfaceTask(type, template, chunk);
             tasks.put(newTask.getTaskId(), newTask);
             remaining -= chunk;
         }

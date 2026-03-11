@@ -603,6 +603,23 @@ public class DeliveryBeeEntity extends Bee {
         return -1;
     }
 
+    /**
+     * [FIX] Lit les sourceSlots de l'InterfaceTask depuis l'interface.
+     * Pour les taches EXPORT, indique les slots d'ou extraire dans le coffre adjacent.
+     *
+     * @return array des slots sources, ou tableau vide si non disponible
+     */
+    public int[] readInterfaceTaskSourceSlots() {
+        if (interfaceTaskId == null || interfacePos == null) return new int[0];
+        if (level() == null || !level().hasChunkAt(interfacePos)) return new int[0];
+        BlockEntity be = level().getBlockEntity(interfacePos);
+        if (be instanceof NetworkInterfaceBlockEntity iface) {
+            InterfaceTask task = iface.getTask(interfaceTaskId);
+            if (task != null) return task.getSourceSlots();
+        }
+        return new int[0];
+    }
+
     public UUID getTaskId() { return taskId; }
     public BlockPos getControllerPos() { return controllerPos; }
     public List<BlockPos> getOutboundWaypoints() { return outboundWaypoints; }

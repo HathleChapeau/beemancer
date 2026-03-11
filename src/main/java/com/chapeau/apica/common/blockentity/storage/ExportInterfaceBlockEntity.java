@@ -113,6 +113,9 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
      *
      * Verifie que le reseau a de l'espace avant de creer des tasks.
      *
+     * [FIX] Trackez les slots sources pour chaque type d'item pour extraire
+     * du bon slot lors de l'export.
+     *
      * @param filter si non-null, seuls les items matchant ce filtre sont exportes
      * @param keepQty 0=tout exporter, N=garder N items
      * @param activeItemKeys set des itemKeys actifs (rempli par cette methode)
@@ -123,6 +126,8 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
                                        Set<String> activeItemKeys) {
         Map<String, ItemStack> templatesByKey = new LinkedHashMap<>();
         Map<String, Integer> totalCountsByKey = new LinkedHashMap<>();
+        // [FIX] Track source slots for each item type
+        Map<String, java.util.List<Integer>> slotsByKey = new LinkedHashMap<>();
 
         for (int slot : slots) {
             if (slot < 0 || slot >= adjacent.getSlots()) {
@@ -137,6 +142,8 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
             String key = itemKey(stack);
             templatesByKey.putIfAbsent(key, stack.copyWithCount(1));
             totalCountsByKey.merge(key, stack.getCount(), Integer::sum);
+            // [FIX] Track which slot this item was found in
+            slotsByKey.computeIfAbsent(key, k -> new java.util.ArrayList<>()).add(slot);
             LOGGER.debug("[ExportScan] Found item in slot {}: {}x{}", slot, stack.getCount(), stack.getItem());
         }
 
@@ -172,10 +179,16 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
             // leur count mis à 0 et seraient annulées alors qu'elles sont en vol.
             int exportable = Math.max(0, totalCount - keepQty);
 
-            LOGGER.debug("[ExportScan] Item {}: creating task for {} items (dest={})",
-                template.getItem(), exportable, dest);
+            // [FIX] Convert slot list to array for the task
+            java.util.List<Integer> slotList = slotsByKey.get(key);
+            int[] sourceSlots = slotList != null
+                ? slotList.stream().mapToInt(Integer::intValue).toArray()
+                : new int[0];
+
+            LOGGER.debug("[ExportScan] Item {}: creating task for {} items (dest={}, sourceSlots={})",
+                template.getItem(), exportable, dest, java.util.Arrays.toString(sourceSlots));
             taskManager.reconcileTasksForItem(template, exportable, beeCapacity,
-                InterfaceTask.TaskType.EXPORT);
+                InterfaceTask.TaskType.EXPORT, sourceSlots);
         }
     }
 

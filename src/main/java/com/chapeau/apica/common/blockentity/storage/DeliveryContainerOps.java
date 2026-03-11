@@ -134,6 +134,14 @@ public class DeliveryContainerOps {
      * Extrait un item d'un coffre ou terminal pour une livraison.
      */
     public ItemStack extractItemForDelivery(ItemStack template, int count, BlockPos chestPos) {
+        return extractItemForDelivery(template, count, chestPos, null);
+    }
+
+    /**
+     * [FIX] Extrait un item de slots specifiques d'un coffre pour une livraison.
+     * Si sourceSlots est fourni et non vide, extrait uniquement de ces slots.
+     */
+    public ItemStack extractItemForDelivery(ItemStack template, int count, BlockPos chestPos, int[] sourceSlots) {
         if (parent.getLevel() == null || template.isEmpty() || count <= 0) return ItemStack.EMPTY;
         if (!parent.getLevel().hasChunkAt(chestPos)) return ItemStack.EMPTY;
 
@@ -148,7 +156,13 @@ public class DeliveryContainerOps {
         IItemHandler handler = StorageHelper.getItemHandler(parent.getLevel(), chestPos, null);
         if (handler == null) return ItemStack.EMPTY;
 
-        ItemStack result = ContainerHelper.extractItem(handler, template, count);
+        ItemStack result;
+        if (sourceSlots != null && sourceSlots.length > 0) {
+            // [FIX] Extraire uniquement des slots specifies
+            result = ContainerHelper.extractItem(handler, template, count, sourceSlots);
+        } else {
+            result = ContainerHelper.extractItem(handler, template, count);
+        }
         parent.getItemAggregator().setNeedsSync(true);
         return result;
     }

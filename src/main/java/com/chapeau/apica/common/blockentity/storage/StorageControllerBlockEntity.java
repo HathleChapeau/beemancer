@@ -602,6 +602,13 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         return deliveryManager.getContainerOps().extractItemForDelivery(template, count, chestPos);
     }
 
+    /**
+     * [FIX] Extrait des items de slots specifiques d'un coffre pour une livraison.
+     */
+    public ItemStack extractItemForDelivery(ItemStack template, int count, BlockPos chestPos, int[] sourceSlots) {
+        return deliveryManager.getContainerOps().extractItemForDelivery(template, count, chestPos, sourceSlots);
+    }
+
     public ItemStack depositItemForDelivery(ItemStack stack, @Nullable BlockPos chestPos) {
         return deliveryManager.getContainerOps().depositItemForDelivery(stack, chestPos);
     }

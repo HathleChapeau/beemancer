@@ -358,4 +358,36 @@ public final class ContainerHelper {
         }
         return capacity;
     }
+
+    /**
+     * Extrait N items d'un type donne depuis des slots specifiques d'un IItemHandler.
+     * Extrait uniquement des slots fournis, dans l'ordre donne.
+     *
+     * @param handler le handler source
+     * @param template le type d'item a extraire
+     * @param count le nombre d'items a extraire
+     * @param slots les indices de slots autorises pour l'extraction
+     * @return les items extraits (count peut etre inferieur si pas assez)
+     */
+    public static ItemStack extractItem(IItemHandler handler, ItemStack template, int count, int[] slots) {
+        if (template.isEmpty() || count <= 0 || slots == null || slots.length == 0) {
+            return ItemStack.EMPTY;
+        }
+        ItemStack result = template.copy();
+        result.setCount(0);
+        int needed = count;
+
+        for (int slot : slots) {
+            if (slot < 0 || slot >= handler.getSlots()) continue;
+            ItemStack existing = handler.getStackInSlot(slot);
+            if (ItemStack.isSameItemSameComponents(existing, template)) {
+                int toTake = Math.min(needed, existing.getCount());
+                ItemStack extracted = handler.extractItem(slot, toTake, false);
+                result.grow(extracted.getCount());
+                needed -= extracted.getCount();
+            }
+            if (needed <= 0) break;
+        }
+        return result;
+    }
 }

@@ -37,6 +37,7 @@ import java.util.Set;
  * Calcule les chemins de relais entre controller, relays et coffres.
  */
 public class DeliveryNetworkPathfinder {
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DeliveryNetworkPathfinder.class);
     private final StorageControllerBlockEntity parent;
 
     public DeliveryNetworkPathfinder(StorageControllerBlockEntity parent) {

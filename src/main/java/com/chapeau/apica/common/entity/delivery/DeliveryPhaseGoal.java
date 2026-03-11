@@ -532,6 +532,9 @@ public class DeliveryPhaseGoal extends Goal {
      * Extraction a la source: le controller extrait l'item du coffre/container.
      * Pour les taches d'interface, lit le count actuel depuis l'InterfaceTask
      * pour s'adapter aux changements pendant le transit.
+     *
+     * [FIX] Pour les taches EXPORT d'interface, utilise les sourceSlots de l'InterfaceTask
+     * pour extraire du bon slot au lieu d'extraire de n'importe quel slot.
      */
     private void performExtraction(Level level) {
         BlockPos controllerPos = bee.getControllerPos();
@@ -547,6 +550,7 @@ public class DeliveryPhaseGoal extends Goal {
         }
 
         int maxExtract;
+        int[] sourceSlots = null;
         if (bee.getInterfaceTaskId() != null) {
             int currentCount = bee.readCurrentInterfaceTaskCount();
             if (currentCount <= 0) {
@@ -556,13 +560,23 @@ public class DeliveryPhaseGoal extends Goal {
                 return;
             }
             maxExtract = Math.min(currentCount, bee.getRequestCount());
+            // [FIX] Lire les sourceSlots de l'InterfaceTask pour extraire du bon slot
+            sourceSlots = bee.readInterfaceTaskSourceSlots();
         } else {
             maxExtract = bee.getRequestCount();
         }
 
-        ItemStack extracted = controller.extractItemForDelivery(
-            bee.getTemplate(), maxExtract, bee.getSourcePos()
-        );
+        ItemStack extracted;
+        if (sourceSlots != null && sourceSlots.length > 0) {
+            // [FIX] Extraire des slots specifiques (taches EXPORT d'interface)
+            extracted = controller.extractItemForDelivery(
+                bee.getTemplate(), maxExtract, bee.getSourcePos(), sourceSlots
+            );
+        } else {
+            extracted = controller.extractItemForDelivery(
+                bee.getTemplate(), maxExtract, bee.getSourcePos()
+            );
+        }
         bee.setCarriedItems(extracted);
     }
 
