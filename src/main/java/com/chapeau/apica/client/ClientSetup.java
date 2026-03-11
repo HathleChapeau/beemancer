@@ -83,6 +83,7 @@ import com.chapeau.apica.client.renderer.item.MiningLaserItemRenderer;
 import com.chapeau.apica.client.renderer.item.RailgunItemRenderer;
 import com.chapeau.apica.client.renderer.item.ChopperHiveItemRenderer;
 import com.chapeau.apica.client.renderer.item.MagicBeeItemRenderer;
+import com.chapeau.apica.client.renderer.item.HoverbikePartItemRenderer;
 import com.chapeau.apica.common.blockentity.alchemy.LiquidPipeBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.ItemPipeBlockEntity;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
@@ -548,6 +549,29 @@ public class ClientSetup {
                 return true;
             }
         }, ApicaItems.CHOPPER_HIVE.get());
+
+        // Hoverbike Parts - render 3D model in inventory
+        IClientItemExtensions hoverbikeParts = new IClientItemExtensions() {
+            private HoverbikePartItemRenderer renderer;
+
+            @Override
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (renderer == null) {
+                    renderer = new HoverbikePartItemRenderer();
+                }
+                return renderer;
+            }
+        };
+        event.registerItem(hoverbikeParts,
+                ApicaItems.SADDLE_STANDARD.get(),
+                ApicaItems.SADDLE_REINFORCED.get(),
+                ApicaItems.SADDLE_LIGHT.get(),
+                ApicaItems.WING_PROTECTOR_STANDARD.get(),
+                ApicaItems.WING_PROTECTOR_HEAVY.get(),
+                ApicaItems.WING_PROTECTOR_AERODYNAMIC.get(),
+                ApicaItems.CONTROL_STANDARD.get(),
+                ApicaItems.CONTROL_PRECISION.get(),
+                ApicaItems.CONTROL_RESPONSIVE.get());
 
         // --- Fluid Extensions ---
         registerFluidExtension(event, ApicaFluids.HONEY_FLUID_TYPE,
