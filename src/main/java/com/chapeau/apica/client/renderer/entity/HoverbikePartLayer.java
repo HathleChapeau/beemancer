@@ -175,8 +175,9 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
             part.renderToBuffer(poseStack, vertexConsumer, packedLight,
                     OverlayTexture.NO_OVERLAY);
 
-            // Render lightning arcs for saddle variant B
+            // Render connector and lightning arcs for saddle variant B
             if (partType == HoverbikePart.SADDLE && clampedIndex == 1) {
+                renderSaddleConnector(poseStack, bufferSource, packedLight, part);
                 renderElectrodeLightning(poseStack, bufferSource, state);
             }
 
@@ -218,7 +219,7 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
         return switch (bodyType) {
             case DEFAULT -> new Vec3(0, 14.5, 2.0);
             case ROYAL -> new Vec3(0, 14.0, -2.0);
-            case SEGMENTED -> new Vec3(0, 14.5, -0.5);
+            case SEGMENTED -> new Vec3(0, 14.5, 5.5);  // Reculee vers la tail
             case ARMORED, PUFFY -> new Vec3(0, 14.5, 1.0);
         };
     }
@@ -242,7 +243,7 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
         return switch (bodyType) {
             case DEFAULT -> new Vec3(-4.0, 16.0, 1.0);
             case ROYAL -> new Vec3(-4.5, 16.0, -3.0);
-            case SEGMENTED -> new Vec3(-4.0, 16.0, 0.5);
+            case SEGMENTED -> new Vec3(-4.0, 16.0, 6.0);  // Au milieu de la tail, face west
             case ARMORED, PUFFY -> new Vec3(-4.5, 16.0, 1.0);
         };
     }
@@ -252,7 +253,7 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
         return switch (bodyType) {
             case DEFAULT -> new Vec3(4.0, 16.0, 1.0);
             case ROYAL -> new Vec3(4.5, 16.0, -3.0);
-            case SEGMENTED -> new Vec3(4.0, 16.0, 0.5);
+            case SEGMENTED -> new Vec3(4.0, 16.0, 6.0);  // Au milieu de la tail, face east
             case ARMORED, PUFFY -> new Vec3(4.5, 16.0, 1.0);
         };
     }
@@ -372,6 +373,23 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
                         ARC_HALF_WIDTH, r, g, b, 0.9f);
             }
         }
+    }
+
+    // ========== Connector render (Saddle B) ==========
+
+    /**
+     * Rend le connecteur entre les electrodes de la selle B avec texture placeholder rose.
+     * Utilise RenderType.entityCutout pour un rendu sans transparence alpha.
+     */
+    private void renderSaddleConnector(PoseStack poseStack, MultiBufferSource bufferSource,
+                                        int packedLight, HoverbikePartModel part) {
+        if (!(part instanceof SaddlePartModelB saddleB)) return;
+
+        ModelPart connector = saddleB.getConnector();
+        VertexConsumer vc = bufferSource.getBuffer(
+                RenderType.entityCutout(SaddlePartModelB.CONNECTOR_TEXTURE));
+
+        connector.render(poseStack, vc, packedLight, OverlayTexture.NO_OVERLAY);
     }
 
     // ========== Ring effect (Saddle C) ==========
