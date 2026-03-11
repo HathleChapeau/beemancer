@@ -70,6 +70,7 @@ import com.chapeau.apica.client.renderer.block.StorageTerminalRenderer;
 import com.chapeau.apica.client.renderer.block.TranslucentOutlineRenderer;
 import com.chapeau.apica.client.renderer.debug.BeeDebugRenderer;
 import com.chapeau.apica.client.renderer.debug.CustomDebugDisplayRenderer;
+import com.chapeau.apica.client.renderer.debug.DeliveryBeeDebugRenderer;
 import com.chapeau.apica.client.renderer.debug.HoverbikeDebugRenderer;
 import com.chapeau.apica.client.model.entity.LeafBlowerProjectileModel;
 import com.chapeau.apica.client.renderer.entity.LeafBlowerProjectileRenderer;
@@ -139,6 +140,7 @@ public class ClientSetup {
 
         // Debug renderers (quand displayDebug = true)
         NeoForge.EVENT_BUS.register(CustomDebugDisplayRenderer.class);
+        NeoForge.EVENT_BUS.register(DeliveryBeeDebugRenderer.class);
 
         // Assembly Table stats billboard
         NeoForge.EVENT_BUS.register(AssemblyTableStatsRenderer.class);

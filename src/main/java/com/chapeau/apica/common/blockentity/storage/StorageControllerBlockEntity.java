@@ -872,6 +872,9 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         // Multibloc formed state (necessaire pour les renderers)
         multiblockManager.save(tag);
 
+        // [FIX] Registre central du reseau (necessaire pour edit mode sur relays)
+        networkRegistry.save(tag);
+
         // Honey buffer (necessaire pour la GUI jauge miel)
         tag.putInt("HoneyStored", honeyStored);
         tag.putInt("HoneyCapacity", honeyCapacity);

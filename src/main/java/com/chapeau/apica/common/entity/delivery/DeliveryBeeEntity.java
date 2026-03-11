@@ -72,6 +72,10 @@ public class DeliveryBeeEntity extends Bee {
     private static final EntityDataAccessor<String> DATA_PHASE = SynchedEntityData.defineId(
         DeliveryBeeEntity.class, EntityDataSerializers.STRING);
 
+    // [DEBUG] Sync waypoints et positions pour affichage debug client
+    private static final EntityDataAccessor<CompoundTag> DATA_DEBUG_WAYPOINTS = SynchedEntityData.defineId(
+        DeliveryBeeEntity.class, EntityDataSerializers.COMPOUND_TAG);
+
     private BlockPos controllerPos;
     private BlockPos sourcePos;
     private BlockPos returnPos;
@@ -125,6 +129,7 @@ public class DeliveryBeeEntity extends Bee {
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(DATA_PHASE, "");
+        builder.define(DATA_DEBUG_WAYPOINTS, new CompoundTag());
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -485,6 +490,7 @@ public class DeliveryBeeEntity extends Bee {
         this.outboundWaypoints = new ArrayList<>(newOutboundWaypoints);
         this.transitWaypoints = new ArrayList<>(newTransitWaypoints);
         this.homeWaypoints = new ArrayList<>(newHomeWaypoints);
+        syncDebugWaypoints();
 
         // Reset redirect state
         this.taskCancelled = false;
@@ -632,6 +638,44 @@ public class DeliveryBeeEntity extends Bee {
         this.outboundWaypoints = new ArrayList<>(outbound);
         this.transitWaypoints = new ArrayList<>(transit);
         this.homeWaypoints = new ArrayList<>(home);
+        syncDebugWaypoints();
+    }
+
+    /**
+     * [DEBUG] Synchronise les waypoints et positions vers le client pour l'affichage debug.
+     */
+    private void syncDebugWaypoints() {
+        if (level().isClientSide()) return;
+
+        CompoundTag tag = new CompoundTag();
+
+        // Positions cles
+        if (controllerPos != null) {
+            tag.putLong("Controller", controllerPos.asLong());
+        }
+        if (sourcePos != null) {
+            tag.putLong("Source", sourcePos.asLong());
+        }
+        if (destPos != null) {
+            tag.putLong("Dest", destPos.asLong());
+        }
+        if (returnPos != null) {
+            tag.putLong("Return", returnPos.asLong());
+        }
+
+        // Waypoints en long arrays
+        tag.putLongArray("Outbound", outboundWaypoints.stream().mapToLong(BlockPos::asLong).toArray());
+        tag.putLongArray("Transit", transitWaypoints.stream().mapToLong(BlockPos::asLong).toArray());
+        tag.putLongArray("Home", homeWaypoints.stream().mapToLong(BlockPos::asLong).toArray());
+
+        this.entityData.set(DATA_DEBUG_WAYPOINTS, tag);
+    }
+
+    /**
+     * [DEBUG] Recupere les waypoints depuis le sync data (pour le renderer client).
+     */
+    public CompoundTag getDebugWaypointsTag() {
+        return this.entityData.get(DATA_DEBUG_WAYPOINTS);
     }
 
     public BlockPos getSourcePos() { return sourcePos; }
