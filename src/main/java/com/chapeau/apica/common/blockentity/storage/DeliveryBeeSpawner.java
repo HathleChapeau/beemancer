@@ -152,10 +152,18 @@ public class DeliveryBeeSpawner {
             LOGGER.debug("[Spawner] Task {} G3 extracted: {}x{}", task.getTaskId(),
                 extracted.getCount(), extracted.getItem());
         } else {
-            LOGGER.debug("[Spawner] Task {} interface import: bee will extract at source {}",
-                task.getTaskId(), task.getSourcePos());
+            // [FIX] Interface import task: vérifier que le coffre source a toujours l'item
+            // Avant ce fix, la bee était spawnée même si le coffre était vide,
+            // ce qui causait des cycles d'échec/retry inutiles.
+            int available = containerOps.countItemInChest(task.getTemplate(), task.getSourcePos());
+            if (available <= 0) {
+                LOGGER.debug("[Spawner] Task {} interface import: source {} has no items, skipping spawn",
+                    task.getTaskId(), task.getSourcePos());
+                return false;
+            }
+            LOGGER.debug("[Spawner] Task {} interface import: bee will extract at source {} (available: {})",
+                task.getTaskId(), task.getSourcePos(), available);
         }
-        // Else: interface import task — la bee vole a la source pour extraire
 
         BlockPos spawnPos = getSpawnPosBottom();
         BlockPos returnPos = getSpawnPosTop();

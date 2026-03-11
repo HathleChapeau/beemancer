@@ -108,8 +108,9 @@ public class DeliveryTaskLifecycle {
 
     /**
      * Notifie l'interface qu'une task a echoue: remet la task en NEEDED pour re-tentative.
+     * Package-private pour permettre l'appel depuis StorageDeliveryManager.handleSpawnFailure().
      */
-    private void notifyInterfaceTaskFailed(DeliveryTask task) {
+    void notifyInterfaceTaskFailed(DeliveryTask task) {
         if (task.getInterfacePos() == null || task.getInterfaceTaskId() == null) return;
         if (manager.getParent().getLevel() == null) return;
         if (!manager.getParent().getLevel().hasChunkAt(task.getInterfacePos())) return;

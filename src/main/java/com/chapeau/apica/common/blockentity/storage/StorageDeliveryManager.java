@@ -179,7 +179,9 @@ public class StorageDeliveryManager {
                 eligible.setFlyingStartTick(gameTick);
                 activeTasks.add(eligible);
             } else {
-                eligible.setState(DeliveryTask.DeliveryState.FAILED);
+                // [FIX] Spawn échoué: traiter comme un échec normal (retry + notification interface)
+                // Avant ce fix, la task était perdue (plus dans queue ni activeTasks)
+                handleSpawnFailure(eligible, gameTick);
             }
         }
     }
@@ -261,6 +263,31 @@ public class StorageDeliveryManager {
             }
         }
         return best;
+    }
+
+    /**
+     * [FIX] Gère l'échec de spawn d'une bee: retry avec backoff ou échec définitif.
+     * Appelé quand spawnDeliveryBee() retourne false.
+     * Réplique la logique de DeliveryTaskLifecycle.finishTask(FAILED) mais sans
+     * chercher la task dans activeTasks (elle n'y est pas).
+     */
+    private void handleSpawnFailure(DeliveryTask task, long gameTick) {
+        if (task.canRetry()) {
+            task.incrementRetry(gameTick);
+            task.setState(DeliveryTask.DeliveryState.QUEUED);
+            task.setFlyingStartTick(-1);
+            deliveryQueue.add(task);
+        } else {
+            task.setState(DeliveryTask.DeliveryState.FAILED);
+            if (task.getInterfaceTaskId() == null) {
+                parent.getRequestManager().onTaskFailed(task.getRootTaskId());
+            } else {
+                // Notifier l'interface que la task a échoué définitivement
+                lifecycle.notifyInterfaceTaskFailed(task);
+            }
+        }
+        tasksDirty = true;
+        parent.setChanged();
     }
 
     // === Bee Management ===
