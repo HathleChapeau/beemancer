@@ -257,7 +257,9 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
         Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
         float time = AnimationTimer.getTicks() + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
 
-        blackHoleEffect.render(poseStack, buffer, camera, time, packedLight, scaleMult, rotMult, tintR, tintG, tintB);
+        // Meme lumiere que le beam (fullbright)
+        int fullBright = 15728880;
+        blackHoleEffect.render(poseStack, buffer, camera, time, fullBright, scaleMult, rotMult, tintR, tintG, tintB);
 
         poseStack.popPose();
     }
