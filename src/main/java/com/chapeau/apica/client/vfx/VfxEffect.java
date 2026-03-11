@@ -116,8 +116,11 @@ public class VfxEffect {
         float r = quad.r() * tintR;
         float g = quad.g() * tintG;
         float b = quad.b() * tintB;
+
+        // Normale vers l'arriere (vers le joueur en FPS) pour eclairage coherent avec le loader
+        // (0, 0, -1) en espace local = face vers le joueur
         emitQuad(poseStack, buffer, quad.texture(), -half, -half, half, half,
-                 r, g, b, quad.a(), light, quad.flipU());
+                 r, g, b, quad.a(), light, quad.flipU(), new Vector3f(0, 0, -1));
 
         poseStack.popPose();
     }
@@ -148,10 +151,12 @@ public class VfxEffect {
 
     /**
      * Emet un quad avec entityTranslucent (translucent + lumiere, sans backface cull).
+     * La normale est passee en parametre pour un eclairage coherent.
      */
     private void emitQuad(PoseStack poseStack, MultiBufferSource buffer,
                           ResourceLocation texture, float x0, float y0, float x1, float y1,
-                          float r, float g, float b, float a, int light, boolean flipU) {
+                          float r, float g, float b, float a, int light, boolean flipU,
+                          Vector3f normal) {
         VertexConsumer vc = buffer.getBuffer(RenderType.entityTranslucent(texture));
         PoseStack.Pose pose = poseStack.last();
         int ol = OverlayTexture.NO_OVERLAY;
@@ -159,9 +164,10 @@ public class VfxEffect {
         float u0 = flipU ? 1 : 0;
         float u1 = flipU ? 0 : 1;
 
-        vc.addVertex(pose, x0, y0, 0).setColor(r, g, b, a).setUv(u0, 1).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
-        vc.addVertex(pose, x0, y1, 0).setColor(r, g, b, a).setUv(u0, 0).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
-        vc.addVertex(pose, x1, y1, 0).setColor(r, g, b, a).setUv(u1, 0).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
-        vc.addVertex(pose, x1, y0, 0).setColor(r, g, b, a).setUv(u1, 1).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
+        float nx = normal.x, ny = normal.y, nz = normal.z;
+        vc.addVertex(pose, x0, y0, 0).setColor(r, g, b, a).setUv(u0, 1).setOverlay(ol).setLight(light).setNormal(pose, nx, ny, nz);
+        vc.addVertex(pose, x0, y1, 0).setColor(r, g, b, a).setUv(u0, 0).setOverlay(ol).setLight(light).setNormal(pose, nx, ny, nz);
+        vc.addVertex(pose, x1, y1, 0).setColor(r, g, b, a).setUv(u1, 0).setOverlay(ol).setLight(light).setNormal(pose, nx, ny, nz);
+        vc.addVertex(pose, x1, y0, 0).setColor(r, g, b, a).setUv(u1, 1).setOverlay(ol).setLight(light).setNormal(pose, nx, ny, nz);
     }
 }
