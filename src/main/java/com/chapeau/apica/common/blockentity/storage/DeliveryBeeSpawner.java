@@ -213,34 +213,38 @@ public class DeliveryBeeSpawner {
         );
         bee.setPreloaded(task.isPreloaded());
 
-        // [FIX] Calculer les waypoints via la proximite physique aux noeuds du reseau
-        // Cette approche est plus robuste que l'ownership car elle fonctionne meme si
-        // un bloc est enregistre avec le mauvais proprietaire
+        // [FIX] Calcul unifié des waypoints pour IMPORT et EXPORT
+        // Les trois chemins sont calculés de manière cohérente:
+        // - outbound: Controller → Source (pathToSource)
+        // - transit: Source → Dest (via LCA)
+        // - home: Dest → Controller (reverse de pathToDest)
         List<BlockPos> pathToSource = List.of();
         List<BlockPos> pathToDest = List.of();
 
-        // Chemin controller → source (interface/coffre)
+        // Chemin controller → source
         if (task.getSourcePos() != null) {
             pathToSource = pathfinder.findPathToPosition(task.getSourcePos());
             LOGGER.info("[Spawner] Task {} pathToSource (controller→{}): {}",
                 task.getTaskId(), task.getSourcePos(), pathToSource);
         }
 
-        // Chemin controller → destination (coffre)
+        // Chemin controller → destination
         if (task.getDestPos() != null && !task.getDestPos().equals(parent.getBlockPos())) {
             pathToDest = pathfinder.findPathToPosition(task.getDestPos());
             LOGGER.info("[Spawner] Task {} pathToDest (controller→{}): {}",
                 task.getTaskId(), task.getDestPos(), pathToDest);
         }
 
-        // Transit: chemin source → destination via l'ancetre commun
+        // Transit: chemin source → destination via l'ancetre commun (LCA)
         List<BlockPos> transitWaypoints = pathfinder.computeTransitWaypoints(pathToSource, pathToDest);
         LOGGER.info("[Spawner] Task {} transitWaypoints: {}", task.getTaskId(), transitWaypoints);
 
-        // Chemin retour: destination → controller
-        List<BlockPos> homeWaypoints = pathfinder.findPathFromPosition(task.getDestPos());
-        LOGGER.info("[Spawner] Task {} homeWaypoints ({}→controller): {}",
-            task.getTaskId(), task.getDestPos(), homeWaypoints);
+        // [FIX UNIFIÉ] Home = reverse de pathToDest (PAS un recalcul séparé!)
+        // Cela garantit que le chemin retour est exactement l'inverse du chemin aller vers dest
+        List<BlockPos> homeWaypoints = new ArrayList<>(pathToDest);
+        java.util.Collections.reverse(homeWaypoints);
+        LOGGER.info("[Spawner] Task {} homeWaypoints (reverse of pathToDest): {}",
+            task.getTaskId(), homeWaypoints);
 
         bee.setAllWaypoints(pathToSource, transitWaypoints, homeWaypoints);
 
@@ -348,8 +352,9 @@ public class DeliveryBeeSpawner {
 
             List<BlockPos> outboundFromNode = pathfinder.trimPathFromNode(pathToSource, nearestNode);
             List<BlockPos> transitWaypoints = pathfinder.computeTransitWaypoints(pathToSource, pathToDest);
-            // [FIX] Chemin de retour basé sur la proximité
-            List<BlockPos> homeWaypoints = pathfinder.findPathFromPosition(newTask.getDestPos());
+            // [FIX UNIFIÉ] Home = reverse de pathToDest (même pattern que spawnDeliveryBee)
+            List<BlockPos> homeWaypoints = new ArrayList<>(pathToDest);
+            java.util.Collections.reverse(homeWaypoints);
 
             targetBee.cancelAndRedirect(
                 nearestNode, savingChest,
