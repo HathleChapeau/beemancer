@@ -516,8 +516,13 @@ public class DeliveryBeeEntity extends Bee {
     public void setSavingChestPos(@Nullable BlockPos pos) { this.savingChestPos = pos; }
 
     /**
-     * [AU] Trouve un coffre du reseau avec de la place pour les items transportes.
-     * Utilise le ContainerOps du controller pour trouver un coffre disponible.
+     * [AU] Trouve un coffre du reseau pour deposer les items transportes.
+     * Utilise findSlotForItem() qui respecte les regles de priorite:
+     * 1. Coffre contenant le meme item exact
+     * 2. Coffre contenant un item avec un tag commun
+     * 3. Coffre contenant un item du meme namespace
+     * 4. Coffre totalement vide
+     * 5. N'importe quel coffre avec un slot vide
      */
     @Nullable
     public BlockPos findSavingChest() {
@@ -525,8 +530,8 @@ public class DeliveryBeeEntity extends Bee {
         if (level() == null || !level().hasChunkAt(controllerPos)) return null;
         BlockEntity be = level().getBlockEntity(controllerPos);
         if (be instanceof StorageControllerBlockEntity controller) {
-            return controller.getDeliveryManager().getContainerOps()
-                .findChestWithSpace(carriedItems, carriedItems.getCount());
+            // Utiliser findSlotForItem pour respecter les priorites de depot
+            return controller.findSlotForItem(carriedItems);
         }
         return null;
     }

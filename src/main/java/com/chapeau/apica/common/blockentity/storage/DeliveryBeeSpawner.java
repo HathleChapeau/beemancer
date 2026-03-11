@@ -306,8 +306,8 @@ public class DeliveryBeeSpawner {
 
         BlockPos savingChest = null;
         if (!targetBee.getCarriedItems().isEmpty()) {
-            savingChest = containerOps.findChestWithSpace(
-                targetBee.getCarriedItems(), targetBee.getCarriedItems().getCount());
+            // Utiliser findSlotForItem pour respecter les priorites de depot
+            savingChest = parent.findSlotForItem(targetBee.getCarriedItems());
         }
 
         if (newTask != null) {
