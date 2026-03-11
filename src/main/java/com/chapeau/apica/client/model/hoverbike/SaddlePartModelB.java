@@ -34,7 +34,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Selle variante B : 2 electrodes aux extremites avec arc electrique entre elles.
+ * Selle variante B : 2 cubes lateraux relies par un connecteur avec arc electrique.
  * Les particules lightning sont gerees par HoverbikePartLayer.
  */
 public class SaddlePartModelB extends HoverbikePartModel {
@@ -45,8 +45,8 @@ public class SaddlePartModelB extends HoverbikePartModel {
             ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/hoverbee/hoverbee_saddle_b.png");
 
     /** Position des electrodes pour le lightning (coordonnees locales) */
-    public static final Vec3 LEFT_ELECTRODE = new Vec3(-3.0, 0, 0);
-    public static final Vec3 RIGHT_ELECTRODE = new Vec3(3.0, 0, 0);
+    public static final Vec3 LEFT_ELECTRODE = new Vec3(-1.575, -0.5, 2.75);
+    public static final Vec3 RIGHT_ELECTRODE = new Vec3(1.575, -0.5, 2.75);
 
     public SaddlePartModelB(ModelPart root) {
         super(root);
@@ -56,21 +56,43 @@ public class SaddlePartModelB extends HoverbikePartModel {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        // Electrode gauche: 1x2x2, centree a -3 sur X (separation de 5 entre les deux)
-        root.addOrReplaceChild("electrode_left",
+        // Assise: 6x1x5, centree a l'origine
+        root.addOrReplaceChild("seat",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-0.5F, -1.0F, -1.0F, 1.0F, 2.0F, 2.0F),
-                PartPose.offset(-3.0F, 0F, 0F));
+                        .addBox(-3.0F, -0.5F, -2.5F, 6.0F, 1.0F, 5.0F),
+                PartPose.ZERO);
 
-        // Electrode droite: 1x2x2, centree a +3 sur X (separation de 5 entre les deux)
-        root.addOrReplaceChild("electrode_right",
+        // Dossier: 5x1x1, derriere le siege et legèrement plus haut
+        root.addOrReplaceChild("backrest",
                 CubeListBuilder.create()
-                        .texOffs(0, 0)
-                        .addBox(-0.5F, -1.0F, -1.0F, 1.0F, 2.0F, 2.0F),
-                PartPose.offset(3.0F, 0F, 0F));
+                        .texOffs(0, 6)
+                        .addBox(-2.5F, -0.5F, -0.5F, 5.0F, 1.0F, 1.0F),
+                PartPose.offset(0.0F, -0.5F, 1.75F));
 
-        return LayerDefinition.create(mesh, 16, 8);
+        // Cube gauche: 1.15x2x1, separe de 2 du cube droit
+        root.addOrReplaceChild("cube_left",
+                CubeListBuilder.create()
+                        .texOffs(0, 8)
+                        .addBox(-0.575F, -1.0F, -0.5F, 1.15F, 2.0F, 1.0F),
+                PartPose.offset(-1.575F, -0.5F, 2.75F));
+
+        // Cube droit: flip horizontal du gauche
+        root.addOrReplaceChild("cube_right",
+                CubeListBuilder.create()
+                        .texOffs(0, 8)
+                        .mirror()
+                        .addBox(-0.575F, -1.0F, -0.5F, 1.15F, 2.0F, 1.0F),
+                PartPose.offset(1.575F, -0.5F, 2.75F));
+
+        // Connecteur: 2x2x1 (pont entre les deux cubes)
+        root.addOrReplaceChild("connector",
+                CubeListBuilder.create()
+                        .texOffs(0, 12)
+                        .addBox(-1.0F, -1.0F, -0.5F, 2.0F, 2.0F, 1.0F),
+                PartPose.offset(0F, -0.5F, 2.75F));
+
+        return LayerDefinition.create(mesh, 32, 16);
     }
 
     @Override

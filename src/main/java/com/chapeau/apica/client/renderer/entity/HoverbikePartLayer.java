@@ -31,7 +31,11 @@ import com.chapeau.apica.client.model.ApicaBeeModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartVariants;
 import com.chapeau.apica.client.model.hoverbike.SaddlePartModelB;
+import com.chapeau.apica.client.model.hoverbike.SaddlePartModelC;
 import com.chapeau.apica.client.renderer.LightningArcRenderer;
+import com.chapeau.apica.Apica;
+import com.mojang.math.Axis;
+import net.minecraft.resources.ResourceLocation;
 import com.chapeau.apica.common.block.beecreator.BeeBodyType;
 import com.chapeau.apica.common.entity.mount.HoverbikePart;
 import com.chapeau.apica.common.entity.mount.HoverbikeEntity;
@@ -88,6 +92,13 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
     private static final int ARC_NODES = 2;
     private static final float ARC_AMPLITUDE = 0.08f;
     private static final float ARC_HALF_WIDTH = 0.035f;
+
+    // Ring constants for Saddle C
+    private static final ResourceLocation RING_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/particle/ring.png");
+    private static final int RING_FACE_COUNT = 12;
+    private static final float RING_RADIUS = 0.12f;
+    private static final float RING_HALF_DEPTH = 0.015f;
 
     public HoverbikePartLayer(RenderLayerParent<HoverbikeEntity, ApicaBeeModel<HoverbikeEntity>> parent,
                               EntityRendererProvider.Context context) {
