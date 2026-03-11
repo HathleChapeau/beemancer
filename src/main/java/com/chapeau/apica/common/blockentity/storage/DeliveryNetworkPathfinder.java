@@ -90,9 +90,10 @@ public class DeliveryNetworkPathfinder {
     }
 
     /**
-     * [NEW] Trouve le chemin de relais vers une position en utilisant la proximite physique.
-     * Ne depend PAS de l'ownership - trouve le noeud le plus proche physiquement et calcule le chemin.
-     * C'est la methode principale a utiliser pour tous les calculs de waypoints.
+     * [NEW] Trouve le chemin de relais vers une position.
+     * Approche hybride:
+     * 1. D'abord essayer l'ownership du registre (si le bloc est enregistre a un relay)
+     * 2. Si l'owner est le controller ou null, utiliser la proximite physique comme fallback
      *
      * @param targetPos position cible (coffre, interface, terminal, etc.)
      * @return liste des relays a traverser depuis le controller (vide si target pres du controller)
@@ -101,19 +102,35 @@ public class DeliveryNetworkPathfinder {
         if (targetPos == null) return List.of();
         if (parent.getLevel() == null) return List.of();
 
-        // Trouver le noeud reseau le plus proche de la position cible
-        BlockPos nearestNode = findNearestNetworkNode(Vec3.atCenterOf(targetPos));
-        LOGGER.info("[PathToPosition] Target {} → nearest node: {}", targetPos, nearestNode);
+        // Etape 1: Verifier si le bloc est dans le registre avec un owner relay (pas controller)
+        StorageNetworkRegistry registry = parent.getNetworkRegistry();
+        BlockPos ownerNode = registry.getOwner(targetPos);
 
-        // Si le plus proche est le controller, pas de relays a traverser
+        if (ownerNode != null && !ownerNode.equals(parent.getBlockPos())) {
+            // Le bloc est enregistre a un relay - utiliser ce relay comme cible
+            LOGGER.info("[PathToPosition] Target {} owned by relay {}, using ownership path", targetPos, ownerNode);
+            List<BlockPos> path = findRelayPathToNode(ownerNode);
+            LOGGER.info("[PathToPosition] Path via owner: {}", path);
+            return path;
+        }
+
+        // Etape 2: Verifier les coffres directs du controller
+        if (parent.getChestManager().getRegisteredChests().contains(targetPos)) {
+            LOGGER.info("[PathToPosition] Target {} is direct controller chest, returning empty path", targetPos);
+            return List.of();
+        }
+
+        // Etape 3: Fallback - utiliser le noeud le plus proche physiquement
+        BlockPos nearestNode = findNearestNetworkNode(Vec3.atCenterOf(targetPos));
+        LOGGER.info("[PathToPosition] Target {} has no relay owner, using nearest node: {}", targetPos, nearestNode);
+
         if (nearestNode.equals(parent.getBlockPos())) {
             LOGGER.info("[PathToPosition] Nearest is controller, returning empty path");
             return List.of();
         }
 
-        // BFS depuis le controller pour trouver le chemin vers le noeud le plus proche
         List<BlockPos> path = findRelayPathToNode(nearestNode);
-        LOGGER.info("[PathToPosition] Path to nearest node {}: {}", nearestNode, path);
+        LOGGER.info("[PathToPosition] Path to nearest node: {}", path);
         return path;
     }
 
@@ -272,7 +289,7 @@ public class DeliveryNetworkPathfinder {
 
     /**
      * [NEW] Trouve le chemin de relais depuis une position vers le controller.
-     * Utilise la proximite physique pour determiner le noeud de depart.
+     * Approche hybride: ownership d'abord, proximite physique en fallback.
      *
      * @param fromPos position de depart (coffre, interface, etc.)
      * @return liste des relays a traverser vers le controller (du plus eloigne au plus proche du controller)
@@ -281,22 +298,36 @@ public class DeliveryNetworkPathfinder {
         if (fromPos == null) return List.of();
         if (parent.getLevel() == null) return List.of();
 
-        // Trouver le noeud reseau le plus proche de la position de depart
-        BlockPos nearestNode = findNearestNetworkNode(Vec3.atCenterOf(fromPos));
-        LOGGER.info("[PathFromPosition] From {} → nearest node: {}", fromPos, nearestNode);
+        // Etape 1: Verifier si le bloc est dans le registre avec un owner relay
+        StorageNetworkRegistry registry = parent.getNetworkRegistry();
+        BlockPos ownerNode = registry.getOwner(fromPos);
 
-        // Si le plus proche est le controller, pas de relays a traverser
+        if (ownerNode != null && !ownerNode.equals(parent.getBlockPos())) {
+            // Le bloc est enregistre a un relay - utiliser ce relay comme point de depart
+            LOGGER.info("[PathFromPosition] From {} owned by relay {}, using ownership path", fromPos, ownerNode);
+            List<BlockPos> path = findRelayPathToNode(ownerNode);
+            LOGGER.info("[PathFromPosition] Path via owner: {}", path);
+            return path;
+        }
+
+        // Etape 2: Verifier les coffres directs du controller
+        if (parent.getChestManager().getRegisteredChests().contains(fromPos)) {
+            LOGGER.info("[PathFromPosition] From {} is direct controller chest, returning empty path", fromPos);
+            return List.of();
+        }
+
+        // Etape 3: Fallback - utiliser le noeud le plus proche physiquement
+        BlockPos nearestNode = findNearestNetworkNode(Vec3.atCenterOf(fromPos));
+        LOGGER.info("[PathFromPosition] From {} has no relay owner, using nearest node: {}", fromPos, nearestNode);
+
         if (nearestNode.equals(parent.getBlockPos())) {
             LOGGER.info("[PathFromPosition] Nearest is controller, returning empty path");
             return List.of();
         }
 
-        // Le chemin depuis nearestNode vers le controller
-        // C'est l'inverse de findPathToPosition, mais on garde le meme ordre de relays
-        // car le chemin est parcouru dans l'ordre: nearestNode → ... → controller
-        List<BlockPos> pathToNearest = findRelayPathToNode(nearestNode);
-        LOGGER.info("[PathFromPosition] Path from {} to controller via relays: {}", nearestNode, pathToNearest);
-        return pathToNearest;
+        List<BlockPos> path = findRelayPathToNode(nearestNode);
+        LOGGER.info("[PathFromPosition] Path to controller via nearest: {}", path);
+        return path;
     }
 
     /**
@@ -478,8 +509,8 @@ public class DeliveryNetworkPathfinder {
     }
 
     /**
-     * [NEW] Calcule le chemin entre deux positions en utilisant la proximite physique.
-     * Trouve le noeud le plus proche de chaque position et calcule le chemin entre eux.
+     * [NEW] Calcule le chemin entre deux positions.
+     * Approche hybride: ownership d'abord, proximite physique en fallback.
      *
      * @param fromPos position de depart
      * @param toPos position d'arrivee
@@ -490,11 +521,29 @@ public class DeliveryNetworkPathfinder {
         if (fromPos.equals(toPos)) return List.of();
         if (parent.getLevel() == null) return List.of();
 
-        // Trouver les noeuds les plus proches de chaque position
-        BlockPos fromNode = findNearestNetworkNode(Vec3.atCenterOf(fromPos));
-        BlockPos toNode = findNearestNetworkNode(Vec3.atCenterOf(toPos));
+        StorageNetworkRegistry registry = parent.getNetworkRegistry();
 
-        LOGGER.info("[PathBetweenPositions] From {} (nearest: {}) to {} (nearest: {})",
+        // Determiner le noeud pour fromPos (ownership d'abord, sinon nearest)
+        BlockPos fromNode = registry.getOwner(fromPos);
+        if (fromNode == null || fromNode.equals(parent.getBlockPos())) {
+            if (parent.getChestManager().getRegisteredChests().contains(fromPos)) {
+                fromNode = parent.getBlockPos();
+            } else {
+                fromNode = findNearestNetworkNode(Vec3.atCenterOf(fromPos));
+            }
+        }
+
+        // Determiner le noeud pour toPos (ownership d'abord, sinon nearest)
+        BlockPos toNode = registry.getOwner(toPos);
+        if (toNode == null || toNode.equals(parent.getBlockPos())) {
+            if (parent.getChestManager().getRegisteredChests().contains(toPos)) {
+                toNode = parent.getBlockPos();
+            } else {
+                toNode = findNearestNetworkNode(Vec3.atCenterOf(toPos));
+            }
+        }
+
+        LOGGER.info("[PathBetweenPositions] From {} (node: {}) to {} (node: {})",
             fromPos, fromNode, toPos, toNode);
 
         // Meme noeud: pas de relays a traverser
