@@ -45,6 +45,51 @@ public class DeliveryNetworkPathfinder {
     }
 
     /**
+     * [DEBUG] Affiche la topologie complete du reseau dans les logs.
+     * Utile pour diagnostiquer les problemes de pathfinding.
+     */
+    public void dumpNetworkTopology() {
+        if (parent.getLevel() == null) {
+            LOGGER.debug("[Topology] Level is null");
+            return;
+        }
+
+        LOGGER.debug("[Topology] === Network Topology for Controller {} ===", parent.getBlockPos());
+        LOGGER.debug("[Topology] Controller neighbors: {}", parent.getConnectedNodes());
+
+        Set<BlockPos> visited = new HashSet<>();
+        visited.add(parent.getBlockPos());
+        Queue<BlockPos> toVisit = new LinkedList<>(parent.getConnectedNodes());
+
+        while (!toVisit.isEmpty()) {
+            BlockPos nodePos = toVisit.poll();
+            if (!visited.add(nodePos)) continue;
+            if (!parent.getLevel().hasChunkAt(nodePos)) continue;
+
+            BlockEntity be = parent.getLevel().getBlockEntity(nodePos);
+            if (be instanceof INetworkNode node) {
+                Set<BlockPos> neighbors = node.getConnectedNodes();
+                boolean hasController = neighbors.contains(parent.getBlockPos());
+                LOGGER.debug("[Topology] Relay {} → neighbors: {} (directToController: {})",
+                    nodePos, neighbors, hasController);
+
+                Set<BlockPos> ownedBlocks = parent.getNetworkRegistry().getBlocksByOwner(nodePos);
+                if (!ownedBlocks.isEmpty()) {
+                    LOGGER.debug("[Topology]   Owns: {}", ownedBlocks);
+                }
+
+                for (BlockPos neighbor : neighbors) {
+                    if (!visited.contains(neighbor)) {
+                        toVisit.add(neighbor);
+                    }
+                }
+            }
+        }
+
+        LOGGER.debug("[Topology] === End Topology ===");
+    }
+
+    /**
      * Trouve le chemin de relais entre le controller et le noeud qui possede un coffre donne.
      * BFS a travers le graphe de noeuds connectes.
      */
