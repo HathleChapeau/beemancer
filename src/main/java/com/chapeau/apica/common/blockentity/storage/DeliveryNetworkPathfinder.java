@@ -290,6 +290,7 @@ public class DeliveryNetworkPathfinder {
     /**
      * [NEW] Trouve le chemin de relais depuis une position vers le controller.
      * Approche hybride: ownership d'abord, proximite physique en fallback.
+     * Le chemin est INVERSE par rapport a findPathToPosition car on va dans l'autre sens.
      *
      * @param fromPos position de depart (coffre, interface, etc.)
      * @return liste des relays a traverser vers le controller (du plus eloigne au plus proche du controller)
@@ -304,10 +305,13 @@ public class DeliveryNetworkPathfinder {
 
         if (ownerNode != null && !ownerNode.equals(parent.getBlockPos())) {
             // Le bloc est enregistre a un relay - utiliser ce relay comme point de depart
-            LOGGER.info("[PathFromPosition] From {} owned by relay {}, using ownership path", fromPos, ownerNode);
-            List<BlockPos> path = findRelayPathToNode(ownerNode);
-            LOGGER.info("[PathFromPosition] Path via owner: {}", path);
-            return path;
+            LOGGER.info("[PathFromPosition] From {} owned by relay {}", fromPos, ownerNode);
+            List<BlockPos> pathToNode = findRelayPathToNode(ownerNode);
+            // INVERSER le chemin car on va de la position vers le controller
+            List<BlockPos> reversedPath = new ArrayList<>(pathToNode);
+            java.util.Collections.reverse(reversedPath);
+            LOGGER.info("[PathFromPosition] Path (reversed): {}", reversedPath);
+            return reversedPath;
         }
 
         // Etape 2: Verifier les coffres directs du controller
@@ -325,9 +329,12 @@ public class DeliveryNetworkPathfinder {
             return List.of();
         }
 
-        List<BlockPos> path = findRelayPathToNode(nearestNode);
-        LOGGER.info("[PathFromPosition] Path to controller via nearest: {}", path);
-        return path;
+        List<BlockPos> pathToNode = findRelayPathToNode(nearestNode);
+        // INVERSER le chemin car on va de la position vers le controller
+        List<BlockPos> reversedPath = new ArrayList<>(pathToNode);
+        java.util.Collections.reverse(reversedPath);
+        LOGGER.info("[PathFromPosition] Path (reversed): {}", reversedPath);
+        return reversedPath;
     }
 
     /**
