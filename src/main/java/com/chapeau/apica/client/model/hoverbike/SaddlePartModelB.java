@@ -97,11 +97,11 @@ public class SaddlePartModelB extends HoverbikePartModel {
                         .addBox(-0.5F, -1.0F, -1.075F, 1.0F, 2.0F, 2.15F),
                 PartPose.offset(1.575F, -0.5F, 3.75F));
 
-        // Connecteur entre les electrodes: 2.15x1x1, centre entre les deux electrodes
+        // Connecteur entre les electrodes: 2x1x1, centre entre les deux electrodes
         root.addOrReplaceChild("connector",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-1.075F, -0.5F, -0.5F, 2.15F, 1.0F, 1.0F),
+                        .addBox(-1.0F, -0.5F, -0.5F, 2.0F, 1.0F, 1.0F),
                 PartPose.offset(0.0F, -0.5F, 3.75F));
 
         return LayerDefinition.create(mesh, 32, 16);

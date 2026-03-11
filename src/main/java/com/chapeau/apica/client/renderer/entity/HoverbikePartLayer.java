@@ -241,20 +241,20 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
     /** Controle gauche: flanc gauche du corps, mi-hauteur, zone arriere. */
     private static Vec3 getControlLeftPosition(BeeBodyType bodyType) {
         return switch (bodyType) {
-            case DEFAULT -> new Vec3(-4.0, 16.0, 1.0);
-            case ROYAL -> new Vec3(-4.5, 16.0, -3.0);
-            case SEGMENTED -> new Vec3(-4.0, 16.0, 6.0);  // Au milieu de la tail, face west
-            case ARMORED, PUFFY -> new Vec3(-4.5, 16.0, 1.0);
+            case DEFAULT -> new Vec3(-4.0, 13.0, 1.0);
+            case ROYAL -> new Vec3(-4.5, 13.0, -3.0);
+            case SEGMENTED -> new Vec3(-4.0, 13.0, 6.0);  // Au milieu de la tail, face west
+            case ARMORED, PUFFY -> new Vec3(-4.5, 13.0, 1.0);
         };
     }
 
     /** Controle droit: flanc droit du corps, mi-hauteur, zone arriere. */
     private static Vec3 getControlRightPosition(BeeBodyType bodyType) {
         return switch (bodyType) {
-            case DEFAULT -> new Vec3(4.0, 16.0, 1.0);
-            case ROYAL -> new Vec3(4.5, 16.0, -3.0);
-            case SEGMENTED -> new Vec3(4.0, 16.0, 6.0);  // Au milieu de la tail, face east
-            case ARMORED, PUFFY -> new Vec3(4.5, 16.0, 1.0);
+            case DEFAULT -> new Vec3(4.0, 13.0, 1.0);
+            case ROYAL -> new Vec3(4.5, 13.0, -3.0);
+            case SEGMENTED -> new Vec3(4.0, 13.0, 6.0);  // Au milieu de la tail, face east
+            case ARMORED, PUFFY -> new Vec3(4.5, 13.0, 1.0);
         };
     }
 
@@ -454,7 +454,7 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
     private void renderControlRing(PoseStack poseStack, MultiBufferSource bufferSource,
                                     int packedLight, float ageInTicks) {
         Vec3 center = ControlPartModelC.RING_CENTER.scale(1.0 / 16.0);
-        float rotation = ageInTicks * 0.2f;
+        float rotation = ageInTicks * 0.14f;  // Reduit de 30% (etait 0.2)
 
         VertexConsumer vc = bufferSource.getBuffer(RenderType.entityTranslucent(RING_TEXTURE));
         int overlay = OverlayTexture.NO_OVERLAY;
