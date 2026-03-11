@@ -66,13 +66,8 @@ public class RailgunBeamRenderer {
     private static Vec3 beamDestination = Vec3.ZERO;
     private static float beamR = 1f, beamG = 1f, beamB = 1f;
 
-    // FPS beam: offset relatif a la camera (stocke au moment du tir)
-    private static Vec3 fpsRightOffset = Vec3.ZERO;
-    private static Vec3 fpsUpOffset = Vec3.ZERO;
-    private static Vec3 fpsForwardOffset = Vec3.ZERO;
-
-    // TPS beam: position world-space fixe
-    private static Vec3 tpsBeamOrigin = Vec3.ZERO;
+    // Beam origin: position world-space fixe au moment du tir (FPS et TPS)
+    private static Vec3 beamOrigin = Vec3.ZERO;
 
     private static boolean wasUsing = false;
     private static int storedUseTicks = 0;
@@ -131,22 +126,6 @@ public class RailgunBeamRenderer {
 
         MultiBufferSource.BufferSource bufferSource = mc.renderBuffers().bufferSource();
 
-        // Calculer l'origine du beam selon le mode camera
-        Vec3 beamOrigin;
-        if (firedInFps && mc.options.getCameraType() == CameraType.FIRST_PERSON) {
-            // FPS: origine relative a la camera actuelle
-            Vec3 lookDir = new Vec3(camera.getLookVector());
-            Vec3 upDir = new Vec3(camera.getUpVector());
-            Vec3 rightDir = lookDir.cross(upDir).normalize();
-            beamOrigin = camPos
-                .add(rightDir.scale(fpsRightOffset.x + 0.3f))
-                .add(upDir.scale(fpsUpOffset.y - 0.4f))
-                .add(lookDir.scale(fpsForwardOffset.z + 1.3f));
-        } else {
-            // TPS: origine world-space fixe
-            beamOrigin = tpsBeamOrigin;
-        }
-
         renderBeamQuads(poseStack, bufferSource, camPos, beamOrigin,
             CORE_HALF_WIDTH * widthMult, beamR, beamG, beamB, 1.0f);
         renderBeamQuads(poseStack, bufferSource, camPos, beamOrigin,
@@ -173,19 +152,29 @@ public class RailgunBeamRenderer {
         boolean isRightSide = (storedHand == InteractionHand.MAIN_HAND) == isMainRight;
         float sideSign = isRightSide ? 1.0f : -1.0f;
 
-        // Stocker les offsets FPS (relatifs a la camera)
-        fpsRightOffset = new Vec3(sideSign * 0.35, 0, 0);
-        fpsUpOffset = new Vec3(0, -0.15, 0);
-        fpsForwardOffset = new Vec3(0, 0, 0.6);
-
-        // Stocker la position TPS (world-space fixe)
+        // Calculer et stocker l'origine du beam (world-space fixe au moment du tir)
         Vec3 up = new Vec3(0, 1, 0);
         Vec3 right = look.cross(up);
         if (right.lengthSqr() < 0.001) right = new Vec3(1, 0, 0);
         right = right.normalize();
-        tpsBeamOrigin = player.position().add(0, 1.2, 0)
-            .add(right.scale(sideSign * 0.4))
-            .add(look.scale(1.2));
+
+        if (firedInFps) {
+            // FPS: origine basee sur la camera au moment du tir
+            Camera camera = mc.gameRenderer.getMainCamera();
+            Vec3 camPos = camera.getPosition();
+            Vec3 lookDir = new Vec3(camera.getLookVector());
+            Vec3 upDir = new Vec3(camera.getUpVector());
+            Vec3 rightDir = lookDir.cross(upDir).normalize();
+            beamOrigin = camPos
+                .add(rightDir.scale(sideSign * 0.35 + 0.3))
+                .add(upDir.scale(-0.15 - 0.4))
+                .add(lookDir.scale(0.6 + 1.3));
+        } else {
+            // TPS: origine basee sur le joueur
+            beamOrigin = player.position().add(0, 1.2, 0)
+                .add(right.scale(sideSign * 0.4))
+                .add(look.scale(1.2));
+        }
 
         // Couleur du beam = tinte du loader (meme que le magazine)
         String fluidId = storedStack.isEmpty() ? "" : MagazineData.getFluidId(storedStack);
