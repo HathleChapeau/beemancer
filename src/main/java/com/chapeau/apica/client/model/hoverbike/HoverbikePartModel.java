@@ -14,7 +14,7 @@
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - SaddlePartModel, WingProtectorPartModel, ControlLeftPartModel, ControlRightPartModel
+ * - SaddlePartModel, WingProtectorPartModel, ControlPartModel (unifie)
  * - HoverbikePartLayer.java: Rendu des parties
  *
  * ============================================================

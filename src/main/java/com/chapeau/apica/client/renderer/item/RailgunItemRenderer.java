@@ -11,6 +11,7 @@
  * | BakedModel              | Modele 3D body       | Rendu via putBulkData          |
  * | AnimationTimer          | Temps client         | Tracking frame animation       |
  * | RailgunItem             | Detection item       | Constantes charge              |
+ * | RailgunRenderUtil       | Couleurs/positions   | Tinte fluide, offsets BlackHole|
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -22,9 +23,8 @@ package com.chapeau.apica.client.renderer.item;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.animation.AnimationTimer;
+import com.chapeau.apica.client.renderer.RailgunRenderUtil;
 import com.chapeau.apica.client.vfx.BlackHoleEffect;
-import com.chapeau.apica.common.item.debug.DebugWandItem;
-import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.tool.RailgunItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -76,11 +76,6 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float LDR_MIN_Z = 5.5f / 16f;
     private static final float LDR_MAX_Z = 30.5f / 16f;
     private static final float FACE_OFFSET = 0.001f;
-
-    // Position du black hole (bout du canon)
-    private static final float BLACKHOLE_X = 0.6f;   // Centre X du canon
-    private static final float BLACKHOLE_Y = 0.5f;  // Centre Y du canon
-    private static final float BLACKHOLE_Z = 2.3f;    // Devant le canon
 
     private final BlackHoleEffect blackHoleEffect = createBlackHoleEffect();
 
@@ -164,21 +159,14 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
                              int packedLight, int packedOverlay) {
         renderBodyModel(poseStack, buffer, packedLight, packedOverlay, stack);
 
-        boolean inHand = displayContext == ItemDisplayContext.FIRST_PERSON_LEFT_HAND
-            || displayContext == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND
-            || displayContext == ItemDisplayContext.THIRD_PERSON_LEFT_HAND
-            || displayContext == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND;
+        int tint = RailgunRenderUtil.getFluidTint(stack);
 
-        int tint = getLoaderTint(stack);
-        if (inHand) {
+        if (RailgunRenderUtil.isInHand(displayContext)) {
             updateAnimation();
             renderChargingOverlay(poseStack, buffer, packedLight, (int) currentFrame, tint);
 
-            // Black hole effect en FPS
-            boolean isFPS = displayContext == ItemDisplayContext.FIRST_PERSON_LEFT_HAND
-                || displayContext == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND;
-            if (isFPS) {
-                renderBlackHoleEffect(poseStack, buffer, packedLight, tint);
+            if (RailgunRenderUtil.isFps(displayContext)) {
+                renderBlackHoleEffect(poseStack, buffer, packedLight, tint, displayContext);
             }
         } else {
             renderChargingOverlay(poseStack, buffer, packedLight, 0, tint);
@@ -235,42 +223,39 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
      * Rend l'effet Black Hole devant le canon du railgun.
      * Scale et vitesse de rotation augmentent avec le chargement.
      * Couleur basee sur la tinte du loader (fluide du magazine).
+     * Position ajustee selon left/right hand.
      */
-    private void renderBlackHoleEffect(PoseStack poseStack, MultiBufferSource buffer, int packedLight, int tint) {
+    private void renderBlackHoleEffect(PoseStack poseStack, MultiBufferSource buffer,
+                                        int packedLight, int tint, ItemDisplayContext displayContext) {
         if (currentFrame <= 0) return;
 
-        // Progression du chargement (0 a 1)
         float progress = currentFrame / (TOTAL_FRAMES - 1);
-
-        // scaleMult: 0 -> 2.5, rotMult: 2 -> 4
         float scaleMult = progress * 2.5f;
         float rotMult = 2f + progress * 2f;
 
-        // Conversion tint int -> RGB floats
-        float tintR = ((tint >> 16) & 0xFF) / 255f;
-        float tintG = ((tint >> 8) & 0xFF) / 255f;
-        float tintB = (tint & 0xFF) / 255f;
+        float[] rgb = RailgunRenderUtil.tintToRgb(tint);
+
+        // Position selon left/right hand
+        float posX, posY, posZ;
+        if (RailgunRenderUtil.isRightHandFps(displayContext)) {
+            posX = RailgunRenderUtil.BLACKHOLE_RIGHT_X;
+            posY = RailgunRenderUtil.BLACKHOLE_RIGHT_Y;
+            posZ = RailgunRenderUtil.BLACKHOLE_RIGHT_Z;
+        } else {
+            posX = RailgunRenderUtil.BLACKHOLE_LEFT_X;
+            posY = RailgunRenderUtil.BLACKHOLE_LEFT_Y;
+            posZ = RailgunRenderUtil.BLACKHOLE_LEFT_Z;
+        }
 
         poseStack.pushPose();
-        poseStack.translate(BLACKHOLE_X, BLACKHOLE_Y, BLACKHOLE_Z);
+        poseStack.translate(posX, posY, posZ);
 
         Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
         float time = AnimationTimer.getTicks() + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
 
-        // Meme lumiere que le beam (fullbright)
-        // int fullBright = 15728880;
-        blackHoleEffect.render(poseStack, buffer, camera, time, packedLight, scaleMult, rotMult, tintR, tintG, tintB);
+        blackHoleEffect.render(poseStack, buffer, camera, time, packedLight, scaleMult, rotMult, rgb[0], rgb[1], rgb[2]);
 
         poseStack.popPose();
-    }
-
-    /** Retourne la couleur de tinte du Loader en fonction du fluide du magazine. */
-    private static int getLoaderTint(ItemStack stack) {
-        String fluidId = MagazineData.getFluidId(stack);
-        if (fluidId.contains("honey")) return 0xFADE29;
-        if (fluidId.contains("royal_jelly")) return 0xFFFAD0;
-        if (fluidId.contains("nectar")) return 0xE855FF;
-        return 0xFFFFFF;
     }
 
     /**
@@ -286,9 +271,8 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
         PoseStack.Pose pose = poseStack.last();
         int ol = OverlayTexture.NO_OVERLAY;
 
-        float r = ((tint >> 16) & 0xFF) / 255f;
-        float g = ((tint >> 8) & 0xFF) / 255f;
-        float b = (tint & 0xFF) / 255f;
+        float[] rgb = RailgunRenderUtil.tintToRgb(tint);
+        float r = rgb[0], g = rgb[1], b = rgb[2];
 
         // V coordinates for current frame row (1 row = 1/26 of texture height)
         float v0 = (float) frame / TOTAL_FRAMES;

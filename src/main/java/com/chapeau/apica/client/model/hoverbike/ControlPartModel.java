@@ -1,11 +1,20 @@
 /**
  * ============================================================
- * [ControlLeftPartModel.java]
- * Description: Cube de controle gauche HoverBee (centre a l'origine)
+ * [ControlPartModel.java]
+ * Description: Modele de controle unifie HoverBee - variante A
  * ============================================================
  *
+ * DEPENDANCES:
+ * ------------------------------------------------------------
+ * | Dependance          | Raison                | Utilisation                    |
+ * |---------------------|----------------------|--------------------------------|
+ * | HoverbikePartModel  | Classe parent        | Heritage modele partie         |
+ * | HoverbikePart       | Enum type            | CONTROL_LEFT / CONTROL_RIGHT   |
+ * ------------------------------------------------------------
+ *
  * UTILISE PAR:
- * - HoverbikePartLayer.java: Rendu
+ * - HoverbikePartVariants.java: Enregistrement variante (gauche + droite)
+ * - HoverbikePartLayer.java: Rendu avec flip horizontal pour droite
  * - ClientSetup.java: Enregistrement du layer
  *
  * ============================================================
@@ -25,18 +34,21 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Cube 1x3x3 de controle gauche, centre a l'origine.
- * Le positionnement final est gere par HoverbikePartLayer selon le body type.
- * Variante A — texture de base.
+ * Modele de controle unifie : cube 1x3x3 centre a l'origine.
+ * Utilise pour les deux cotes (gauche et droite).
+ * Le flip horizontal est applique par HoverbikePartLayer pour le cote droit.
  */
-public class ControlLeftPartModel extends HoverbikePartModel {
+public class ControlPartModel extends HoverbikePartModel {
 
-    public static final ModelLayerLocation LAYER_LOCATION = createLayerLocation("control_left");
+    public static final ModelLayerLocation LAYER_LOCATION = createLayerLocation("control");
 
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/hoverbee/hoverbee_control_left_a.png");
+            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/hoverbee/hoverbee_control_a.png");
 
-    public ControlLeftPartModel(ModelPart root) {
+    /** Le type de partie est defini dynamiquement lors du rendu. */
+    private HoverbikePart partType = HoverbikePart.CONTROL_LEFT;
+
+    public ControlPartModel(ModelPart root) {
         super(root);
     }
 
@@ -44,8 +56,8 @@ public class ControlLeftPartModel extends HoverbikePartModel {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        // Cube de controle gauche: 1x3x3, centre a l'origine
-        root.addOrReplaceChild("control_left",
+        // Cube de controle: 1x3x3, centre a l'origine
+        root.addOrReplaceChild("control",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
                         .addBox(-0.5F, -1.5F, -1.5F, 1.0F, 3.0F, 3.0F),
@@ -56,7 +68,11 @@ public class ControlLeftPartModel extends HoverbikePartModel {
 
     @Override
     public HoverbikePart getPartType() {
-        return HoverbikePart.CONTROL_LEFT;
+        return partType;
+    }
+
+    public void setPartType(HoverbikePart type) {
+        this.partType = type;
     }
 
     @Override
@@ -66,6 +82,7 @@ public class ControlLeftPartModel extends HoverbikePartModel {
 
     @Override
     public Vec3 getEditModeOffset() {
+        // Offset vers l'exterieur (sera inverse pour le cote droit)
         return new Vec3(-0.5, 0, 0);
     }
 }

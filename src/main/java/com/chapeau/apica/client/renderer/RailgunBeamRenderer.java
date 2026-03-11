@@ -10,7 +10,7 @@
  * |-------------------------|----------------------|--------------------------------|
  * | RenderLevelStageEvent   | Hook rendu world     | Rendu apres translucents       |
  * | RailgunItem             | Detection item actif | Constantes charge              |
- * | MagazineData            | Lecture fluide       | Couleur beam par fluide        |
+ * | RailgunRenderUtil       | Couleurs/positions   | Tinte fluide, offsets beam     |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -21,8 +21,6 @@
 package com.chapeau.apica.client.renderer;
 
 import com.chapeau.apica.Apica;
-import com.chapeau.apica.common.item.debug.DebugWandItem;
-import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.tool.RailgunItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -166,26 +164,22 @@ public class RailgunBeamRenderer {
             Vec3 upDir = new Vec3(camera.getUpVector());
             Vec3 rightDir = lookDir.cross(upDir).normalize();
             beamOrigin = camPos
-                .add(rightDir.scale(sideSign * 0.35 + 0.3))
-                .add(upDir.scale(-0.15 - 0.4))
-                .add(lookDir.scale(0.6 + 1.3));
+                .add(rightDir.scale(sideSign * RailgunRenderUtil.BEAM_FPS_SIDE_OFFSET + RailgunRenderUtil.BEAM_FPS_SIDE_BASE))
+                .add(upDir.scale(RailgunRenderUtil.BEAM_FPS_UP_OFFSET))
+                .add(lookDir.scale(RailgunRenderUtil.BEAM_FPS_FORWARD_OFFSET));
         } else {
             // TPS: origine basee sur le joueur
-            beamOrigin = player.position().add(0, 1.2, 0)
-                .add(right.scale(sideSign * 0.4))
-                .add(look.scale(1.2));
+            beamOrigin = player.position().add(0, RailgunRenderUtil.BEAM_TPS_HEIGHT, 0)
+                .add(right.scale(sideSign * RailgunRenderUtil.BEAM_TPS_SIDE_OFFSET))
+                .add(look.scale(RailgunRenderUtil.BEAM_TPS_FORWARD_OFFSET));
         }
 
         // Couleur du beam = tinte du loader (meme que le magazine)
-        String fluidId = storedStack.isEmpty() ? "" : MagazineData.getFluidId(storedStack);
-        int tint;
-        if (fluidId.contains("honey")) { tint = 0xFADE29; }
-        else if (fluidId.contains("royal_jelly")) { tint = 0xFFFAD0; }
-        else if (fluidId.contains("nectar")) { tint = 0xE855FF; }
-        else { tint = 0xFFFFFF; }
-        beamR = ((tint >> 16) & 0xFF) / 255f;
-        beamG = ((tint >> 8) & 0xFF) / 255f;
-        beamB = (tint & 0xFF) / 255f;
+        int tint = RailgunRenderUtil.getFluidTint(storedStack);
+        float[] rgb = RailgunRenderUtil.tintToRgb(tint);
+        beamR = rgb[0];
+        beamG = rgb[1];
+        beamB = rgb[2];
     }
 
     private static void renderBeamQuads(PoseStack poseStack, MultiBufferSource buffer,

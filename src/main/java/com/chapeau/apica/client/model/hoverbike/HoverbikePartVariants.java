@@ -99,21 +99,21 @@ public final class HoverbikePartVariants {
             map.put("wing_protector_c", new ModelFactory(WingProtectorPartModelC.LAYER_LOCATION,
                     WingProtectorPartModelC::createLayerDefinition, WingProtectorPartModelC::new));
 
-            // --- Control Left ---
-            map.put("control_left", new ModelFactory(ControlLeftPartModel.LAYER_LOCATION,
-                    ControlLeftPartModel::createLayerDefinition, ControlLeftPartModel::new));
-            map.put("control_left_b", new ModelFactory(ControlLeftPartModelB.LAYER_LOCATION,
-                    ControlLeftPartModelB::createLayerDefinition, ControlLeftPartModelB::new));
-            map.put("control_left_c", new ModelFactory(ControlLeftPartModelC.LAYER_LOCATION,
-                    ControlLeftPartModelC::createLayerDefinition, ControlLeftPartModelC::new));
+            // --- Control (unifie, meme modele pour gauche et droite) ---
+            map.put("control", new ModelFactory(ControlPartModel.LAYER_LOCATION,
+                    ControlPartModel::createLayerDefinition, ControlPartModel::new));
+            map.put("control_b", new ModelFactory(ControlPartModelB.LAYER_LOCATION,
+                    ControlPartModelB::createLayerDefinition, ControlPartModelB::new));
+            map.put("control_c", new ModelFactory(ControlPartModelC.LAYER_LOCATION,
+                    ControlPartModelC::createLayerDefinition, ControlPartModelC::new));
 
-            // --- Control Right ---
-            map.put("control_right", new ModelFactory(ControlRightPartModel.LAYER_LOCATION,
-                    ControlRightPartModel::createLayerDefinition, ControlRightPartModel::new));
-            map.put("control_right_b", new ModelFactory(ControlRightPartModelB.LAYER_LOCATION,
-                    ControlRightPartModelB::createLayerDefinition, ControlRightPartModelB::new));
-            map.put("control_right_c", new ModelFactory(ControlRightPartModelC.LAYER_LOCATION,
-                    ControlRightPartModelC::createLayerDefinition, ControlRightPartModelC::new));
+            // Aliases pour compatibilite avec les JSONs existants (gauche = meme modele)
+            map.put("control_left", map.get("control"));
+            map.put("control_left_b", map.get("control_b"));
+            map.put("control_left_c", map.get("control_c"));
+            map.put("control_right", map.get("control"));
+            map.put("control_right_b", map.get("control_b"));
+            map.put("control_right_c", map.get("control_c"));
 
             MODEL_FACTORIES = map;
         }

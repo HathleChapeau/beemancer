@@ -59,10 +59,11 @@ import java.util.Set;
  */
 public class RailgunItem extends Item implements IMagazineHolder {
 
-    private static final int HONEY_COLOR = 0xE8A317;
-    private static final int ROYAL_JELLY_COLOR = 0xFFF8DC;
-    private static final int NECTAR_COLOR = 0xB050FF;
-    private static final int DEFAULT_COLOR = 0x888888;
+    // Couleurs par fluide (partagees avec RailgunRenderUtil)
+    public static final int HONEY_TINT = 0xFADE29;
+    public static final int ROYAL_JELLY_TINT = 0xFFFAD0;
+    public static final int NECTAR_TINT = 0xE855FF;
+    public static final int DEFAULT_TINT = 0xFFFFFF;
 
     /** Ticks de charge base (honey). Royal jelly = /1.4, nectar = /2. */
     public static final int CHARGE_THRESHOLD = 43;
@@ -100,10 +101,10 @@ public class RailgunItem extends Item implements IMagazineHolder {
     @Override
     public int getBarColor(ItemStack stack) {
         String fluidId = MagazineData.getFluidId(stack);
-        if (fluidId.contains("honey")) return HONEY_COLOR;
-        if (fluidId.contains("royal_jelly")) return ROYAL_JELLY_COLOR;
-        if (fluidId.contains("nectar")) return NECTAR_COLOR;
-        return DEFAULT_COLOR;
+        if (fluidId.contains("honey")) return HONEY_TINT;
+        if (fluidId.contains("royal_jelly")) return ROYAL_JELLY_TINT;
+        if (fluidId.contains("nectar")) return NECTAR_TINT;
+        return DEFAULT_TINT;
     }
 
     @Override

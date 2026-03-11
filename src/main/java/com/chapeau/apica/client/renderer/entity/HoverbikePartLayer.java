@@ -15,7 +15,9 @@
  * | BeeBodyType         | Type de corps        | Positionnement par body type   |
  * | SaddlePartModelB    | Positions electrodes | Lightning arcs saddle B        |
  * | SaddlePartModelC    | Position ring center | Ring effect saddle C           |
- * | LightningArcRenderer| Arcs electriques     | Rendu lightning saddle B       |
+ * | ControlPartModelB   | Positions electrodes | Lightning arcs control B       |
+ * | ControlPartModelC   | Position ring center | Ring effect control C          |
+ * | LightningArcRenderer| Arcs electriques     | Rendu lightning effects        |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -35,6 +37,8 @@ import com.chapeau.apica.client.model.hoverbike.HoverbikePartModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartVariants;
 import com.chapeau.apica.client.model.hoverbike.SaddlePartModelB;
 import com.chapeau.apica.client.model.hoverbike.SaddlePartModelC;
+import com.chapeau.apica.client.model.hoverbike.ControlPartModelB;
+import com.chapeau.apica.client.model.hoverbike.ControlPartModelC;
 import com.chapeau.apica.client.renderer.LightningArcRenderer;
 import com.chapeau.apica.Apica;
 import com.mojang.math.Axis;
@@ -159,7 +163,13 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
             Vec3 pos = getPartPosition(partType, bodyType);
             poseStack.translate(pos.x / 16.0, pos.y / 16.0, pos.z / 16.0);
 
-            applyEditOffset(poseStack, part, animName, state);
+            // Flip horizontal pour le controle droit (meme modele que gauche, miroir)
+            boolean isRightControl = partType == HoverbikePart.CONTROL_RIGHT;
+            if (isRightControl) {
+                poseStack.scale(-1.0f, 1.0f, 1.0f);
+            }
+
+            applyEditOffset(poseStack, part, animName, state, isRightControl);
 
             VertexConsumer vertexConsumer = bufferSource.getBuffer(
                     RenderType.entityCutoutNoCull(part.getTextureLocation()));
@@ -175,6 +185,18 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
             // Render ring effect for saddle variant C
             if (partType == HoverbikePart.SADDLE && clampedIndex == 2) {
                 renderSaddleRing(poseStack, bufferSource, packedLight, ageInTicks);
+            }
+
+            // Render lightning arcs for control variant B
+            if ((partType == HoverbikePart.CONTROL_LEFT || partType == HoverbikePart.CONTROL_RIGHT)
+                    && clampedIndex == 1) {
+                renderControlLightning(poseStack, bufferSource, state);
+            }
+
+            // Render ring effect for control variant C
+            if ((partType == HoverbikePart.CONTROL_LEFT || partType == HoverbikePart.CONTROL_RIGHT)
+                    && clampedIndex == 2) {
+                renderControlRing(poseStack, bufferSource, packedLight, ageInTicks);
             }
 
             poseStack.popPose();
@@ -303,10 +325,12 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
     }
 
     private void applyEditOffset(PoseStack poseStack, HoverbikePartModel part,
-                                  String animName, PerEntityState state) {
+                                  String animName, PerEntityState state, boolean flipX) {
         if (state.editExpanded && !state.controller.isAnimationPlaying(animName)) {
             Vec3 offset = part.getEditModeOffset();
-            poseStack.translate(offset.x, offset.y, offset.z);
+            // Inverse l'offset X pour le controle droit (deja flippe par scale)
+            double ox = flipX ? -offset.x : offset.x;
+            poseStack.translate(ox, offset.y, offset.z);
         } else {
             state.controller.applyAnimation(animName, poseStack);
         }
@@ -399,6 +423,88 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
 
             PoseStack.Pose pose = poseStack.last();
             // Face exterieure du cylindre
+            vc.addVertex(pose, -RING_HALF_DEPTH, y0, z0).setColor(1f, 1f, 1f, 0.8f)
+                    .setUv(0f, 1f).setOverlay(overlay).setLight(packedLight).setNormal(pose, 0, ny, nz);
+            vc.addVertex(pose, RING_HALF_DEPTH, y0, z0).setColor(1f, 1f, 1f, 0.8f)
+                    .setUv(0f, 0f).setOverlay(overlay).setLight(packedLight).setNormal(pose, 0, ny, nz);
+            vc.addVertex(pose, RING_HALF_DEPTH, y1, z1).setColor(1f, 1f, 1f, 0.8f)
+                    .setUv(1f, 0f).setOverlay(overlay).setLight(packedLight).setNormal(pose, 0, ny, nz);
+            vc.addVertex(pose, -RING_HALF_DEPTH, y1, z1).setColor(1f, 1f, 1f, 0.8f)
+                    .setUv(1f, 1f).setOverlay(overlay).setLight(packedLight).setNormal(pose, 0, ny, nz);
+        }
+
+        poseStack.popPose();
+    }
+
+    // ========== Control lightning arcs (Control B) ==========
+
+    /**
+     * Rend des arcs electriques entre les deux electrodes du controle B.
+     */
+    private void renderControlLightning(PoseStack poseStack, MultiBufferSource bufferSource,
+                                         PerEntityState state) {
+        Vec3 top = ControlPartModelB.ELECTRODE_TOP.scale(1.0 / 16.0);
+        Vec3 bottom = ControlPartModelB.ELECTRODE_BOTTOM.scale(1.0 / 16.0);
+
+        int currentTick = AnimationTimer.getTicks();
+        if (state.lastArcTick < 0 || (currentTick - state.lastArcTick) >= ARC_REFRESH_TICKS) {
+            RandomSource random = RandomSource.create(currentTick * 37L);
+            for (int i = 0; i < 2; i++) {
+                state.lightningArcs[i] = LightningArcRenderer.generateArc(
+                        top, bottom, ARC_NODES, ARC_AMPLITUDE * 0.7f,
+                        ARC_REFRESH_TICKS, false, false, random);
+            }
+            state.lastArcTick = currentTick;
+        }
+
+        float r = 0.4f, g = 0.9f, b = 1.0f;
+        for (LightningArcRenderer.LightningArc arc : state.lightningArcs) {
+            if (arc != null) {
+                LightningArcRenderer.renderArc(poseStack, bufferSource, arc,
+                        ARC_HALF_WIDTH * 0.8f, r, g, b, 0.9f);
+            }
+        }
+    }
+
+    // ========== Control ring effect (Control C) ==========
+
+    /**
+     * Rend un anneau rotatif autour de l'axe X pour le controle C.
+     */
+    private void renderControlRing(PoseStack poseStack, MultiBufferSource bufferSource,
+                                    int packedLight, float ageInTicks) {
+        Vec3 center = ControlPartModelC.RING_CENTER.scale(1.0 / 16.0);
+        float rotation = ageInTicks * 0.2f;
+
+        VertexConsumer vc = bufferSource.getBuffer(RenderType.entityTranslucent(RING_TEXTURE));
+        int overlay = OverlayTexture.NO_OVERLAY;
+
+        poseStack.pushPose();
+        poseStack.translate(center.x, center.y, center.z);
+        poseStack.mulPose(Axis.XP.rotation(rotation));
+
+        float angleStep = (float) (2.0 * Math.PI / RING_FACE_COUNT);
+        float radius = RING_RADIUS * 0.8f;
+
+        for (int i = 0; i < RING_FACE_COUNT; i++) {
+            float angle0 = i * angleStep;
+            float angle1 = (i + 1) * angleStep;
+            float angleMid = (angle0 + angle1) * 0.5f;
+
+            float cos0 = (float) Math.cos(angle0);
+            float sin0 = (float) Math.sin(angle0);
+            float cos1 = (float) Math.cos(angle1);
+            float sin1 = (float) Math.sin(angle1);
+
+            float y0 = cos0 * radius;
+            float z0 = sin0 * radius;
+            float y1 = cos1 * radius;
+            float z1 = sin1 * radius;
+
+            float ny = (float) Math.cos(angleMid);
+            float nz = (float) Math.sin(angleMid);
+
+            PoseStack.Pose pose = poseStack.last();
             vc.addVertex(pose, -RING_HALF_DEPTH, y0, z0).setColor(1f, 1f, 1f, 0.8f)
                     .setUv(0f, 1f).setOverlay(overlay).setLight(packedLight).setNormal(pose, 0, ny, nz);
             vc.addVertex(pose, RING_HALF_DEPTH, y0, z0).setColor(1f, 1f, 1f, 0.8f)
