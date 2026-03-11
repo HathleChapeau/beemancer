@@ -244,6 +244,12 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     /**
      * Retourne les slots operables pour un filtre donne.
      * Si le filtre a des selectedSlots, les utilise; sinon tous.
+     *
+     * [FIX] Si la selection filtree est vide (slots selectionnes hors limites du handler),
+     * retourne tous les slots du handler. Cela arrive quand l'utilisateur selectionne
+     * des slots dans le GUI d'un bloc (ex: four, slot 1=fuel) mais que le handler
+     * accessible via capability n'expose qu'un sous-ensemble des slots (ex: 1 slot seulement
+     * selon la face d'acces). Dans ce cas, on insere dans tous les slots disponibles.
      */
     protected int[] getOperableSlots(IItemHandler handler, Set<Integer> selectedSlots) {
         if (selectedSlots.isEmpty()) {
@@ -251,10 +257,20 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
             for (int i = 0; i < all.length; i++) all[i] = i;
             return all;
         }
-        return selectedSlots.stream()
+        int[] filtered = selectedSlots.stream()
             .filter(s -> s >= 0 && s < handler.getSlots())
             .mapToInt(Integer::intValue)
             .toArray();
+
+        // [FIX] Si tous les slots selectionnes sont hors limites, utiliser tous les slots
+        // du handler comme fallback. Cela evite que l'insertion echoue completement.
+        if (filtered.length == 0) {
+            int[] all = new int[handler.getSlots()];
+            for (int i = 0; i < all.length; i++) all[i] = i;
+            return all;
+        }
+
+        return filtered;
     }
 
     /**
