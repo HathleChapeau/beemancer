@@ -48,7 +48,7 @@ public class ControlPartModelC extends HoverbikePartModel {
             ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/hoverbee/hoverbee_control_c.png");
 
     /** Position du centre de la ring pour l'effet (coordonnees locales) */
-    public static final Vec3 RING_CENTER = Vec3.ZERO;
+    public static final Vec3 RING_CENTER = new Vec3(1.0, 0, 0);
 
     private static final float ANGLE_45 = (float)(Math.PI / 4);
 
@@ -69,12 +69,12 @@ public class ControlPartModelC extends HoverbikePartModel {
                         .addBox(-0.5F, -1.5F, -1.5F, 1.0F, 3.0F, 3.0F),
                 PartPose.offsetAndRotation(0F, 0F, 0F, ANGLE_45, 0F, 0F));
 
-        // Cube secondaire 1x2x2 (non tourne, devant le cube principal)
+        // Cube secondaire 1x2x2 (non tourne, centre et avance de 1 en X)
         root.addOrReplaceChild("secondary_cube",
                 CubeListBuilder.create()
                         .texOffs(0, 4)
                         .addBox(-0.5F, -1.0F, -1.0F, 1.0F, 2.0F, 2.0F),
-                PartPose.offset(0F, 0F, 1.0F));
+                PartPose.offset(1.0F, 0F, 0F));
 
         // Barre horizontale 0.5x1x3.5 tournee a 45° sur X
         root.addOrReplaceChild("bar_horizontal",
