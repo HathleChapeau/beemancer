@@ -81,7 +81,7 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
                 setReloading(player, true);
             }
             //setChargeLevel(stack, 0);
-            Apica.LOGGER.info("reload {}", 1);
+            Apica.LOGGER.info("reload {}", !level.isClientSide());
             return InteractionResultHolder.success(stack);
         }
 
