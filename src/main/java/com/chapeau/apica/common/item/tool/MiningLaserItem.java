@@ -6,6 +6,7 @@
  */
 package com.chapeau.apica.common.item.tool;
 
+import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.item.magazine.*;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -71,11 +72,16 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-
+        Apica.LOGGER.info("Before mouse down: {} is client: {} / right click: {} can reload: {}",
+                MagazineInputHelper.isMouseDown(), level.isClientSide(),
+                isOnRightClick(stack), canReload(player, stack));
         // Client: mouseDown -> set onRightClick, serveur: vérifie et exécute
         if (level.isClientSide()) {
             if (MagazineInputHelper.isMouseDown()) {
                 setOnRightClick(stack, true);
+                Apica.LOGGER.info("After return mouse down: {} is client: {} / right click: {} can reload: {}",
+                        MagazineInputHelper.isMouseDown(), level.isClientSide(),
+                        isOnRightClick(stack), canReload(player, stack));
                 return InteractionResultHolder.consume(stack);
             }
         } else {
@@ -84,10 +90,15 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
                     doReload(player, stack);
                 }
                 setOnRightClick(stack, false);
+                Apica.LOGGER.info("After return mouse down: {} is client: {} / right click: {} can reload: {}",
+                        MagazineInputHelper.isMouseDown(), level.isClientSide(),
+                        isOnRightClick(stack), canReload(player, stack));
                 return InteractionResultHolder.consume(stack);
             }
         }
-
+        Apica.LOGGER.info("After mouse down: {} is client: {} / right click: {} can reload: {}",
+                MagazineInputHelper.isMouseDown(), level.isClientSide(),
+                isOnRightClick(stack), canReload(player, stack));
         if (!canUse(player, stack)) {
             return InteractionResultHolder.fail(stack);
         }

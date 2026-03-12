@@ -6,6 +6,7 @@
  */
 package com.chapeau.apica.common.item.magazine;
 
+import com.chapeau.apica.Apica;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
@@ -45,6 +46,7 @@ public interface IMagazineHolder {
 
     default boolean isOnRightClick(ItemStack stack) {
         CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        Apica.LOGGER.info("custom data {}", customData.copyTag().getBoolean(TAG_ON_RIGHT_CLICK));
         if (customData == null) return false;
         return customData.copyTag().getBoolean(TAG_ON_RIGHT_CLICK);
     }
@@ -77,6 +79,7 @@ public interface IMagazineHolder {
     default void trackHeldState(ItemStack stack, boolean isHeld) {
         if (isHeld && !wasHeld(stack)) {
             // Vient d'être pris en main -> reset
+            Apica.LOGGER.info("RESET RIGHT CLICK");
             setOnRightClick(stack, false);
             setWasHeld(stack, true);
         } else if (!isHeld && wasHeld(stack)) {
