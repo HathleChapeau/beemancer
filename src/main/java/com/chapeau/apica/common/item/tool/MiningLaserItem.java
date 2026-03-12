@@ -72,15 +72,18 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        // Client: vérifie mouseDown, serveur: vérifie et exécute le reload
+        // Client: mouseDown -> set onRightClick, serveur: vérifie et exécute
         if (level.isClientSide()) {
             if (MagazineInputHelper.isMouseDown()) {
+                setOnRightClick(player, true);
                 return InteractionResultHolder.consume(stack);
             }
         } else {
-            if (!isReloading(player) && needsReload(stack)) {
-                doReload(player, stack);
-                setReloading(player, true);
+            if (isOnRightClick(player)) {
+                if (canReload(player, stack)) {
+                    doReload(player, stack);
+                }
+                setOnRightClick(player, false);
                 return InteractionResultHolder.consume(stack);
             }
         }

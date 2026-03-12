@@ -18,6 +18,7 @@ public interface IMagazineHolder {
 
     // Track reload state par joueur (server + client)
     Map<UUID, Boolean> RELOAD_STATE = new HashMap<>();
+    Map<UUID, Boolean> ON_RIGHT_CLICK = new HashMap<>();
 
     Set<String> getAcceptedFluids();
 
@@ -31,6 +32,14 @@ public interface IMagazineHolder {
 
     default void setReloading(Player player, boolean reloading) {
         RELOAD_STATE.put(player.getUUID(), reloading);
+    }
+
+    default boolean isOnRightClick(Player player) {
+        return ON_RIGHT_CLICK.getOrDefault(player.getUUID(), false);
+    }
+
+    default void setOnRightClick(Player player, boolean value) {
+        ON_RIGHT_CLICK.put(player.getUUID(), value);
     }
 
     // =========================================================================
@@ -48,6 +57,12 @@ public interface IMagazineHolder {
     default boolean needsReload(ItemStack holder) {
         if (!MagazineData.hasMagazine(holder)) return true;
         return MagazineData.getFluidAmount(holder) <= 0;
+    }
+
+    /** True si peut reloader (magazine vide, pas en reload). */
+    default boolean canReload(Player player, ItemStack holder) {
+        if (isReloading(player)) return false;
+        return needsReload(holder);
     }
 
     // =========================================================================
