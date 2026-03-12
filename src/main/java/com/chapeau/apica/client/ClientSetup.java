@@ -84,6 +84,7 @@ import com.chapeau.apica.client.renderer.item.RailgunItemRenderer;
 import com.chapeau.apica.client.renderer.item.ChopperHiveItemRenderer;
 import com.chapeau.apica.client.renderer.item.MagicBeeItemRenderer;
 import com.chapeau.apica.client.renderer.item.HoverbikePartItemRenderer;
+import com.chapeau.apica.client.renderer.shader.MagazineSweepShader;
 import com.chapeau.apica.common.blockentity.alchemy.LiquidPipeBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.ItemPipeBlockEntity;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
@@ -103,6 +104,7 @@ import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+import net.neoforged.neoforge.client.event.RegisterShadersEvent;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
@@ -124,6 +126,7 @@ public class ClientSetup {
         modEventBus.addListener((RegisterColorHandlersEvent.Item e)   -> timed("registerItemColors",      () -> registerItemColors(e)));
         modEventBus.addListener((ModelEvent.RegisterAdditional e)     -> timed("registerAdditionalModels",() -> registerAdditionalModels(e)));
         modEventBus.addListener((RegisterParticleProvidersEvent e)    -> timed("registerParticleProviders",() -> registerParticleProviders(e)));
+        modEventBus.addListener((RegisterShadersEvent e)              -> timed("registerShaders",         () -> registerShaders(e)));
         modEventBus.addListener((FMLClientSetupEvent e)              -> e.enqueueWork(ClientSetup::registerItemProperties));
         modEventBus.addListener((net.neoforged.neoforge.client.event.RegisterClientTooltipComponentFactoriesEvent e) -> timed("registerTooltipComponents", () -> registerTooltipComponents(e)));
         modEventBus.addListener((net.neoforged.neoforge.client.event.RegisterItemDecorationsEvent e) -> timed("registerItemDecorations", () -> registerItemDecorations(e)));
@@ -837,6 +840,14 @@ public class ClientSetup {
         event.register(ApicaItems.CHOPPER_HIVE.get(), magazineDecorator);
         event.register(ApicaItems.BUILDING_STAFF.get(), magazineDecorator);
         event.register(ApicaItems.RAILGUN.get(), magazineDecorator);
+    }
+
+    private static void registerShaders(final RegisterShadersEvent event) {
+        try {
+            MagazineSweepShader.register(event);
+        } catch (Exception e) {
+            Apica.LOGGER.error("Failed to register magazine_sweep shader", e);
+        }
     }
 
     private static void registerItemProperties() {

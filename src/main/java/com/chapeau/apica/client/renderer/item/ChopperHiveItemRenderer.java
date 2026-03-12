@@ -30,6 +30,7 @@ import com.chapeau.apica.client.animation.IAnimatable;
 import com.chapeau.apica.client.animation.MoveAnimation;
 import com.chapeau.apica.client.animation.TimingEffect;
 import com.chapeau.apica.client.animation.TimingType;
+import com.chapeau.apica.client.renderer.shader.MagazineSweepShader;
 import com.chapeau.apica.common.item.tool.ChopperHiveLockHelper;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -317,9 +318,9 @@ public class ChopperHiveItemRenderer extends BlockEntityWithoutLevelRenderer imp
             }
             lastFpRenderTick = currentTick;
             updateChoppingPhase(currentTick);
-            renderAnimated(stack, poseStack, buffer, packedLight, packedOverlay);
+            renderAnimated(stack, poseStack, buffer, packedLight, packedOverlay, true);
         } else {
-            renderStatic(stack, poseStack, buffer, packedLight, packedOverlay);
+            renderStatic(stack, poseStack, buffer, packedLight, packedOverlay, false);
         }
     }
 
@@ -327,10 +328,10 @@ public class ChopperHiveItemRenderer extends BlockEntityWithoutLevelRenderer imp
      * Rendu statique: les 3 parties a leurs positions par defaut.
      */
     private void renderStatic(ItemStack stack, PoseStack poseStack, MultiBufferSource buffer,
-                               int packedLight, int packedOverlay) {
-        renderBakedModel(BOTTOM_MODEL_LOC, stack, poseStack, buffer, packedLight, packedOverlay);
-        renderBakedModel(CENTER_MODEL_LOC, stack, poseStack, buffer, packedLight, packedOverlay);
-        renderBakedModel(TOP_MODEL_LOC, stack, poseStack, buffer, packedLight, packedOverlay);
+                               int packedLight, int packedOverlay, boolean inHand) {
+        renderBakedModel(BOTTOM_MODEL_LOC, stack, poseStack, buffer, packedLight, packedOverlay, inHand);
+        renderBakedModel(CENTER_MODEL_LOC, stack, poseStack, buffer, packedLight, packedOverlay, inHand);
+        renderBakedModel(TOP_MODEL_LOC, stack, poseStack, buffer, packedLight, packedOverlay, inHand);
     }
 
     /**
@@ -339,7 +340,7 @@ public class ChopperHiveItemRenderer extends BlockEntityWithoutLevelRenderer imp
      * et l'animation de chopping (montee/descente des abeilles).
      */
     private void renderAnimated(ItemStack stack, PoseStack poseStack, MultiBufferSource buffer,
-                                 int packedLight, int packedOverlay) {
+                                 int packedLight, int packedOverlay, boolean inHand) {
         int currentTick = AnimationTimer.getTicks();
         int rawElapsed = currentTick - animStartTick;
         if (rawElapsed < 0) rawElapsed = 0;
@@ -367,7 +368,7 @@ public class ChopperHiveItemRenderer extends BlockEntityWithoutLevelRenderer imp
         } else {
             animController.applyAnimation(ANIM_BOTTOM_OPEN, poseStack);
         }
-        renderBakedModel(BOTTOM_MODEL_LOC, stack, poseStack, buffer, packedLight, packedOverlay);
+        renderBakedModel(BOTTOM_MODEL_LOC, stack, poseStack, buffer, packedLight, packedOverlay, inHand);
         poseStack.popPose();
 
         // Top slab
@@ -377,13 +378,13 @@ public class ChopperHiveItemRenderer extends BlockEntityWithoutLevelRenderer imp
         } else {
             animController.applyAnimation(ANIM_TOP_OPEN, poseStack);
         }
-        renderBakedModel(TOP_MODEL_LOC, stack, poseStack, buffer, packedLight, packedOverlay);
+        renderBakedModel(TOP_MODEL_LOC, stack, poseStack, buffer, packedLight, packedOverlay, inHand);
         poseStack.popPose();
 
         // Centre cube avec bobbing
         poseStack.pushPose();
         animController.applyAnimation(ANIM_CENTER_BOB, poseStack);
-        renderBakedModel(CENTER_MODEL_LOC, stack, poseStack, buffer, packedLight, packedOverlay);
+        renderBakedModel(CENTER_MODEL_LOC, stack, poseStack, buffer, packedLight, packedOverlay, inHand);
         poseStack.popPose();
 
         // Abeilles orbitantes (procedurales, apparaissent apres l'ouverture)
@@ -454,13 +455,20 @@ public class ChopperHiveItemRenderer extends BlockEntityWithoutLevelRenderer imp
      */
     private void renderBakedModel(ModelResourceLocation modelLoc, ItemStack stack,
                                    PoseStack poseStack, MultiBufferSource buffer,
-                                   int packedLight, int packedOverlay) {
+                                   int packedLight, int packedOverlay, boolean inHand) {
         BakedModel model = Minecraft.getInstance().getModelManager().getModel(modelLoc);
         if (model == null) return;
 
+        // Use magazine sweep shader when in hand, vanilla RenderType otherwise
+        RenderType renderType;
+        if (inHand && MagazineSweepShader.isAvailable()) {
+            renderType = MagazineSweepShader.getRenderType(TextureAtlas.LOCATION_BLOCKS, stack);
+        } else {
+            renderType = RenderType.entityTranslucentCull(TextureAtlas.LOCATION_BLOCKS);
+        }
+
         @SuppressWarnings("deprecation")
-        VertexConsumer vc = ItemRenderer.getFoilBufferDirect(buffer,
-            RenderType.entityTranslucentCull(TextureAtlas.LOCATION_BLOCKS), true, stack.hasFoil());
+        VertexConsumer vc = ItemRenderer.getFoilBufferDirect(buffer, renderType, true, stack.hasFoil());
 
         RandomSource random = RandomSource.create();
         for (Direction dir : Direction.values()) {

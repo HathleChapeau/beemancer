@@ -22,6 +22,7 @@ package com.chapeau.apica.client.renderer.item;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.animation.AnimationTimer;
+import com.chapeau.apica.client.renderer.shader.MagazineSweepShader;
 import com.chapeau.apica.common.item.tool.LeafBlowerItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -111,12 +112,12 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
     public void renderByItem(ItemStack stack, ItemDisplayContext displayContext,
                              PoseStack poseStack, MultiBufferSource buffer,
                              int packedLight, int packedOverlay) {
-        renderBodyModel(poseStack, buffer, packedLight, packedOverlay, stack);
-
         boolean inHand = displayContext == ItemDisplayContext.FIRST_PERSON_LEFT_HAND
             || displayContext == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND
             || displayContext == ItemDisplayContext.THIRD_PERSON_LEFT_HAND
             || displayContext == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND;
+
+        renderBodyModel(poseStack, buffer, packedLight, packedOverlay, stack, inHand);
 
         if (inHand) {
             updateAnimation();
@@ -129,13 +130,20 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
     }
 
     private void renderBodyModel(PoseStack poseStack, MultiBufferSource buffer,
-                                  int packedLight, int packedOverlay, ItemStack stack) {
+                                  int packedLight, int packedOverlay, ItemStack stack, boolean inHand) {
         BakedModel model = Minecraft.getInstance().getModelManager().getModel(BODY_MODEL_LOC);
         if (model == null) return;
 
+        // Use magazine sweep shader when in hand, vanilla RenderType otherwise
+        RenderType renderType;
+        if (inHand && MagazineSweepShader.isAvailable()) {
+            renderType = MagazineSweepShader.getRenderType(TextureAtlas.LOCATION_BLOCKS, stack);
+        } else {
+            renderType = RenderType.entityTranslucentCull(TextureAtlas.LOCATION_BLOCKS);
+        }
+
         @SuppressWarnings("deprecation")
-        VertexConsumer vc = ItemRenderer.getFoilBufferDirect(buffer,
-            RenderType.entityTranslucentCull(TextureAtlas.LOCATION_BLOCKS), true, stack.hasFoil());
+        VertexConsumer vc = ItemRenderer.getFoilBufferDirect(buffer, renderType, true, stack.hasFoil());
 
         RandomSource random = RandomSource.create();
         for (Direction dir : Direction.values()) {
