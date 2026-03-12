@@ -26,8 +26,10 @@
 package com.chapeau.apica.client.renderer.shader;
 
 import com.chapeau.apica.Apica;
+import com.chapeau.apica.client.animation.AnimationTimer;
 import com.chapeau.apica.common.item.debug.DebugWandItem;
 import com.chapeau.apica.common.item.magazine.MagazineData;
+import net.minecraft.client.Minecraft;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.renderer.RenderStateShard;
@@ -131,6 +133,11 @@ public class MagazineSweepShader {
      */
     private static void updateUniforms(ItemStack holderStack) {
         if (shaderInstance == null) return;
+
+        // GameTime doit etre mis a jour manuellement pour les shaders custom
+        float partialTick = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
+        float gameTime = AnimationTimer.getRenderTime(partialTick);
+        setUniform("GameTime", gameTime);
 
         // Speed depuis DebugWandItem.value1 (default 1.0)
         float speed = DebugWandItem.value1 > 0.01f ? DebugWandItem.value1 : DEFAULT_SPEED;
