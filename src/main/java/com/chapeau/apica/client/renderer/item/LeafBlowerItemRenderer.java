@@ -135,8 +135,9 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
         if (model == null) return;
 
         // Use magazine sweep shader when in hand, vanilla RenderType otherwise
+        boolean useShader = inHand && MagazineSweepShader.isAvailable();
         RenderType renderType;
-        if (inHand && MagazineSweepShader.isAvailable()) {
+        if (useShader) {
             renderType = MagazineSweepShader.getRenderType(TextureAtlas.LOCATION_BLOCKS, stack);
         } else {
             renderType = RenderType.entityTranslucentCull(TextureAtlas.LOCATION_BLOCKS);
@@ -144,6 +145,11 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
 
         @SuppressWarnings("deprecation")
         VertexConsumer vc = ItemRenderer.getFoilBufferDirect(buffer, renderType, true, stack.hasFoil());
+
+        // Appliquer les uniforms APRES avoir obtenu le buffer (le shader est maintenant bind)
+        if (useShader) {
+            MagazineSweepShader.applyUniforms(stack);
+        }
 
         RandomSource random = RandomSource.create();
         for (Direction dir : Direction.values()) {

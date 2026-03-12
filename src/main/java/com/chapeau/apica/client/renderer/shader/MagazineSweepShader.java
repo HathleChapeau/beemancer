@@ -69,7 +69,7 @@ public class MagazineSweepShader {
     // Defaults
     private static final float DEFAULT_SPEED = 1.0f;
     private static final float DEFAULT_ANGLE = 0.0f;
-    private static final float DEFAULT_WIDTH = 0.15f;
+    private static final float DEFAULT_WIDTH = 0.03f;
 
     /**
      * Enregistre le shader lors de l'evenement RegisterShadersEvent.
@@ -94,6 +94,9 @@ public class MagazineSweepShader {
         return shaderInstance != null;
     }
 
+    // Cache du RenderType par texture
+    private static final java.util.Map<ResourceLocation, RenderType> RENDER_TYPE_CACHE = new java.util.HashMap<>();
+
     /**
      * Cree un RenderType utilisant le shader magazine_sweep.
      *
@@ -107,11 +110,11 @@ public class MagazineSweepShader {
             return RenderType.entityTranslucentCull(texture);
         }
 
-        // Mettre a jour les uniforms
+        // Mettre a jour les uniforms AVANT de retourner le RenderType
         updateUniforms(holderStack);
 
-        // Creer le RenderType avec le shader
-        return RenderType.create(
+        // Utiliser un RenderType cache pour eviter de recreer a chaque frame
+        return RENDER_TYPE_CACHE.computeIfAbsent(texture, tex -> RenderType.create(
                 "apica:magazine_sweep",
                 DefaultVertexFormat.NEW_ENTITY,
                 VertexFormat.Mode.QUADS,
@@ -120,12 +123,19 @@ public class MagazineSweepShader {
                 true,
                 RenderType.CompositeState.builder()
                         .setShaderState(new RenderStateShard.ShaderStateShard(() -> shaderInstance))
-                        .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
+                        .setTextureState(new RenderStateShard.TextureStateShard(tex, false, false))
                         .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
                         .setLightmapState(RenderStateShard.LIGHTMAP)
                         .setOverlayState(RenderStateShard.OVERLAY)
                         .createCompositeState(true)
-        );
+        ));
+    }
+
+    /**
+     * Met a jour les uniforms du shader. Doit etre appele chaque frame APRES avoir obtenu le buffer.
+     */
+    public static void applyUniforms(ItemStack holderStack) {
+        updateUniforms(holderStack);
     }
 
     /**

@@ -23,7 +23,7 @@
         { "name": "GameTime", "type": "float", "count": 1, "values": [ 0.0 ] },
         { "name": "SweepSpeed", "type": "float", "count": 1, "values": [ 1.0 ] },
         { "name": "SweepAngle", "type": "float", "count": 1, "values": [ 0.0 ] },
-        { "name": "BandWidth", "type": "float", "count": 1, "values": [ 0.15 ] },
+        { "name": "BandWidth", "type": "float", "count": 1, "values": [ 0.03 ] },
         { "name": "FluidColor", "type": "float", "count": 3, "values": [ 0.91, 0.64, 0.09 ] },
         { "name": "ColorModulator", "type": "float", "count": 4, "values": [ 1.0, 1.0, 1.0, 1.0 ] },
         { "name": "FogStart", "type": "float", "count": 1, "values": [ 0.0 ] },
