@@ -110,12 +110,12 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
 
         ItemStack wandStack = context.getItemInHand();
 
-        // Sans magazine = tenter reload
+        // Reload immédiat au clic DOWN si magazine vide/absent
         if (!MagazineData.hasMagazine(wandStack) || MagazineData.getFluidAmount(wandStack) <= 0) {
-            if (!level.isClientSide() && MagazineReloadHelper.tryReload(player, wandStack)) {
-                return InteractionResult.SUCCESS;
+            if (!level.isClientSide()) {
+                MagazineReloadHelper.tryReload(player, wandStack);
             }
-            return InteractionResult.PASS;
+            return InteractionResult.SUCCESS;
         }
 
         BlockPos clickedPos = context.getClickedPos();
@@ -314,11 +314,12 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        // Reload si magazine vide/absent
+        // Reload immédiat au clic DOWN si magazine vide/absent
         if (!MagazineData.hasMagazine(stack) || MagazineData.getFluidAmount(stack) <= 0) {
-            if (!level.isClientSide() && MagazineReloadHelper.tryReload(player, stack)) {
-                return InteractionResultHolder.success(stack);
+            if (!level.isClientSide()) {
+                MagazineReloadHelper.tryReload(player, stack);
             }
+            return InteractionResultHolder.success(stack);
         }
 
         return InteractionResultHolder.pass(stack);

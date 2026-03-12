@@ -111,12 +111,12 @@ public class ChopperHiveItem extends Item implements IMagazineHolder {
 
         ItemStack stack = context.getItemInHand();
 
-        // Sans magazine = tenter reload
+        // Reload immédiat au clic DOWN si magazine vide/absent
         if (!MagazineData.hasMagazine(stack) || MagazineData.getFluidAmount(stack) <= 0) {
-            if (!level.isClientSide() && MagazineReloadHelper.tryReload(player, stack)) {
-                return InteractionResult.SUCCESS;
+            if (!level.isClientSide()) {
+                MagazineReloadHelper.tryReload(player, stack);
             }
-            return InteractionResult.PASS;
+            return InteractionResult.SUCCESS;
         }
 
         BlockPos clickedPos = context.getClickedPos();
@@ -152,11 +152,12 @@ public class ChopperHiveItem extends Item implements IMagazineHolder {
             return InteractionResultHolder.success(stack);
         }
 
-        // Reload si magazine vide/absent
+        // Reload immédiat au clic DOWN si magazine vide/absent
         if (!MagazineData.hasMagazine(stack) || MagazineData.getFluidAmount(stack) <= 0) {
-            if (!level.isClientSide() && MagazineReloadHelper.tryReload(player, stack)) {
-                return InteractionResultHolder.success(stack);
+            if (!level.isClientSide()) {
+                MagazineReloadHelper.tryReload(player, stack);
             }
+            return InteractionResultHolder.success(stack);
         }
 
         return InteractionResultHolder.pass(stack);

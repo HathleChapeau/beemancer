@@ -737,6 +737,20 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         // Pas de goals
     }
 
+    // --- Persistence ---
+
+    @Override
+    public boolean removeWhenFarAway(double distanceToClosestPlayer) {
+        // Ne jamais despawn naturellement
+        return false;
+    }
+
+    @Override
+    public boolean requiresCustomPersistence() {
+        // Toujours sauvegarder
+        return true;
+    }
+
     // --- Save/Load ---
 
     @Override

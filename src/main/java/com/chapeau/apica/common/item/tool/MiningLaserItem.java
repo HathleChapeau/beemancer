@@ -84,8 +84,8 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
 
     /** Cout base par tir selon niveau de charge (avant multiplicateur fluide) */
     private static final int COST_LEVEL1 = 2;
-    private static final int COST_LEVEL2 = 8;
-    private static final int COST_LEVEL3 = 15;
+    private static final int COST_LEVEL2 = 16;
+    private static final int COST_LEVEL3 = 30;
 
     private static final String TAG_CHARGE_LEVEL = "ChargeLevel";
     private static final String TAG_LAST_CLICK_TICK = "LastClickTick";
@@ -122,22 +122,23 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
+
+        // Reload immédiat au clic DOWN si magazine vide/absent
+        boolean hasMag = MagazineData.hasMagazine(stack) && MagazineData.getFluidAmount(stack) > 0;
+        if (!hasMag) {
+            if (!level.isClientSide()) {
+                MagazineReloadHelper.tryReload(player, stack);
+            }
+            setChargeLevel(stack, 0);
+            return InteractionResultHolder.success(stack);
+        }
+
         long gameTime = level.getGameTime();
         long lastClick = getLastClickTick(stack);
 
-        boolean hasMag = MagazineData.hasMagazine(stack) && MagazineData.getFluidAmount(stack) > 0;
-
-        // Double-click: cycle le niveau (1-2-3-1), requiert magazine
+        // Double-click: cycle le niveau (1-2-3-1)
         if (gameTime - lastClick <= DOUBLE_CLICK_WINDOW) {
             setLastClickTick(stack, 0);
-
-            if (!hasMag) {
-                if (!level.isClientSide() && MagazineReloadHelper.tryReload(player, stack)) {
-                    return InteractionResultHolder.success(stack);
-                }
-                setChargeLevel(stack, 0);
-                return InteractionResultHolder.pass(stack);
-            }
 
             int current = getChargeLevel(stack);
             int next = current >= MAX_CHARGE_LEVEL ? 1 : current + 1;
@@ -152,15 +153,6 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
 
             player.startUsingItem(hand);
             return InteractionResultHolder.consume(stack);
-        }
-
-        // Sans magazine = tenter reload, sinon bloque au niveau 0
-        if (!hasMag) {
-            if (!level.isClientSide() && MagazineReloadHelper.tryReload(player, stack)) {
-                return InteractionResultHolder.success(stack);
-            }
-            setChargeLevel(stack, 0);
-            return InteractionResultHolder.pass(stack);
         }
 
         // Avec magazine, force minimum niveau 1

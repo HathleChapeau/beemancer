@@ -41,8 +41,8 @@ import java.util.List;
  * Le chargeLevel détermine le rayon AoE :
  * - 0 : pas de tir (pas de magazine)
  * - 1 : bloc ciblé uniquement
- * - 2 : sphère rayon 1 (voisins directs)
- * - 3 : sphère rayon 2
+ * - 2 : sphère rayon 2
+ * - 3 : sphère rayon 3
  */
 public final class MiningLaserBlockBreaker {
 
@@ -90,8 +90,8 @@ public final class MiningLaserBlockBreaker {
         // Détruire le bloc central avec prise en compte des enchantements (Fortune, Silk Touch)
         breakBlockWithTool(level, player, hitPos);
 
-        // Détruire les blocs voisins en sphère (chargeLevel 2 = rayon 1, 3 = rayon 2)
-        int aoeRadius = chargeLevel - 1;
+        // Détruire les blocs voisins en sphère (chargeLevel 2 = rayon 2, 3 = rayon 3)
+        int aoeRadius = chargeLevel > 1 ? chargeLevel : 0;
         if (aoeRadius > 0) {
             destroySphere(level, player, hitPos, aoeRadius);
         }
