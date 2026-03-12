@@ -88,8 +88,9 @@ public class SaddlePartModelC extends HoverbikePartModel {
         root.addOrReplaceChild("center_cube",
                 CubeListBuilder.create()
                         .texOffs(0, 14)
-                        .addBox(-1.075F, -0.5F, -1.075F, 2.15F, 1.0F, 2.15F),
-                PartPose.offset(0.0F, -0.5F, 3.5F));
+                        .mirror()
+                        .addBox(-1F, -1F, -1F, 2F, 2F, 2F),
+                PartPose.offset(0.0F, -2F, 0F));
 
         return LayerDefinition.create(mesh, 32, 32);
     }
