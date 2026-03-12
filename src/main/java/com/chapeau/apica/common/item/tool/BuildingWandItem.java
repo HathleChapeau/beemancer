@@ -69,20 +69,19 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
 
         ItemStack wandStack = context.getItemInHand();
 
-        if (isReloading(player)) {
-            return InteractionResult.PASS;
-        }
-
+        // Reload si possible
         if (canReload(player, wandStack)) {
-            if (level.isClientSide() && !MagazineInputHelper.isMouseDown()) {
-                return InteractionResult.PASS;
-            }
             if (!level.isClientSide()) {
                 doReload(player, wandStack);
             } else {
                 setReloading(player, true);
             }
             return InteractionResult.SUCCESS;
+        }
+
+        // Bloqué si en reload ou pas de magazine
+        if (!canUse(player, wandStack)) {
+            return InteractionResult.FAIL;
         }
 
         BlockPos clickedPos = context.getClickedPos();
@@ -270,14 +269,8 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        if (isReloading(player)) {
-            return InteractionResultHolder.pass(stack);
-        }
-
+        // Reload si possible
         if (canReload(player, stack)) {
-            if (level.isClientSide() && !MagazineInputHelper.isMouseDown()) {
-                return InteractionResultHolder.pass(stack);
-            }
             if (!level.isClientSide()) {
                 doReload(player, stack);
             } else {
@@ -286,6 +279,6 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
             return InteractionResultHolder.success(stack);
         }
 
-        return InteractionResultHolder.pass(stack);
+        return InteractionResultHolder.fail(stack);
     }
 }

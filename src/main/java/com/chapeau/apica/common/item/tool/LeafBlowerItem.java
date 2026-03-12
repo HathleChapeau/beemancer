@@ -61,22 +61,20 @@ public class LeafBlowerItem extends Item implements IMagazineHolder {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        if (isReloading(player)) {
-            return InteractionResultHolder.pass(stack);
-        }
-
-        // Magazine vide/insuffisant → reload
-        int minCost = MagazineData.computeEffectiveCost(stack, COST_TIER1);
-        if (!MagazineData.hasMagazine(stack) || MagazineData.getFluidAmount(stack) < minCost) {
-            if (level.isClientSide() && !MagazineInputHelper.isMouseDown()) {
-                return InteractionResultHolder.pass(stack);
-            }
+        // Reload si possible
+        if (canReload(player, stack)) {
             if (!level.isClientSide()) {
                 doReload(player, stack);
             } else {
                 setReloading(player, true);
             }
             return InteractionResultHolder.success(stack);
+        }
+
+        // Bloqué si en reload ou pas assez de fluide
+        int minCost = MagazineData.computeEffectiveCost(stack, COST_TIER1);
+        if (!MagazineData.hasMagazine(stack) || MagazineData.getFluidAmount(stack) < minCost) {
+            return InteractionResultHolder.fail(stack);
         }
 
         player.startUsingItem(hand);

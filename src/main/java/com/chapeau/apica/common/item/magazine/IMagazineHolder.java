@@ -44,9 +44,10 @@ public interface IMagazineHolder {
         return MagazineData.getFluidAmount(holder) > 0;
     }
 
-    /** True si peut reloader (magazine vide ET pas déjà en reload). */
+    /** True si peut reloader (mouse DOWN, magazine vide, pas déjà en reload). */
     default boolean canReload(Player player, ItemStack holder) {
         if (isReloading(player)) return false;
+        if (!MagazineInputHelper.isMouseDown()) return false;
         if (!MagazineData.hasMagazine(holder)) return true;
         return MagazineData.getFluidAmount(holder) <= 0;
     }
