@@ -68,8 +68,7 @@ public class MagazineSweepShader {
     private static final String NECTAR_ID = "apica:nectar";
 
     // Defaults
-    private static final float DEFAULT_SPEED = 0.55f;
-    private static final float DEFAULT_ANGLE = 0.8f;
+    private static final float DEFAULT_SPEED = 1.0f;
     private static final float DEFAULT_WIDTH = 0.03f;
 
     /**
@@ -139,9 +138,8 @@ public class MagazineSweepShader {
         float sweepPos = (time * speed * 0.05f) % 1.0f;
         setUniform("SweepPos", sweepPos);
 
-        // Angle depuis DebugWandItem.value2 (default 0.8)
-        float angle = Math.abs(DebugWandItem.value2) > 0.01f ? DebugWandItem.value2 : DEFAULT_ANGLE;
-        setUniform("SweepAngle", angle);
+        // Angle depuis DebugWandItem.value2 (default 0.0 = vertical)
+        setUniform("SweepAngle", DebugWandItem.value2);
 
         // Width depuis DebugWandItem.value3 (default 0.03)
         float width = DebugWandItem.value3 > 0.01f ? DebugWandItem.value3 : DEFAULT_WIDTH;
