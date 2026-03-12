@@ -72,14 +72,6 @@ public class ApiModel extends Model {
         this.legRight = root.getChild("leg_right");
     }
 
-    /**
-     * Convertit des coordonnees absolues JSON (0-16) vers coordonnees modele centrees.
-     * Block center (8, 0, 8) devient (0, 0, 0).
-     */
-    private static float toModelX(float jsonX) { return jsonX - 8f; }
-    private static float toModelY(float jsonY) { return jsonY; }
-    private static float toModelZ(float jsonZ) { return jsonZ - 8f; }
-
     public static LayerDefinition createLayerDefinition() {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition rootDef = mesh.getRoot();

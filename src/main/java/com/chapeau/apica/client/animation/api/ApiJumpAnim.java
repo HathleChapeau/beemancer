@@ -146,7 +146,7 @@ public class ApiJumpAnim implements AnimationState {
 
         // Application
         model.getBody().xRot = bodyX;
-        model.getBody().y = 2.75f - bodyY * 0.0625f; // Conversion pixels -> unites modele
+        model.getBody().y = 2.75f + bodyY; // bodyY est en pixels (4 = 4 pixels de hauteur)
 
         model.getArmLeft().xRot = BASE_ANGLE;
         model.getArmLeft().zRot = armZ;
