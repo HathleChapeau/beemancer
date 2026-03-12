@@ -64,23 +64,22 @@ public interface IMagazineHolder {
     }
 
     /**
-     * Gere le clic droit quand le magazine est vide/absent.
-     * Tente un reload et retourne SUCCESS pour interrompre l'action.
-     * Le joueur devra refaire un clic pour utiliser l'item.
-     *
-     * Le reload ne se declenche que sur la transition mouse DOWN (pas maintained).
-     *
-     * @return Optional.empty() si le magazine est valide (continuer l'action),
-     *         Optional.of(SUCCESS) si reload tente (interrompre l'action)
+     * Tente un reload si magazine vide. Bloque les actions jusqu'au mouse UP apres reload.
      */
     default Optional<InteractionResultHolder<ItemStack>> tryReloadOnUse(Level level, Player player, ItemStack holder) {
+        if (level.isClientSide() && MagazineInputHelper.isBlocked()) {
+            return Optional.of(InteractionResultHolder.pass(holder));
+        }
+
         if (!MagazineData.hasMagazine(holder) || MagazineData.getFluidAmount(holder) <= 0) {
-            // Client: verifier que c'est un vrai mouse DOWN (pas maintenu)
-            if (level.isClientSide() && !MagazineInputHelper.shouldAllowReload()) {
+            if (level.isClientSide() && !MagazineInputHelper.canReload()) {
                 return Optional.of(InteractionResultHolder.pass(holder));
             }
             if (!level.isClientSide()) {
                 MagazineReloadHelper.tryReload(player, holder);
+            }
+            if (level.isClientSide()) {
+                MagazineInputHelper.block();
             }
             return Optional.of(InteractionResultHolder.success(holder));
         }
@@ -88,20 +87,22 @@ public interface IMagazineHolder {
     }
 
     /**
-     * Version pour useOn() (clic sur bloc).
-     * Meme logique que tryReloadOnUse mais retourne InteractionResult.
-     *
-     * @return Optional.empty() si le magazine est valide (continuer l'action),
-     *         Optional.of(SUCCESS) si reload tente (interrompre l'action)
+     * Version useOn() - meme logique.
      */
     default Optional<InteractionResult> tryReloadOnUseOn(Level level, Player player, ItemStack holder) {
+        if (level.isClientSide() && MagazineInputHelper.isBlocked()) {
+            return Optional.of(InteractionResult.PASS);
+        }
+
         if (!MagazineData.hasMagazine(holder) || MagazineData.getFluidAmount(holder) <= 0) {
-            // Client: verifier que c'est un vrai mouse DOWN (pas maintenu)
-            if (level.isClientSide() && !MagazineInputHelper.shouldAllowReload()) {
+            if (level.isClientSide() && !MagazineInputHelper.canReload()) {
                 return Optional.of(InteractionResult.PASS);
             }
             if (!level.isClientSide()) {
                 MagazineReloadHelper.tryReload(player, holder);
+            }
+            if (level.isClientSide()) {
+                MagazineInputHelper.block();
             }
             return Optional.of(InteractionResult.SUCCESS);
         }
