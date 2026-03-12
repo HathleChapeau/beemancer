@@ -361,6 +361,10 @@ public class ClientSetup {
         for (HoverbikePartVariants.ModelFactory factory : HoverbikePartVariants.getAllModelFactories().values()) {
             event.registerLayerDefinition(factory.layerLocation(), factory.layerDefinition());
         }
+
+        // Api — modele articule pour animations
+        event.registerLayerDefinition(com.chapeau.apica.client.model.ApiModel.LAYER_LOCATION,
+                com.chapeau.apica.client.model.ApiModel::createLayerDefinition);
     }
 
     private static void registerClientExtensions(final RegisterClientExtensionsEvent event) {
@@ -790,8 +794,7 @@ public class ClientSetup {
         event.register(PipeExtractRenderer.ITEM_EXTRACT_MODEL_LOC);
         event.register(PipeExtractRenderer.LIQUID_EXTRACT_MODEL_LOC);
 
-        // Modèle Api (bloc vivant scalé dynamiquement)
-        event.register(ApiRenderer.API_MODEL_LOC);
+        // Api utilise maintenant un modele Java (ApiModel) au lieu d'un BakedModel
 
         // Modèles plaque du Launchpad (rendu BER avec rotation dynamique, variantes par fluide)
         event.register(LaunchpadRenderer.PLATE_MODEL_LOC);

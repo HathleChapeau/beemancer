@@ -31,6 +31,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -252,5 +253,20 @@ public class ApiBlock extends BaseEntityBlock {
         }
 
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
+                                               Player player, BlockHitResult hitResult) {
+        BlockEntity be = level.getBlockEntity(pos);
+        if (!(be instanceof ApiBlockEntity apiBE)) {
+            return InteractionResult.PASS;
+        }
+
+        // Main vide → cycle l'animation
+        if (!level.isClientSide()) {
+            apiBE.cycleAnimationState();
+        }
+        return InteractionResult.SUCCESS;
     }
 }

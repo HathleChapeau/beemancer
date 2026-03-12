@@ -132,10 +132,6 @@ public final class MagazineReloadHelper {
             inventory.setItem(replacementSlot, ItemStack.EMPTY);
         }
 
-        // Son de reload
-        player.level().playSound(null, player.blockPosition(), SoundEvents.ITEM_PICKUP,
-                SoundSource.PLAYERS, 0.5f, 1.2f);
-
         return true;
     }
 

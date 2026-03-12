@@ -10,16 +10,18 @@
  * |---------------------|----------------------|--------------------------------|
  * | ApicaBlockEntities  | Type BlockEntity     | Enregistrement                 |
  * | ParticleHelper      | Spawn particules     | Effets visuels                 |
+ * | ApiAnimationState   | Enum animations      | Etat d'animation sync          |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
- * - ApiBlock.java (création BlockEntity, tick)
- * - ApiRenderer.java (getVisualScale)
+ * - ApiBlock.java (création BlockEntity, tick, cycle animation)
+ * - ApiRenderer.java (getVisualScale, getAnimationState)
  *
  * ============================================================
  */
 package com.chapeau.apica.common.block.api;
 
+import com.chapeau.apica.client.animation.api.ApiAnimationState;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.chapeau.apica.core.util.ParticleHelper;
 import net.minecraft.core.BlockPos;
@@ -70,6 +72,7 @@ public class ApiBlockEntity extends BlockEntity {
     private UUID ownerUUID = null;
     @Nullable
     private Component customName = null;
+    private ApiAnimationState animationState = ApiAnimationState.IDLE;
 
     public ApiBlockEntity(BlockPos pos, BlockState state) {
         super(ApicaBlockEntities.API.get(), pos, state);
@@ -107,6 +110,25 @@ public class ApiBlockEntity extends BlockEntity {
     @Nullable
     public Component getCustomName() {
         return customName;
+    }
+
+    public ApiAnimationState getAnimationState() {
+        return animationState;
+    }
+
+    public void setAnimationState(ApiAnimationState state) {
+        this.animationState = state;
+        setChanged();
+        syncToClient();
+    }
+
+    /**
+     * Cycle vers l'animation suivante (IDLE → JUMP → HITSTOP → SLEEP → IDLE).
+     */
+    public void cycleAnimationState() {
+        ApiAnimationState[] states = ApiAnimationState.values();
+        int nextIndex = (animationState.ordinal() + 1) % states.length;
+        setAnimationState(states[nextIndex]);
     }
 
     /**
@@ -316,6 +338,7 @@ public class ApiBlockEntity extends BlockEntity {
         if (customName != null) {
             tag.putString("CustomName", Component.Serializer.toJson(customName, registries));
         }
+        tag.putString("AnimState", animationState.name());
     }
 
     @Override
@@ -331,6 +354,13 @@ public class ApiBlockEntity extends BlockEntity {
         }
         if (tag.contains("CustomName", 8)) {
             customName = parseCustomNameSafe(tag.getString("CustomName"), registries);
+        }
+        if (tag.contains("AnimState", 8)) {
+            try {
+                animationState = ApiAnimationState.valueOf(tag.getString("AnimState"));
+            } catch (IllegalArgumentException e) {
+                animationState = ApiAnimationState.IDLE;
+            }
         }
     }
 
