@@ -74,7 +74,7 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
                 doReload(player, wandStack);
             }
             setReloading(player, true);
-            return InteractionResult.SUCCESS;
+            return InteractionResult.CONSUME;
         }
 
         // Bloqué si en reload ou pas de magazine
@@ -272,7 +272,7 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
                 doReload(player, stack);
             }
             setReloading(player, true);
-            return InteractionResultHolder.success(stack);
+            return InteractionResultHolder.consume(stack);
         }
 
         return InteractionResultHolder.fail(stack);

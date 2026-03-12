@@ -66,7 +66,7 @@ public class LeafBlowerItem extends Item implements IMagazineHolder {
                 doReload(player, stack);
             }
             setReloading(player, true);
-            return InteractionResultHolder.success(stack);
+            return InteractionResultHolder.consume(stack);
         }
 
         int minCost = MagazineData.computeEffectiveCost(stack, COST_TIER1);

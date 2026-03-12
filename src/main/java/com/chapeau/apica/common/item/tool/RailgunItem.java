@@ -88,7 +88,7 @@ public class RailgunItem extends Item implements IMagazineHolder {
                 doReload(player, stack);
             }
             setReloading(player, true);
-            return InteractionResultHolder.success(stack);
+            return InteractionResultHolder.consume(stack);
         }
 
         if (!canUse(player, stack)) {

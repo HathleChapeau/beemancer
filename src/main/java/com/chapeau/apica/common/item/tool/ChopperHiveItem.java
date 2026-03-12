@@ -73,7 +73,7 @@ public class ChopperHiveItem extends Item implements IMagazineHolder {
                 doReload(player, stack);
             }
             setReloading(player, true);
-            return InteractionResult.SUCCESS;
+            return InteractionResult.CONSUME;
         }
 
         if (!canUse(player, stack)) {
@@ -118,7 +118,7 @@ public class ChopperHiveItem extends Item implements IMagazineHolder {
                 doReload(player, stack);
             }
             setReloading(player, true);
-            return InteractionResultHolder.success(stack);
+            return InteractionResultHolder.consume(stack);
         }
 
         return InteractionResultHolder.fail(stack);
