@@ -713,7 +713,7 @@
     {
       "id": "quartzose_bee",
       "position": {
-        "x": 1,
+        "x": 0,
         "y": 9
       },
       "category": "NORMAL",
@@ -815,8 +815,8 @@
     {
       "id": "hyphae_bee",
       "position": {
-        "x": 3,
-        "y": 10
+        "x": 4,
+        "y": 9
       },
       "category": "NORMAL",
       "parent": "infernalist_bee",
@@ -830,7 +830,7 @@
       "id": "warped_bee",
       "position": {
         "x": 0,
-        "y": 10
+        "y": 11
       },
       "category": "NORMAL",
       "parent": "quartzose_bee",
@@ -1416,8 +1416,8 @@
     {
       "id": "demonic_bee",
       "position": {
-        "x": 3,
-        "y": 9
+        "x": 4,
+        "y": 8
       },
       "category": "CHALLENGE",
       "parent": "infernalist_bee",

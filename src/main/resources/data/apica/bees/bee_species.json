@@ -4755,7 +4755,7 @@
         "body": "#E8A010",
         "stripe": "#1A3399",
         "wing": "#C8D8FF",
-        "antenna": "#900101",
+        "antenna": "#152266",
         "stinger": "#FFB020",
         "eye": "#D08800",
         "pupil": "#FFE844"
@@ -4804,7 +4804,7 @@
       },
       "part_colors": {
         "body": "#3D0018",
-        "stripe": "#880030",
+        "stripe": "#A00040",
         "wing": "#6E0030",
         "antenna": "#58001C",
         "stinger": "#CC0040",

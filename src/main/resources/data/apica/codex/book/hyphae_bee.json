@@ -1,0 +1,36 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.bees.hyphae_bee.lore"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.bees.hyphae_bee.desc"
+    },
+    {
+      "type": "model",
+      "species": "hyphae",
+      "height": -20,
+      "scale": -90,
+      "y": -80
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "stats",
+      "species": "hyphae"
+    }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "hyphae"
+    }
+  ]
+}
