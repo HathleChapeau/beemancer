@@ -26,8 +26,10 @@
 package com.chapeau.apica.client.renderer.shader;
 
 import com.chapeau.apica.Apica;
+import com.chapeau.apica.client.animation.AnimationTimer;
 import com.chapeau.apica.common.item.debug.DebugWandItem;
 import com.chapeau.apica.common.item.magazine.MagazineData;
+import net.minecraft.client.Minecraft;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.renderer.RenderStateShard;
@@ -127,10 +129,13 @@ public class MagazineSweepShader {
     public static void applyUniforms(ItemStack holderStack) {
         if (shaderInstance == null) return;
 
-        // Calculer la position du sweep: time * speed (mod 1)
-        float time = (System.nanoTime() / 1_000_000_000f); // Secondes
+        // Temps fluide avec partial tick (AnimationTimer + partialTick)
+        float partialTick = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
+        float time = AnimationTimer.getRenderTime(partialTick);
+
+        // Speed multiplicateur, sweep boucle de 0 a 1
         float speed = DebugWandItem.value1 > 0.01f ? DebugWandItem.value1 : DEFAULT_SPEED;
-        float sweepPos = (time * speed) % 1.0f;
+        float sweepPos = (time * speed * 0.05f) % 1.0f;
         setUniform("SweepPos", sweepPos);
 
         // Angle depuis DebugWandItem.value2 (default 0.0 = vertical)
