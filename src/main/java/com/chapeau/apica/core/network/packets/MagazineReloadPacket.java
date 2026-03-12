@@ -49,18 +49,7 @@ public record MagazineReloadPacket(boolean mainHand) implements CustomPacketPayl
             if (!(stack.getItem() instanceof IMagazineHolder holder)) return;
 
             if (holder.canReload(player, stack)) {
-                // Sauvegarder le chargeLevel avant reload (pour MiningLaser)
-                int savedChargeLevel = 0;
-                if (stack.getItem() instanceof MiningLaserItem) {
-                    savedChargeLevel = MiningLaserItem.getChargeLevel(stack);
-                }
-
                 holder.doReload(player, stack);
-
-                // Restaurer le chargeLevel après reload
-                if (stack.getItem() instanceof MiningLaserItem && savedChargeLevel > 0) {
-                    MiningLaserItem.setChargeLevel(stack, savedChargeLevel);
-                }
             }
         });
     }

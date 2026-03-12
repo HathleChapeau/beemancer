@@ -27,7 +27,10 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 public class MiningLaserItem extends Item implements IMagazineHolder {
 
@@ -43,6 +46,11 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
 
     private static final String TAG_CHARGE_LEVEL = "ChargeLevel";
     private static final String TAG_LAST_CLICK_TICK = "LastClickTick";
+
+    /** Client-side only: saved charge levels before reload, keyed by player UUID */
+    private static final Map<UUID, Integer> CLIENT_SAVED_CHARGE = new HashMap<>();
+    /** Client-side only: tracks if we're waiting for reload to complete */
+    private static final Map<UUID, Boolean> CLIENT_AWAITING_RELOAD = new HashMap<>();
 
     public MiningLaserItem(Properties properties) {
         super(properties);
@@ -76,6 +84,16 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
         // Client: mouseDown -> envoie packet au serveur
         if (level.isClientSide()) {
             if (MagazineInputHelper.isMouseDown()) {
+                // Only save chargeLevel if we're actually going to reload
+                if (needsReload(stack)) {
+                    UUID playerId = player.getUUID();
+                    int currentLevel = getChargeLevel(stack);
+                    if (currentLevel > 0) {
+                        CLIENT_SAVED_CHARGE.put(playerId, currentLevel);
+                    }
+                    CLIENT_AWAITING_RELOAD.put(playerId, true);
+                }
+
                 net.neoforged.neoforge.network.PacketDistributor.sendToServer(
                     new com.chapeau.apica.core.network.packets.MagazineReloadPacket(hand == InteractionHand.MAIN_HAND)
                 );
@@ -205,6 +223,28 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
         CompoundTag tag = customData != null ? customData.copyTag() : new CompoundTag();
         tag.putLong(TAG_LAST_CLICK_TICK, tick);
         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+    }
+
+    // =========================================================================
+    // Client-side chargeLevel restoration after reload
+    // =========================================================================
+
+    @Override
+    public void inventoryTick(ItemStack stack, Level level, net.minecraft.world.entity.Entity entity, int slot, boolean selected) {
+        if (!level.isClientSide()) return;
+        if (!(entity instanceof Player player)) return;
+
+        UUID playerId = player.getUUID();
+        if (!CLIENT_AWAITING_RELOAD.getOrDefault(playerId, false)) return;
+
+        // Check if reload completed (magazine now has fluid)
+        if (MagazineData.hasMagazine(stack) && MagazineData.getFluidAmount(stack) > 0) {
+            Integer saved = CLIENT_SAVED_CHARGE.remove(playerId);
+            if (saved != null && saved > 0) {
+                setChargeLevel(stack, saved);
+            }
+            CLIENT_AWAITING_RELOAD.remove(playerId);
+        }
     }
 
     // =========================================================================
