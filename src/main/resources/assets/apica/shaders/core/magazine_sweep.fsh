@@ -3,8 +3,7 @@
 uniform sampler2D Sampler0;
 uniform sampler2D Sampler2;
 
-uniform float GameTime;
-uniform float SweepSpeed;
+uniform float SweepPos;
 uniform float SweepAngle;
 uniform float BandWidth;
 uniform vec3 FluidColor;
@@ -55,9 +54,8 @@ void main() {
     vec2 sweepCoord = vec2(localPos.x * 0.5, normalizedY);
     sweepCoord = rotate2D(SweepAngle) * sweepCoord;
 
-    // Calculate sweep position (continuous loop)
-    // GameTime is in seconds * 20 (ticks), we slow it down
-    float sweepPos = fract(GameTime * SweepSpeed * 0.02);
+    // Sweep position (0-1, pre-calculated in Java)
+    float sweepPos = SweepPos;
 
     // Band intensity with soft edges using smoothstep
     float distToBand = abs(sweepCoord.y - sweepPos);

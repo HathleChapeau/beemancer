@@ -26,10 +26,8 @@
 package com.chapeau.apica.client.renderer.shader;
 
 import com.chapeau.apica.Apica;
-import com.chapeau.apica.client.animation.AnimationTimer;
 import com.chapeau.apica.common.item.debug.DebugWandItem;
 import com.chapeau.apica.common.item.magazine.MagazineData;
-import net.minecraft.client.Minecraft;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.renderer.RenderStateShard;
@@ -54,6 +52,7 @@ import java.io.IOException;
 public class MagazineSweepShader {
 
     private static ShaderInstance shaderInstance;
+    private static RenderType cachedRenderType;
 
     // Couleurs fluides (RGB normalise 0-1)
     private static final Vector3f HONEY_COLOR = new Vector3f(0.91f, 0.64f, 0.09f);    // #E8A317
@@ -68,7 +67,6 @@ public class MagazineSweepShader {
 
     // Defaults
     private static final float DEFAULT_SPEED = 1.0f;
-    private static final float DEFAULT_ANGLE = 0.0f;
     private static final float DEFAULT_WIDTH = 0.03f;
 
     /**
@@ -94,70 +92,51 @@ public class MagazineSweepShader {
         return shaderInstance != null;
     }
 
-    // Cache du RenderType par texture
-    private static final java.util.Map<ResourceLocation, RenderType> RENDER_TYPE_CACHE = new java.util.HashMap<>();
-
     /**
-     * Cree un RenderType utilisant le shader magazine_sweep.
-     *
-     * @param texture Texture de l'item
-     * @param holderStack ItemStack du holder (pour determiner la couleur du fluide)
-     * @return RenderType configure avec le shader et les uniforms
+     * Retourne le RenderType avec shader. Les uniforms sont mis a jour via applyUniforms().
      */
     public static RenderType getRenderType(ResourceLocation texture, ItemStack holderStack) {
         if (shaderInstance == null) {
-            // Fallback si shader pas charge
             return RenderType.entityTranslucentCull(texture);
         }
 
-        // Mettre a jour les uniforms AVANT de retourner le RenderType
-        updateUniforms(holderStack);
+        if (cachedRenderType == null) {
+            cachedRenderType = RenderType.create(
+                    "apica:magazine_sweep",
+                    DefaultVertexFormat.NEW_ENTITY,
+                    VertexFormat.Mode.QUADS,
+                    1536,
+                    true,
+                    true,
+                    RenderType.CompositeState.builder()
+                            .setShaderState(new RenderStateShard.ShaderStateShard(() -> shaderInstance))
+                            .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
+                            .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+                            .setLightmapState(RenderStateShard.LIGHTMAP)
+                            .setOverlayState(RenderStateShard.OVERLAY)
+                            .createCompositeState(true)
+            );
+        }
 
-        // Utiliser un RenderType cache pour eviter de recreer a chaque frame
-        return RENDER_TYPE_CACHE.computeIfAbsent(texture, tex -> RenderType.create(
-                "apica:magazine_sweep",
-                DefaultVertexFormat.NEW_ENTITY,
-                VertexFormat.Mode.QUADS,
-                1536,
-                true,
-                true,
-                RenderType.CompositeState.builder()
-                        .setShaderState(new RenderStateShard.ShaderStateShard(() -> shaderInstance))
-                        .setTextureState(new RenderStateShard.TextureStateShard(tex, false, false))
-                        .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
-                        .setLightmapState(RenderStateShard.LIGHTMAP)
-                        .setOverlayState(RenderStateShard.OVERLAY)
-                        .createCompositeState(true)
-        ));
+        return cachedRenderType;
     }
 
     /**
-     * Met a jour les uniforms du shader. Doit etre appele chaque frame APRES avoir obtenu le buffer.
+     * Met a jour les uniforms du shader. Appeler chaque frame avant le rendu.
      */
     public static void applyUniforms(ItemStack holderStack) {
-        updateUniforms(holderStack);
-    }
-
-    /**
-     * Met a jour les uniforms du shader avec les valeurs actuelles.
-     */
-    private static void updateUniforms(ItemStack holderStack) {
         if (shaderInstance == null) return;
 
-        // GameTime doit etre mis a jour manuellement pour les shaders custom
-        float partialTick = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
-        float gameTime = AnimationTimer.getRenderTime(partialTick);
-        setUniform("GameTime", gameTime);
-
-        // Speed depuis DebugWandItem.value1 (default 1.0)
+        // Calculer la position du sweep: time * speed (mod 1)
+        float time = (System.nanoTime() / 1_000_000_000f); // Secondes
         float speed = DebugWandItem.value1 > 0.01f ? DebugWandItem.value1 : DEFAULT_SPEED;
-        setUniform("SweepSpeed", speed);
+        float sweepPos = (time * speed) % 1.0f;
+        setUniform("SweepPos", sweepPos);
 
         // Angle depuis DebugWandItem.value2 (default 0.0 = vertical)
-        float angle = DebugWandItem.value2;
-        setUniform("SweepAngle", angle);
+        setUniform("SweepAngle", DebugWandItem.value2);
 
-        // Width depuis DebugWandItem.value3 (default 0.15)
+        // Width depuis DebugWandItem.value3 (default 0.03)
         float width = DebugWandItem.value3 > 0.01f ? DebugWandItem.value3 : DEFAULT_WIDTH;
         setUniform("BandWidth", width);
 
