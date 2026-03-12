@@ -3121,12 +3121,12 @@
       },
       "part_colors": {
         "body": "#6F1223",
-        "stripe": "#9A2035",
+        "stripe": "#B83050",
         "wing": "#C84060",
         "antenna": "#3D0A12",
         "stinger": "#3D0A12",
         "eye": "#1A1A1A",
-        "pupil": "#FF6080"
+        "pupil": "#FFAAAA"
       },
       "waveform": {
         "frequency": 78,
@@ -3172,12 +3172,12 @@
       },
       "part_colors": {
         "body": "#167E86",
-        "stripe": "#22B4A6",
+        "stripe": "#40D0C0",
         "wing": "#5DE8D8",
         "antenna": "#0A4A4F",
         "stinger": "#0A4A4F",
         "eye": "#1A1A1A",
-        "pupil": "#80FFEF"
+        "pupil": "#B0FFFF"
       },
       "waveform": {
         "frequency": 102,

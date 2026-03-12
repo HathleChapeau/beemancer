@@ -843,8 +843,8 @@
     {
       "id": "shroomglow_bee",
       "position": {
-        "x": 3,
-        "y": 14
+        "x": 2,
+        "y": 15
       },
       "category": "NORMAL",
       "parent": "luminous_bee",
