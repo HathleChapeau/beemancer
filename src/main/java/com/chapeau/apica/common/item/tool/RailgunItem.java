@@ -83,12 +83,17 @@ public class RailgunItem extends Item implements IMagazineHolder {
         ItemStack stack = player.getItemInHand(hand);
         if (player.getCooldowns().isOnCooldown(this)) return InteractionResultHolder.pass(stack);
 
-        if (canReload(player, stack)) {
-            if (!level.isClientSide()) {
-                doReload(player, stack);
+        if (level.isClientSide()) {
+            if (MagazineInputHelper.isMouseDown()) {
+                MagazineInputHelper.consume();
+                return InteractionResultHolder.consume(stack);
             }
-            setReloading(player, true);
-            return InteractionResultHolder.consume(stack);
+        } else {
+            if (!isReloading(player) && needsReload(stack)) {
+                doReload(player, stack);
+                setReloading(player, true);
+                return InteractionResultHolder.consume(stack);
+            }
         }
 
         if (!canUse(player, stack)) {

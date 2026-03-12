@@ -68,12 +68,17 @@ public class ChopperHiveItem extends Item implements IMagazineHolder {
 
         ItemStack stack = context.getItemInHand();
 
-        if (canReload(player, stack)) {
-            if (!level.isClientSide()) {
-                doReload(player, stack);
+        if (level.isClientSide()) {
+            if (MagazineInputHelper.isMouseDown()) {
+                MagazineInputHelper.consume();
+                return InteractionResult.CONSUME;
             }
-            setReloading(player, true);
-            return InteractionResult.CONSUME;
+        } else {
+            if (!isReloading(player) && needsReload(stack)) {
+                doReload(player, stack);
+                setReloading(player, true);
+                return InteractionResult.CONSUME;
+            }
         }
 
         if (!canUse(player, stack)) {
@@ -113,12 +118,17 @@ public class ChopperHiveItem extends Item implements IMagazineHolder {
             return InteractionResultHolder.success(stack);
         }
 
-        if (canReload(player, stack)) {
-            if (!level.isClientSide()) {
-                doReload(player, stack);
+        if (level.isClientSide()) {
+            if (MagazineInputHelper.isMouseDown()) {
+                MagazineInputHelper.consume();
+                return InteractionResultHolder.consume(stack);
             }
-            setReloading(player, true);
-            return InteractionResultHolder.consume(stack);
+        } else {
+            if (!isReloading(player) && needsReload(stack)) {
+                doReload(player, stack);
+                setReloading(player, true);
+                return InteractionResultHolder.consume(stack);
+            }
         }
 
         return InteractionResultHolder.fail(stack);

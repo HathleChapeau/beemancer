@@ -49,6 +49,10 @@ public class ApiIdleAnim implements AnimationState {
     // Rotation de base (45 degres comme le modele)
     private static final float BASE_ANGLE = (float) (Math.PI / 4);
 
+    // Pivot Y du body (pour resetPose)
+    private static final float PIVOT_Y = 2.75f;
+    private static final float PIVOT_Z = 0.5f;
+
     private final ApiModel model;
     private float startTime;
 

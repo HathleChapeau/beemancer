@@ -86,16 +86,17 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
         Direction facing = blockEntity.getBlockState().getValue(ApiBlock.FACING);
         float yRot = -facing.toYRot();
 
-        // Transform: centrer, rotation, scale, decentrer
-        // Le modele Java est defini en coordonnees Minecraft (0-16 pixels = 0-1 bloc)
-        // On le convertit en coordonnees de rendu (0-1)
+        // Le modele est defini avec (0,0,0) = centre du bloc au sol
+        // Coordonnees en pixels (16 pixels = 1 bloc)
+        //
+        // Transforms:
+        // 1. Translate to block center at ground level (0.5, 0, 0.5)
+        // 2. Apply Y rotation for facing
+        // 3. Apply visual scale around this pivot
+        // 4. Convert pixels to blocks (1/16)
         poseStack.translate(0.5, 0, 0.5);
         poseStack.mulPose(Axis.YP.rotationDegrees(yRot));
-        poseStack.scale(scale, scale, scale);
-        poseStack.translate(-0.5, 0, -0.5);
-
-        // Conversion coordonnees modele (0-16 pixels) vers rendu (0-1)
-        poseStack.scale(1f / 16f, 1f / 16f, 1f / 16f);
+        poseStack.scale(scale / 16f, scale / 16f, scale / 16f);
 
         // Rendu du modele (utiliser le modele de l'animateur, pas un modele partage)
         VertexConsumer consumer = buffer.getBuffer(RenderType.entityCutout(ApiModel.TEXTURE));

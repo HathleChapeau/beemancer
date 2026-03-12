@@ -69,12 +69,17 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
 
         ItemStack wandStack = context.getItemInHand();
 
-        if (canReload(player, wandStack)) {
-            if (!level.isClientSide()) {
-                doReload(player, wandStack);
+        if (level.isClientSide()) {
+            if (MagazineInputHelper.isMouseDown()) {
+                MagazineInputHelper.consume();
+                return InteractionResult.CONSUME;
             }
-            setReloading(player, true);
-            return InteractionResult.CONSUME;
+        } else {
+            if (!isReloading(player) && needsReload(wandStack)) {
+                doReload(player, wandStack);
+                setReloading(player, true);
+                return InteractionResult.CONSUME;
+            }
         }
 
         // Bloqué si en reload ou pas de magazine
@@ -267,12 +272,17 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        if (canReload(player, stack)) {
-            if (!level.isClientSide()) {
-                doReload(player, stack);
+        if (level.isClientSide()) {
+            if (MagazineInputHelper.isMouseDown()) {
+                MagazineInputHelper.consume();
+                return InteractionResultHolder.consume(stack);
             }
-            setReloading(player, true);
-            return InteractionResultHolder.consume(stack);
+        } else {
+            if (!isReloading(player) && needsReload(stack)) {
+                doReload(player, stack);
+                setReloading(player, true);
+                return InteractionResultHolder.consume(stack);
+            }
         }
 
         return InteractionResultHolder.fail(stack);

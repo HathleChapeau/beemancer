@@ -1,31 +1,26 @@
 /**
  * ============================================================
  * [MagazineInputHelper.java]
- * Description: Bridge common/client pour mouse state
+ * Description: Bridge common/client pour mouse state (CLIENT ONLY)
  * ============================================================
  */
 package com.chapeau.apica.common.item.magazine;
 
-import net.minecraft.client.Minecraft;
-import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.api.distmarker.Dist;
-
+/**
+ * ATTENTION: Ces méthodes ne doivent être appelées que côté CLIENT.
+ * Côté serveur, utiliser IMagazineHolder.needsReload() à la place de canReload().
+ */
 public final class MagazineInputHelper {
 
     private MagazineInputHelper() {}
 
-    /** True si mouse vient d'être appuyé (DOWN ce tick). Server: toujours true. */
+    /** True si mouse vient d'être appuyé (DOWN ce tick, pas held). CLIENT ONLY. */
     public static boolean isMouseDown() {
-        if (FMLEnvironment.dist == Dist.DEDICATED_SERVER) return true;
-        // Serveur intégré: si pas sur le thread client, retourner true
-        if (!Minecraft.getInstance().isSameThread()) return true;
         return com.chapeau.apica.client.input.MouseButtonTracker.isMouseDown();
     }
 
-    /** Marquer le click comme consommé (bloque les prochains isMouseDown jusqu'au relâchement). */
+    /** Marquer le click comme consommé. CLIENT ONLY. */
     public static void consume() {
-        if (FMLEnvironment.dist == Dist.DEDICATED_SERVER) return;
-        if (!Minecraft.getInstance().isSameThread()) return;
         com.chapeau.apica.client.input.MouseButtonTracker.consume();
     }
 }
