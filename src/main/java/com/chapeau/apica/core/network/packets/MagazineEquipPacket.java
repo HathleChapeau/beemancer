@@ -8,6 +8,7 @@
  * ------------------------------------------------------------
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
+ * | MagazineConstants   | Constantes fluides   | NECTAR_ID                      |
  * | MagazineData        | Data holder          | setMagazine/removeMagazine     |
  * | MagazineFluidData   | Data magazine        | Lecture fluide                 |
  * | IMagazineHolder     | Interface            | Validation compatibilite       |
@@ -23,10 +24,11 @@
 package com.chapeau.apica.core.network.packets;
 
 import com.chapeau.apica.Apica;
+import com.chapeau.apica.common.item.magazine.CreativeMagazineItem;
 import com.chapeau.apica.common.item.magazine.IMagazineHolder;
+import com.chapeau.apica.common.item.magazine.MagazineConstants;
 import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.magazine.MagazineFluidData;
-import com.chapeau.apica.common.item.magazine.CreativeMagazineItem;
 import com.chapeau.apica.common.item.magazine.MagazineItem;
 import com.chapeau.apica.common.item.tool.MiningLaserItem;
 import net.minecraft.network.FriendlyByteBuf;
@@ -127,7 +129,7 @@ public record MagazineEquipPacket(int slotIndex, boolean equip)
 
         // Creative magazine: force nectar plein
         if (isCreative) {
-            newFluidId = CreativeMagazineItem.NECTAR_FLUID_ID;
+            newFluidId = MagazineConstants.NECTAR_ID;
             newAmount = MagazineFluidData.MAX_CAPACITY;
         }
 

@@ -12,14 +12,15 @@
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - IMagazineHolder.java (getAcceptedFluids default)
+ * - IMagazineHolder.java (NECTAR_ID, getAcceptedFluids default)
  * - MagazineSweepShader.java (couleurs shader)
  * - LeafBlowerItem.java, MiningLaserItem.java, BuildingWandItem.java,
  *   ChopperHiveItem.java, RailgunItem.java (couleurs barre, fluids acceptes)
  * - MagazineItem.java (couleurs barre)
  * - CreativeMagazineItem.java (NECTAR_ID, couleur barre)
  * - MagazineGaugeHud.java (couleurs barre HUD)
- * - MagazineReloadHelper.java (fluid IDs)
+ * - MagazineReloadHelper.java (NECTAR_ID)
+ * - MagazineEquipPacket.java (NECTAR_ID)
  *
  * ============================================================
  */

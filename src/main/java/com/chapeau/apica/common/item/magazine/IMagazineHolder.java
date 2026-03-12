@@ -8,8 +8,9 @@
  * ------------------------------------------------------------
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
+ * | MagazineConstants   | Constantes fluides   | NECTAR_ID                      |
  * | MagazineFluidData   | Lecture fluide mag   | Verification compatibilite     |
- * | CreativeMagazineItem| Magazine creatif     | Detection + fluid ID nectar    |
+ * | CreativeMagazineItem| Magazine creatif     | Detection instanceof           |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -56,7 +57,7 @@ public interface IMagazineHolder {
     default boolean canAcceptMagazine(ItemStack magazineStack) {
         // Creative magazine = nectar
         if (magazineStack.getItem() instanceof CreativeMagazineItem) {
-            return getAcceptedFluids().contains(CreativeMagazineItem.NECTAR_FLUID_ID);
+            return getAcceptedFluids().contains(MagazineConstants.NECTAR_ID);
         }
         String fluidId = MagazineFluidData.getFluidId(magazineStack);
         return !fluidId.isEmpty() && getAcceptedFluids().contains(fluidId);

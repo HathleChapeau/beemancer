@@ -8,6 +8,7 @@
  * ------------------------------------------------------------
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
+ * | MagazineConstants   | Constantes fluides   | NECTAR_ID                      |
  * | MagazineData        | Data magazine holder | Lecture/ecriture magazine      |
  * | MagazineFluidData   | Data magazine item   | Lecture fluide magazine        |
  * | IMagazineHolder     | Interface holder     | Verification fluide accepte    |
@@ -117,7 +118,7 @@ public final class MagazineReloadHelper {
         boolean isCreative = replacementMag.getItem() == ApicaItems.CREATIVE_MAGAZINE.get();
 
         if (isCreative) {
-            MagazineData.setMagazine(holder, CreativeMagazineItem.NECTAR_FLUID_ID, MagazineFluidData.MAX_CAPACITY, true);
+            MagazineData.setMagazine(holder, MagazineConstants.NECTAR_ID, MagazineFluidData.MAX_CAPACITY, true);
         } else {
             MagazineData.setMagazine(holder, newFluidId, newAmount, false);
         }
@@ -159,7 +160,7 @@ public final class MagazineReloadHelper {
      */
     private static String getFluidId(ItemStack magazineStack) {
         if (magazineStack.getItem() == ApicaItems.CREATIVE_MAGAZINE.get()) {
-            return CreativeMagazineItem.NECTAR_FLUID_ID;
+            return MagazineConstants.NECTAR_ID;
         }
         return MagazineFluidData.getFluidId(magazineStack);
     }
