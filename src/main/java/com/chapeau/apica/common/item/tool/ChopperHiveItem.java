@@ -26,7 +26,6 @@ package com.chapeau.apica.common.item.tool;
 import com.chapeau.apica.common.item.magazine.IMagazineHolder;
 import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.magazine.MagazineFluidData;
-import com.chapeau.apica.common.item.magazine.MagazineReloadHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
@@ -111,12 +110,10 @@ public class ChopperHiveItem extends Item implements IMagazineHolder {
 
         ItemStack stack = context.getItemInHand();
 
-        // Reload immédiat au clic DOWN si magazine vide/absent
-        if (!MagazineData.hasMagazine(stack) || MagazineData.getFluidAmount(stack) <= 0) {
-            if (!level.isClientSide()) {
-                MagazineReloadHelper.tryReload(player, stack);
-            }
-            return InteractionResult.SUCCESS;
+        // Reload au clic DOWN si magazine vide/absent → STOP, nouveau clic requis
+        var reloadResult = tryReloadOnUseOn(level, player, stack);
+        if (reloadResult.isPresent()) {
+            return reloadResult.get();
         }
 
         BlockPos clickedPos = context.getClickedPos();
@@ -152,12 +149,10 @@ public class ChopperHiveItem extends Item implements IMagazineHolder {
             return InteractionResultHolder.success(stack);
         }
 
-        // Reload immédiat au clic DOWN si magazine vide/absent
-        if (!MagazineData.hasMagazine(stack) || MagazineData.getFluidAmount(stack) <= 0) {
-            if (!level.isClientSide()) {
-                MagazineReloadHelper.tryReload(player, stack);
-            }
-            return InteractionResultHolder.success(stack);
+        // Reload au clic DOWN si magazine vide/absent → STOP, nouveau clic requis
+        var reloadResult = tryReloadOnUse(level, player, stack);
+        if (reloadResult.isPresent()) {
+            return reloadResult.get();
         }
 
         return InteractionResultHolder.pass(stack);

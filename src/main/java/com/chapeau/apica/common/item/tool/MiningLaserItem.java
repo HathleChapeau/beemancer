@@ -25,7 +25,6 @@ package com.chapeau.apica.common.item.tool;
 import com.chapeau.apica.common.item.magazine.IMagazineHolder;
 import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.magazine.MagazineFluidData;
-import com.chapeau.apica.common.item.magazine.MagazineReloadHelper;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -123,14 +122,11 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        // Reload immédiat au clic DOWN si magazine vide/absent
-        boolean hasMag = MagazineData.hasMagazine(stack) && MagazineData.getFluidAmount(stack) > 0;
-        if (!hasMag) {
-            if (!level.isClientSide()) {
-                MagazineReloadHelper.tryReload(player, stack);
-            }
+        // Reload au clic DOWN si magazine vide/absent → STOP, nouveau clic requis
+        var reloadResult = tryReloadOnUse(level, player, stack);
+        if (reloadResult.isPresent()) {
             setChargeLevel(stack, 0);
-            return InteractionResultHolder.success(stack);
+            return reloadResult.get();
         }
 
         long gameTime = level.getGameTime();
@@ -203,14 +199,10 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
         if ((useTicks - CHARGE_TICKS) % FIRE_INTERVAL == 0) {
             int cost = MagazineData.computeEffectiveCost(stack, getBaseCostForAoE(chargeLevel));
             if (!MagazineData.consumeFluid(stack, cost)) {
+                // Fluide epuise → arret, nouveau clic requis pour reload
                 setChargeLevel(stack, 0);
                 player.stopUsingItem();
                 return;
-            }
-
-            // Magazine vide apres consommation → passer au niveau 0
-            if (MagazineData.getFluidAmount(stack) <= 0) {
-                setChargeLevel(stack, 0);
             }
 
             boolean brokeBlock = MiningLaserBlockBreaker.tryBreakBlock(level, player, MAX_RANGE, chargeLevel);

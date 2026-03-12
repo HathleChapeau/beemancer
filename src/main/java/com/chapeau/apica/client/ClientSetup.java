@@ -18,6 +18,7 @@ import com.chapeau.apica.client.model.ApicaBeeModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartVariants;
 import com.chapeau.apica.client.renderer.entity.HoverbikeRenderer;
 import com.chapeau.apica.client.input.DebugKeyHandler;
+import com.chapeau.apica.client.input.MouseButtonTracker;
 import com.chapeau.apica.client.gui.screen.IncubatorScreen;
 import com.chapeau.apica.client.gui.screen.MagicHiveScreen;
 import com.chapeau.apica.client.gui.screen.alchemy.AlembicScreen;
@@ -133,6 +134,9 @@ public class ClientSetup {
 
         // AnimationTimer: compteur client-side pour animations sans stutter (pattern Create)
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> AnimationTimer.tick());
+
+        // MouseButtonTracker: detection transition mouse down pour reload magazine
+        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> MouseButtonTracker.tick());
 
         NeoForge.EVENT_BUS.register(BuildingWandPreviewRenderer.class);
         NeoForge.EVENT_BUS.register(ChopperHivePreviewRenderer.class);

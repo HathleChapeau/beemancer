@@ -112,6 +112,7 @@ public final class ChopperHiveChoppingState {
         if (state.tickCounter >= ticksPerBlock) {
             // Consommer le fluide avant destruction
             if (!MagazineData.consumeFluid(chopperStack, COST_PER_LOG)) {
+                // Fluide epuise → arret, nouveau clic requis pour reload
                 activeStates.remove(player.getUUID());
                 return;
             }

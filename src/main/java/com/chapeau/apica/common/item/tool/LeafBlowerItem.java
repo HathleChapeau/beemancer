@@ -24,7 +24,6 @@ import com.chapeau.apica.common.entity.projectile.LeafBlowerProjectileEntity;
 import com.chapeau.apica.common.item.magazine.IMagazineHolder;
 import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.magazine.MagazineFluidData;
-import com.chapeau.apica.common.item.magazine.MagazineReloadHelper;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -95,13 +94,13 @@ public class LeafBlowerItem extends Item implements IMagazineHolder {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        // Reload immédiat au clic DOWN si magazine vide/insuffisant
+        // Reload au clic DOWN si magazine vide/insuffisant → STOP, nouveau clic requis
         int minCost = MagazineData.computeEffectiveCost(stack, COST_TIER1);
         if (!MagazineData.hasMagazine(stack) || MagazineData.getFluidAmount(stack) < minCost) {
-            if (!level.isClientSide()) {
-                MagazineReloadHelper.tryReload(player, stack);
+            var reloadResult = tryReloadOnUse(level, player, stack);
+            if (reloadResult.isPresent()) {
+                return reloadResult.get();
             }
-            return InteractionResultHolder.success(stack);
         }
 
         player.startUsingItem(hand);
