@@ -63,7 +63,6 @@ public class LeafBlowerItem extends Item implements IMagazineHolder {
 
         if (level.isClientSide()) {
             if (MagazineInputHelper.isMouseDown()) {
-                MagazineInputHelper.consume();
                 return InteractionResultHolder.consume(stack);
             }
         } else {

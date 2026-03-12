@@ -70,8 +70,7 @@ public class ChopperHiveItem extends Item implements IMagazineHolder {
 
         if (level.isClientSide()) {
             if (MagazineInputHelper.isMouseDown()) {
-                MagazineInputHelper.consume();
-                return InteractionResult.CONSUME;
+                                return InteractionResult.CONSUME;
             }
         } else {
             if (!isReloading(player) && needsReload(stack)) {
@@ -120,8 +119,7 @@ public class ChopperHiveItem extends Item implements IMagazineHolder {
 
         if (level.isClientSide()) {
             if (MagazineInputHelper.isMouseDown()) {
-                MagazineInputHelper.consume();
-                return InteractionResultHolder.consume(stack);
+                                return InteractionResultHolder.consume(stack);
             }
         } else {
             if (!isReloading(player) && needsReload(stack)) {
