@@ -31,6 +31,8 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 import java.util.Set;
@@ -43,17 +45,60 @@ import java.util.Set;
  */
 public interface IMagazineHolder {
 
+    static final Logger LOG = LoggerFactory.getLogger("MiningLaser");
     /**
      * Retourne les identifiants des fluides acceptes par cet item.
      * Ex: Set.of("apica:honey") pour le LeafBlower.
      */
     Set<String> getAcceptedFluids();
 
+    Boolean isReloading();
+
     /**
      * Verifie si un MagazineItem peut etre equipe sur cet item.
      * Par defaut, verifie que le fluide du magazine est dans la liste acceptee.
      * Les magazines creatifs sont traites comme du nectar.
      */
+    default boolean canUse(MagazineItem magazine, ItemStack holder){
+
+        if (magazine instanceof CreativeMagazineItem) return true;
+
+        if(MagazineFluidData.isEmpty(magazine.getDefaultInstance())) return false;
+
+        if (holder.getItem() instanceof IMagazineHolder item) {
+            return !item.isReloading();
+        }
+
+        return true;
+    }
+
+    default boolean canReload(MagazineItem magazine, ItemStack holder){
+        if(magazine != null)
+            if (magazine instanceof CreativeMagazineItem) return false;
+
+        if (holder.getItem() instanceof IMagazineHolder item) {
+            if((magazine == null ||
+                    MagazineFluidData.isEmpty(magazine.getDefaultInstance())) &&
+                    !item.isReloading() &&
+                    MagazineFluidData.isEmpty(magazine.getDefaultInstance())
+            ) return true;
+        }
+
+        return false;
+    }
+
+    default void setReload(Boolean bool){
+
+    };
+
+    default void useReload(){
+        setReload(true);
+    }
+
+    default void useMagazine(){
+        //a override
+    }
+
     default boolean canAcceptMagazine(ItemStack magazineStack) {
         // Creative magazine = nectar
         if (magazineStack.getItem() instanceof CreativeMagazineItem) {

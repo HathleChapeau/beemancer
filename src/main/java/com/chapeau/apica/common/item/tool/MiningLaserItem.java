@@ -22,10 +22,7 @@
  */
 package com.chapeau.apica.common.item.tool;
 
-import com.chapeau.apica.common.item.magazine.IMagazineHolder;
-import com.chapeau.apica.common.item.magazine.MagazineConstants;
-import com.chapeau.apica.common.item.magazine.MagazineData;
-import com.chapeau.apica.common.item.magazine.MagazineFluidData;
+import com.chapeau.apica.common.item.magazine.*;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -44,6 +41,8 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
@@ -61,6 +60,7 @@ import java.util.Set;
  * AoE : niveau 1 = bloc unique, niveau 2 = voisins directs (r1), niveau 3 = sphere r2
  */
 public class MiningLaserItem extends Item implements IMagazineHolder {
+    private static final Logger LOG = LoggerFactory.getLogger("MiningLaser");
 
     /** Nombre de ticks pour atteindre la pleine charge */
     public static final int CHARGE_TICKS = 40;
@@ -113,9 +113,11 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
+        var reloadResult = tryReloadOnUse(level, player, stack);
+
+
 
         // Reload au clic DOWN si magazine vide/absent → STOP, nouveau clic requis
-        var reloadResult = tryReloadOnUse(level, player, stack);
         if (reloadResult.isPresent()) {
             setChargeLevel(stack, 0);
             return reloadResult.get();
@@ -186,6 +188,13 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
      */
     private void onServerUseTick(ServerLevel level, Player player, ItemStack stack,
                                   int useTicks, int chargeLevel) {
+        LOG.info("ID: {}, {}, {}",
+                //stack.getFrame().getUUID(),
+                //reloadResult.isPresent(),
+                com.chapeau.apica.client.input.MouseButtonTracker.canReload(),
+                MagazineInputHelper.canReload(),
+                MagazineInputHelper.isBlocked());
+
         if (useTicks < CHARGE_TICKS) return;
 
         if ((useTicks - CHARGE_TICKS) % FIRE_INTERVAL == 0) {
