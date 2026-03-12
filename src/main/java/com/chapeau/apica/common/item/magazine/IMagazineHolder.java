@@ -6,12 +6,8 @@
  */
 package com.chapeau.apica.common.item.magazine;
 
-import com.chapeau.apica.Apica;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,9 +15,6 @@ import java.util.Set;
 import java.util.UUID;
 
 public interface IMagazineHolder {
-
-    String TAG_ON_RIGHT_CLICK = "OnRightClick";
-    String TAG_WAS_HELD = "WasHeld";
 
     // Track reload state par joueur (server + client)
     Map<UUID, Boolean> RELOAD_STATE = new HashMap<>();
@@ -38,54 +31,6 @@ public interface IMagazineHolder {
 
     default void setReloading(Player player, boolean reloading) {
         RELOAD_STATE.put(player.getUUID(), reloading);
-    }
-
-    // =========================================================================
-    // OnRightClick (stocké sur l'item)
-    // =========================================================================
-
-    default boolean isOnRightClick(ItemStack stack) {
-        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
-        Apica.LOGGER.info("custom data {}", customData.copyTag().getBoolean(TAG_ON_RIGHT_CLICK));
-        if (customData == null) return false;
-        return customData.copyTag().getBoolean(TAG_ON_RIGHT_CLICK);
-    }
-
-    default void setOnRightClick(ItemStack stack, boolean value) {
-        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
-        CompoundTag tag = customData != null ? customData.copyTag() : new CompoundTag();
-        tag.putBoolean(TAG_ON_RIGHT_CLICK, value);
-        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
-    }
-
-    // =========================================================================
-    // WasHeld tracking (pour reset onRightClick quand pris en main)
-    // =========================================================================
-
-    default boolean wasHeld(ItemStack stack) {
-        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
-        if (customData == null) return false;
-        return customData.copyTag().getBoolean(TAG_WAS_HELD);
-    }
-
-    default void setWasHeld(ItemStack stack, boolean value) {
-        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
-        CompoundTag tag = customData != null ? customData.copyTag() : new CompoundTag();
-        tag.putBoolean(TAG_WAS_HELD, value);
-        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
-    }
-
-    /** Appeler dans inventoryTick. Reset onRightClick quand l'item est pris en main. */
-    default void trackHeldState(ItemStack stack, boolean isHeld) {
-        if (isHeld && !wasHeld(stack)) {
-            // Vient d'être pris en main -> reset
-            Apica.LOGGER.info("RESET RIGHT CLICK");
-            setOnRightClick(stack, false);
-            setWasHeld(stack, true);
-        } else if (!isHeld && wasHeld(stack)) {
-            // Vient d'être posé
-            setWasHeld(stack, false);
-        }
     }
 
     // =========================================================================

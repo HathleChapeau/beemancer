@@ -30,6 +30,7 @@ import com.chapeau.apica.core.network.packets.DubstepRadioTrackPacket;
 import com.chapeau.apica.core.network.packets.DubstepRadioTransportPacket;
 import com.chapeau.apica.core.network.packets.DubstepRadioSyncPacket;
 import com.chapeau.apica.core.network.packets.MagazineEquipPacket;
+import com.chapeau.apica.core.network.packets.MagazineReloadPacket;
 import com.chapeau.apica.core.network.packets.BackpackOpenPacket;
 import com.chapeau.apica.core.network.packets.AccessoryEquipPacket;
 import com.chapeau.apica.core.network.packets.AccessorySyncPacket;
@@ -149,6 +150,12 @@ public class ApicaNetwork {
                 MagazineEquipPacket.TYPE,
                 MagazineEquipPacket.STREAM_CODEC,
                 MagazineEquipPacket::handle
+        );
+
+        registrar.playToServer(
+                MagazineReloadPacket.TYPE,
+                MagazineReloadPacket.STREAM_CODEC,
+                MagazineReloadPacket::handle
         );
 
         // Bee Creator C2S

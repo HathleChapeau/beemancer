@@ -70,15 +70,9 @@ public class ChopperHiveItem extends Item implements IMagazineHolder {
 
         if (level.isClientSide()) {
             if (MagazineInputHelper.isMouseDown()) {
-                setOnRightClick(stack, true);
-                return InteractionResult.CONSUME;
-            }
-        } else {
-            if (isOnRightClick(stack)) {
-                if (canReload(player, stack)) {
-                    doReload(player, stack);
-                }
-                setOnRightClick(stack, false);
+                net.neoforged.neoforge.network.PacketDistributor.sendToServer(
+                    new com.chapeau.apica.core.network.packets.MagazineReloadPacket(context.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND)
+                );
                 return InteractionResult.CONSUME;
             }
         }
@@ -122,15 +116,9 @@ public class ChopperHiveItem extends Item implements IMagazineHolder {
 
         if (level.isClientSide()) {
             if (MagazineInputHelper.isMouseDown()) {
-                setOnRightClick(stack, true);
-                return InteractionResultHolder.consume(stack);
-            }
-        } else {
-            if (isOnRightClick(stack)) {
-                if (canReload(player, stack)) {
-                    doReload(player, stack);
-                }
-                setOnRightClick(stack, false);
+                net.neoforged.neoforge.network.PacketDistributor.sendToServer(
+                    new com.chapeau.apica.core.network.packets.MagazineReloadPacket(hand == InteractionHand.MAIN_HAND)
+                );
                 return InteractionResultHolder.consume(stack);
             }
         }
@@ -140,13 +128,9 @@ public class ChopperHiveItem extends Item implements IMagazineHolder {
 
     @Override
     public void inventoryTick(ItemStack stack, Level level, Entity entity, int slot, boolean selected) {
-        if (!(entity instanceof Player player)) return;
+        if (level.isClientSide() || !(entity instanceof Player player)) return;
 
         boolean holding = selected || player.getOffhandItem() == stack;
-        trackHeldState(stack, holding);
-
-        if (level.isClientSide()) return;
-
         if (!holding) {
             ChopperHiveChoppingState.clear(player.getUUID());
             return;

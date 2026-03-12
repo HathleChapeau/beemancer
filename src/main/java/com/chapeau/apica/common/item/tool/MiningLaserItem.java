@@ -72,33 +72,17 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        Apica.LOGGER.info("Before mouse down: {} is client: {} / right click: {} can reload: {}",
-                MagazineInputHelper.isMouseDown(), level.isClientSide(),
-                isOnRightClick(stack), canReload(player, stack));
-        // Client: mouseDown -> set onRightClick, serveur: vérifie et exécute
+
+        // Client: mouseDown -> envoie packet au serveur
         if (level.isClientSide()) {
             if (MagazineInputHelper.isMouseDown()) {
-                setOnRightClick(stack, true);
-                Apica.LOGGER.info("After return mouse down: {} is client: {} / right click: {} can reload: {}",
-                        MagazineInputHelper.isMouseDown(), level.isClientSide(),
-                        isOnRightClick(stack), canReload(player, stack));
-                return InteractionResultHolder.consume(stack);
-            }
-        } else {
-            if (isOnRightClick(stack)) {
-                if (canReload(player, stack)) {
-                    doReload(player, stack);
-                }
-                setOnRightClick(stack, false);
-                Apica.LOGGER.info("After return mouse down: {} is client: {} / right click: {} can reload: {}",
-                        MagazineInputHelper.isMouseDown(), level.isClientSide(),
-                        isOnRightClick(stack), canReload(player, stack));
+                net.neoforged.neoforge.network.PacketDistributor.sendToServer(
+                    new com.chapeau.apica.core.network.packets.MagazineReloadPacket(hand == InteractionHand.MAIN_HAND)
+                );
                 return InteractionResultHolder.consume(stack);
             }
         }
-        Apica.LOGGER.info("After mouse down: {} is client: {} / right click: {} can reload: {}",
-                MagazineInputHelper.isMouseDown(), level.isClientSide(),
-                isOnRightClick(stack), canReload(player, stack));
+
         if (!canUse(player, stack)) {
             return InteractionResultHolder.fail(stack);
         }
@@ -247,13 +231,6 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
     @Override
     public int getEnchantmentValue() {
         return 1;
-    }
-
-    @Override
-    public void inventoryTick(ItemStack stack, Level level, net.minecraft.world.entity.Entity entity, int slot, boolean selected) {
-        if (!(entity instanceof Player player)) return;
-        boolean holding = selected || player.getOffhandItem() == stack;
-        trackHeldState(stack, holding);
     }
 
     @Override
