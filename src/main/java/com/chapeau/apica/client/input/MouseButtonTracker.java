@@ -47,9 +47,14 @@ public final class MouseButtonTracker {
         }
     }
 
-    /** True si click DOWN ce tick (transition false→true). */
+    /** True si click DOWN (lecture directe GLFW, pas cached). */
     public static boolean isMouseDown() {
-        return isDown && !wasDown;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.getWindow() == null) return false;
+        long window = mc.getWindow().getWindow();
+        boolean currentlyDown = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS;
+        // DOWN = appuyé maintenant ET pas appuyé au dernier tick
+        return currentlyDown && !wasDown;
     }
 
     /** True si bouton actuellement enfoncé. */
