@@ -24,6 +24,7 @@ package com.chapeau.apica.client.renderer.item;
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.animation.AnimationTimer;
 import com.chapeau.apica.client.renderer.RailgunRenderUtil;
+import com.chapeau.apica.client.renderer.shader.MagazineSweepShader;
 import com.chapeau.apica.client.vfx.BlackHoleEffect;
 import com.chapeau.apica.common.item.tool.RailgunItem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -157,11 +158,12 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
     public void renderByItem(ItemStack stack, ItemDisplayContext displayContext,
                              PoseStack poseStack, MultiBufferSource buffer,
                              int packedLight, int packedOverlay) {
-        renderBodyModel(poseStack, buffer, packedLight, packedOverlay, stack);
+        boolean inHand = RailgunRenderUtil.isInHand(displayContext);
+        renderBodyModel(poseStack, buffer, packedLight, packedOverlay, stack, inHand);
 
         int tint = RailgunRenderUtil.getFluidTint(stack);
 
-        if (RailgunRenderUtil.isInHand(displayContext)) {
+        if (inHand) {
             updateAnimation();
             renderChargingOverlay(poseStack, buffer, packedLight, (int) currentFrame, tint);
 
@@ -174,12 +176,25 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
     }
 
     private void renderBodyModel(PoseStack poseStack, MultiBufferSource buffer,
-                                  int packedLight, int packedOverlay, ItemStack stack) {
+                                  int packedLight, int packedOverlay, ItemStack stack, boolean inHand) {
         BakedModel model = Minecraft.getInstance().getModelManager().getModel(BODY_MODEL_LOC);
         if (model == null) return;
 
-        VertexConsumer vc = ItemRenderer.getFoilBufferDirect(buffer,
-            RenderType.entityTranslucentCull(TextureAtlas.LOCATION_BLOCKS), true, stack.hasFoil());
+        // Use magazine sweep shader when in hand, vanilla RenderType otherwise
+        boolean useShader = inHand && MagazineSweepShader.isAvailable();
+        RenderType renderType;
+        if (useShader) {
+            renderType = MagazineSweepShader.getRenderType(TextureAtlas.LOCATION_BLOCKS, stack);
+        } else {
+            renderType = RenderType.entityTranslucentCull(TextureAtlas.LOCATION_BLOCKS);
+        }
+
+        VertexConsumer vc = ItemRenderer.getFoilBufferDirect(buffer, renderType, true, stack.hasFoil());
+
+        // Appliquer les uniforms APRES avoir obtenu le buffer (le shader est maintenant bind)
+        if (useShader) {
+            MagazineSweepShader.applyUniforms(stack);
+        }
 
         RandomSource random = RandomSource.create();
         for (Direction dir : Direction.values()) {
