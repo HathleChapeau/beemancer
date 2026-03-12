@@ -83,8 +83,7 @@ public class SaddlePartModelC extends HoverbikePartModel {
                         .addBox(-0.5F, -1.0F, -1.075F, 1.0F, 2.0F, 2.15F),
                 PartPose.offset(1.575F, -0.5F, 3.5F));
 
-        // Cube central entre les electrodes: 2.15 (largeur separation) x 2.15 (profondeur electrodes) x 1 (hauteur)
-        // Position: centre entre les electrodes, meme Z et Y
+        // Cube central: 2x2x2, positionne au-dessus de la selle
         root.addOrReplaceChild("center_cube",
                 CubeListBuilder.create()
                         .texOffs(0, 14)
