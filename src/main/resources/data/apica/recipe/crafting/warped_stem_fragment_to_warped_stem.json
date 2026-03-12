@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "apica:warped_stem_fragment" },
+    { "item": "apica:warped_stem_fragment" },
+    { "item": "apica:warped_stem_fragment" },
+    { "item": "apica:warped_stem_fragment" }
+  ],
+  "result": { "id": "minecraft:warped_stem", "count": 1 }
+}

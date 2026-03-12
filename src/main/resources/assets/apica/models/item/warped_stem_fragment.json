@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "apica:item/combproduct/warped_stem_fragment"
+  }
+}

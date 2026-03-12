@@ -1,0 +1,11 @@
+{
+  "type": "apica:centrifuging",
+  "ingredient": { "item": "apica:phosphor_comb" },
+  "results": [
+    { "item": { "id": "minecraft:ochre_froglight" }, "chance": 0.33 },
+    { "item": { "id": "minecraft:pearlescent_froglight" }, "chance": 0.33 },
+    { "item": { "id": "minecraft:verdant_froglight" }, "chance": 0.34 }
+  ],
+  "fluid_result": { "fluid": "apica:honey", "amount": 250 },
+  "processing_time": 80
+}

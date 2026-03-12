@@ -813,6 +813,48 @@
       "breeding_parent2": "nether_bee"
     },
     {
+      "id": "hyphae_bee",
+      "position": {
+        "x": 3,
+        "y": 10
+      },
+      "category": "NORMAL",
+      "parent": "infernalist_bee",
+      "hidden_until_parent_unlocked": true,
+      "visibility": "SECRET",
+      "quest_id": "hyphae_bee_incubator",
+      "breeding_parent1": "infernalist_bee",
+      "breeding_parent2": "forest_bee"
+    },
+    {
+      "id": "warped_bee",
+      "position": {
+        "x": 0,
+        "y": 10
+      },
+      "category": "NORMAL",
+      "parent": "quartzose_bee",
+      "hidden_until_parent_unlocked": true,
+      "visibility": "SECRET",
+      "quest_id": "warped_bee_incubator",
+      "breeding_parent1": "quartzose_bee",
+      "breeding_parent2": "forest_bee"
+    },
+    {
+      "id": "shroomglow_bee",
+      "position": {
+        "x": 3,
+        "y": 14
+      },
+      "category": "NORMAL",
+      "parent": "luminous_bee",
+      "hidden_until_parent_unlocked": true,
+      "visibility": "SECRET",
+      "quest_id": "shroomglow_bee_incubator",
+      "breeding_parent1": "mushroom_bee",
+      "breeding_parent2": "luminous_bee"
+    },
+    {
       "id": "grim_bee",
       "position": {
         "x": 10,
@@ -925,6 +967,20 @@
       "quest_id": "marsh_bee_incubator",
       "breeding_parent1": "umbra_bee",
       "breeding_parent2": "savanna_bee"
+    },
+    {
+      "id": "phosphor_bee",
+      "position": {
+        "x": -12,
+        "y": 3
+      },
+      "category": "NORMAL",
+      "parent": "marsh_bee",
+      "hidden_until_parent_unlocked": true,
+      "visibility": "SECRET",
+      "quest_id": "phosphor_bee_incubator",
+      "breeding_parent1": "mushroom_bee",
+      "breeding_parent2": "marsh_bee"
     },
     {
       "id": "majestic_bee",

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "apica:crimson_stem_fragment" },
+    { "item": "apica:crimson_stem_fragment" },
+    { "item": "apica:crimson_stem_fragment" },
+    { "item": "apica:crimson_stem_fragment" }
+  ],
+  "result": { "id": "minecraft:crimson_stem", "count": 1 }
+}

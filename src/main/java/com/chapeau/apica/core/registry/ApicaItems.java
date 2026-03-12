@@ -572,6 +572,14 @@ public class ApicaItems {
             () -> new CombItem(new Item.Properties(), "geode"));
     public static final DeferredItem<Item> MARSH_COMB = ITEMS.register("marsh_comb",
             () -> new CombItem(new Item.Properties(), "marsh"));
+    public static final DeferredItem<Item> PHOSPHOR_COMB = ITEMS.register("phosphor_comb",
+            () -> new CombItem(new Item.Properties(), "phosphor"));
+    public static final DeferredItem<Item> HYPHAE_COMB = ITEMS.register("hyphae_comb",
+            () -> new CombItem(new Item.Properties(), "hyphae"));
+    public static final DeferredItem<Item> WARPED_COMB = ITEMS.register("warped_comb",
+            () -> new CombItem(new Item.Properties(), "warped"));
+    public static final DeferredItem<Item> SHROOMGLOW_COMB = ITEMS.register("shroomglow_comb",
+            () -> new CombItem(new Item.Properties(), "shroomglow"));
     public static final DeferredItem<Item> MAJESTIC_COMB = ITEMS.register("majestic_comb",
             () -> new CombItem(new Item.Properties(), "majestic"));
     public static final DeferredItem<Item> AURIC_COMB = ITEMS.register("auric_comb",
@@ -647,6 +655,12 @@ public class ApicaItems {
     public static final DeferredItem<Item> ACACIA_LOG_FRAGMENT = ITEMS.register("acacia_log_fragment",
             () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> MANGROVE_LOG_FRAGMENT = ITEMS.register("mangrove_log_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> CRIMSON_STEM_FRAGMENT = ITEMS.register("crimson_stem_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> WARPED_STEM_FRAGMENT = ITEMS.register("warped_stem_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> SHROOMLIGHT_FRAGMENT = ITEMS.register("shroomlight_fragment",
             () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> ICE_FRAGMENT = ITEMS.register("ice_fragment",
             () -> new Item(new Item.Properties()));

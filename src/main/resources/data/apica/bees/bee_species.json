@@ -3034,6 +3034,210 @@
       },
       "harmonized": false
     },
+    "phosphor": {
+      "tier": "VI",
+      "parents": [
+        "mushroom",
+        "marsh"
+      ],
+      "environment": 0,
+      "flower_type": "mushroom",
+      "stats": {
+        "attack": 1,
+        "health": 2,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 2
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
+      "day_night": "night",
+      "loot": {
+        "item": "apica:phosphor_comb"
+      },
+      "pollen": null,
+      "texture": "Phosphor_Bee",
+      "color": "#6BBF7A",
+      "model": {
+        "body": "puffy",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#6BBF7A",
+        "stripe": "#DFB6D3",
+        "wing": "#FFE06B",
+        "antenna": "#3D8A4A",
+        "stinger": "#3D8A4A",
+        "eye": "#1A1A1A",
+        "pupil": "#FFFF99"
+      },
+      "waveform": {
+        "frequency": 95,
+        "amplitude": 65,
+        "phase": 145,
+        "harmonics": 32
+      },
+      "harmonized": false
+    },
+    "hyphae": {
+      "tier": "VI",
+      "parents": [
+        "infernalist",
+        "forest"
+      ],
+      "environment": 2,
+      "flower_type": "mushroom",
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 2,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 2
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": true,
+        "hostile_mobs": false
+      },
+      "day_night": "both",
+      "loot": {
+        "item": "apica:hyphae_comb"
+      },
+      "pollen": null,
+      "texture": "Hyphae_Bee",
+      "color": "#6F1223",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "demon"
+      },
+      "part_colors": {
+        "body": "#6F1223",
+        "stripe": "#9A2035",
+        "wing": "#C84060",
+        "antenna": "#3D0A12",
+        "stinger": "#3D0A12",
+        "eye": "#1A1A1A",
+        "pupil": "#FF6080"
+      },
+      "waveform": {
+        "frequency": 78,
+        "amplitude": 58,
+        "phase": 167,
+        "harmonics": 29
+      },
+      "harmonized": false
+    },
+    "warped": {
+      "tier": "VI",
+      "parents": [
+        "quartzose",
+        "forest"
+      ],
+      "environment": 2,
+      "flower_type": "mushroom",
+      "stats": {
+        "attack": 1,
+        "health": 2,
+        "drop_level": 2,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 2
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
+      "day_night": "both",
+      "loot": {
+        "item": "apica:warped_comb"
+      },
+      "pollen": null,
+      "texture": "Warped_Bee",
+      "color": "#167E86",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "demon"
+      },
+      "part_colors": {
+        "body": "#167E86",
+        "stripe": "#22B4A6",
+        "wing": "#5DE8D8",
+        "antenna": "#0A4A4F",
+        "stinger": "#0A4A4F",
+        "eye": "#1A1A1A",
+        "pupil": "#80FFEF"
+      },
+      "waveform": {
+        "frequency": 102,
+        "amplitude": 52,
+        "phase": 189,
+        "harmonics": 31
+      },
+      "harmonized": false
+    },
+    "shroomglow": {
+      "tier": "VI",
+      "parents": [
+        "mushroom",
+        "luminous"
+      ],
+      "environment": 0,
+      "flower_type": "mushroom",
+      "stats": {
+        "attack": 1,
+        "health": 2,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 2
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
+      "day_night": "night",
+      "loot": {
+        "item": "apica:shroomglow_comb"
+      },
+      "pollen": null,
+      "texture": "Shroomglow_Bee",
+      "color": "#F9801D",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "demon"
+      },
+      "part_colors": {
+        "body": "#F9801D",
+        "stripe": "#FFBC5E",
+        "wing": "#FFE0A0",
+        "antenna": "#C85B10",
+        "stinger": "#C85B10",
+        "eye": "#1A1A1A",
+        "pupil": "#FFFF80"
+      },
+      "waveform": {
+        "frequency": 89,
+        "amplitude": 62,
+        "phase": 156,
+        "harmonics": 30
+      },
+      "harmonized": false
+    },
     "majestic": {
       "tier": "VI",
       "parents": [
