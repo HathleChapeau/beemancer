@@ -8,6 +8,7 @@ package com.chapeau.apica.core.network.packets;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.item.magazine.IMagazineHolder;
+import com.chapeau.apica.common.item.tool.MiningLaserItem;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -48,7 +49,18 @@ public record MagazineReloadPacket(boolean mainHand) implements CustomPacketPayl
             if (!(stack.getItem() instanceof IMagazineHolder holder)) return;
 
             if (holder.canReload(player, stack)) {
+                // Sauvegarder le chargeLevel avant reload (pour MiningLaser)
+                int savedChargeLevel = 0;
+                if (stack.getItem() instanceof MiningLaserItem) {
+                    savedChargeLevel = MiningLaserItem.getChargeLevel(stack);
+                }
+
                 holder.doReload(player, stack);
+
+                // Restaurer le chargeLevel après reload
+                if (stack.getItem() instanceof MiningLaserItem && savedChargeLevel > 0) {
+                    MiningLaserItem.setChargeLevel(stack, savedChargeLevel);
+                }
             }
         });
     }
