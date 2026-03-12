@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [SaddlePartModelC.java]
- * Description: Selle HoverBee - variante C (cubes inclines 45° + ring rotative)
+ * Description: Selle HoverBee - variante C (electrodes + cube central)
  * ============================================================
  *
  * DEPENDANCES:
@@ -15,7 +15,6 @@
  * UTILISE PAR:
  * - HoverbikePartVariants.java: Enregistrement variante
  * - ClientSetup.java: Enregistrement du layer
- * - HoverbikePartLayer.java: Rendu ring effect
  *
  * ============================================================
  */
@@ -34,8 +33,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Selle variante C : structure avec cubes inclines a 45° et effet de ring.
- * La ring est geree par HoverbikePartLayer.
+ * Selle variante C : selle + dossier + 2 electrodes + cube central entre les electrodes.
  */
 public class SaddlePartModelC extends HoverbikePartModel {
 
@@ -44,10 +42,9 @@ public class SaddlePartModelC extends HoverbikePartModel {
     private static final ResourceLocation TEXTURE =
             ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/hoverbee/hoverbee_saddle_c.png");
 
-    /** Position du centre de la ring pour l'effet de particules (coordonnees locales) */
-    public static final Vec3 RING_CENTER = new Vec3(0, -0.5, 2.75);
-
-    private static final float ANGLE_45 = (float)(Math.PI / 4);
+    /** Position des electrodes pour reference (coordonnees locales) */
+    public static final Vec3 LEFT_ELECTRODE = new Vec3(-1.575, -0.5, 3.5);
+    public static final Vec3 RIGHT_ELECTRODE = new Vec3(1.575, -0.5, 3.5);
 
     public SaddlePartModelC(ModelPart root) {
         super(root);
@@ -64,40 +61,35 @@ public class SaddlePartModelC extends HoverbikePartModel {
                         .addBox(-3.0F, -0.5F, -2.5F, 6.0F, 1.0F, 5.0F),
                 PartPose.ZERO);
 
-        // Dossier: 5x1x1, derriere le siege et legèrement plus haut
+        // Dossier: 5x1x1, derriere le siege et legerement plus haut
         root.addOrReplaceChild("backrest",
                 CubeListBuilder.create()
                         .texOffs(0, 6)
                         .addBox(-2.5F, -0.5F, -0.5F, 5.0F, 1.0F, 1.0F),
                 PartPose.offset(0.0F, -0.5F, 1.75F));
 
-        // Cube principal 3x3x1, tourne a 45° sur l'axe X
-        root.addOrReplaceChild("main_cube",
+        // Electrode gauche: 1x2x2.15
+        root.addOrReplaceChild("electrode_left",
                 CubeListBuilder.create()
                         .texOffs(0, 8)
-                        .addBox(-1.5F, -1.5F, -0.5F, 3.0F, 3.0F, 1.0F),
-                PartPose.offsetAndRotation(0F, -0.5F, 2.75F, ANGLE_45, 0F, 0F));
+                        .addBox(-0.5F, -1.0F, -1.075F, 1.0F, 2.0F, 2.15F),
+                PartPose.offset(-1.575F, -0.5F, 3.5F));
 
-        // Cube secondaire 2x2x1 (non tourne, devant le cube principal)
-        root.addOrReplaceChild("secondary_cube",
+        // Electrode droite: 1x2x2.15 (miroir)
+        root.addOrReplaceChild("electrode_right",
                 CubeListBuilder.create()
-                        .texOffs(0, 12)
-                        .addBox(-1.0F, -1.0F, -0.5F, 2.0F, 2.0F, 1.0F),
-                PartPose.offset(0F, -0.5F, 3.75F));
+                        .texOffs(0, 8)
+                        .mirror()
+                        .addBox(-0.5F, -1.0F, -1.075F, 1.0F, 2.0F, 2.15F),
+                PartPose.offset(1.575F, -0.5F, 3.5F));
 
-        // Barre horizontale 3.5x1x0.5 tournee a 45° sur X (meme niveau que main_cube)
-        root.addOrReplaceChild("bar_horizontal",
+        // Cube central entre les electrodes: 2.15 (largeur separation) x 2.15 (profondeur electrodes) x 1 (hauteur)
+        // Position: centre entre les electrodes, meme Z et Y
+        root.addOrReplaceChild("center_cube",
                 CubeListBuilder.create()
-                        .texOffs(0, 15)
-                        .addBox(-1.75F, -0.5F, -0.25F, 3.5F, 1.0F, 0.5F),
-                PartPose.offsetAndRotation(0F, -0.5F, 2.75F, ANGLE_45, 0F, 0F));
-
-        // Barre verticale 1x3.5x0.5 tournee a 45° sur X (meme niveau que main_cube)
-        root.addOrReplaceChild("bar_vertical",
-                CubeListBuilder.create()
-                        .texOffs(8, 15)
-                        .addBox(-0.5F, -1.75F, -0.25F, 1.0F, 3.5F, 0.5F),
-                PartPose.offsetAndRotation(0F, -0.5F, 2.75F, ANGLE_45, 0F, 0F));
+                        .texOffs(0, 14)
+                        .addBox(-1.075F, -0.5F, -1.075F, 2.15F, 1.0F, 2.15F),
+                PartPose.offset(0.0F, -0.5F, 3.5F));
 
         return LayerDefinition.create(mesh, 32, 32);
     }

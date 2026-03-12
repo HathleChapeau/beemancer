@@ -25,6 +25,7 @@ package com.chapeau.apica.common.item.tool;
 import com.chapeau.apica.common.item.magazine.IMagazineHolder;
 import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.magazine.MagazineFluidData;
+import com.chapeau.apica.common.item.magazine.MagazineReloadHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
@@ -109,8 +110,11 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
 
         ItemStack wandStack = context.getItemInHand();
 
-        // Sans magazine = rien
+        // Sans magazine = tenter reload
         if (!MagazineData.hasMagazine(wandStack) || MagazineData.getFluidAmount(wandStack) <= 0) {
+            if (!level.isClientSide() && MagazineReloadHelper.tryReload(player, wandStack)) {
+                return InteractionResult.SUCCESS;
+            }
             return InteractionResult.PASS;
         }
 
@@ -308,6 +312,15 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
-        return InteractionResultHolder.pass(player.getItemInHand(hand));
+        ItemStack stack = player.getItemInHand(hand);
+
+        // Reload si magazine vide/absent
+        if (!MagazineData.hasMagazine(stack) || MagazineData.getFluidAmount(stack) <= 0) {
+            if (!level.isClientSide() && MagazineReloadHelper.tryReload(player, stack)) {
+                return InteractionResultHolder.success(stack);
+            }
+        }
+
+        return InteractionResultHolder.pass(stack);
     }
 }

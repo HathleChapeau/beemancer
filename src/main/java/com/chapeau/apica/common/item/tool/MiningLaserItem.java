@@ -25,6 +25,7 @@ package com.chapeau.apica.common.item.tool;
 import com.chapeau.apica.common.item.magazine.IMagazineHolder;
 import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.magazine.MagazineFluidData;
+import com.chapeau.apica.common.item.magazine.MagazineReloadHelper;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -131,6 +132,9 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
             setLastClickTick(stack, 0);
 
             if (!hasMag) {
+                if (!level.isClientSide() && MagazineReloadHelper.tryReload(player, stack)) {
+                    return InteractionResultHolder.success(stack);
+                }
                 setChargeLevel(stack, 0);
                 return InteractionResultHolder.pass(stack);
             }
@@ -150,8 +154,11 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
             return InteractionResultHolder.consume(stack);
         }
 
-        // Sans magazine = bloque au niveau 0, pas de charge
+        // Sans magazine = tenter reload, sinon bloque au niveau 0
         if (!hasMag) {
+            if (!level.isClientSide() && MagazineReloadHelper.tryReload(player, stack)) {
+                return InteractionResultHolder.success(stack);
+            }
             setChargeLevel(stack, 0);
             return InteractionResultHolder.pass(stack);
         }

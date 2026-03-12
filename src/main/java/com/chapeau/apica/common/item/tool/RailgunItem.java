@@ -25,6 +25,7 @@ package com.chapeau.apica.common.item.tool;
 import com.chapeau.apica.common.item.magazine.IMagazineHolder;
 import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.magazine.MagazineFluidData;
+import com.chapeau.apica.common.item.magazine.MagazineReloadHelper;
 import com.chapeau.apica.core.util.ParticleHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -113,6 +114,9 @@ public class RailgunItem extends Item implements IMagazineHolder {
         if (player.getCooldowns().isOnCooldown(this)) return InteractionResultHolder.pass(stack);
 
         if (!MagazineData.hasMagazine(stack) || MagazineData.getFluidAmount(stack) <= 0) {
+            if (!level.isClientSide() && MagazineReloadHelper.tryReload(player, stack)) {
+                return InteractionResultHolder.success(stack);
+            }
             return InteractionResultHolder.pass(stack);
         }
 

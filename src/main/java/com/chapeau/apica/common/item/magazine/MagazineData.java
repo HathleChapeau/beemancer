@@ -45,6 +45,7 @@ public final class MagazineData {
     private static final String FLUID_ID_KEY = "FluidId";
     private static final String AMOUNT_KEY = "Amount";
     private static final String CREATIVE_KEY = "Creative";
+    private static final String LAST_FLUID_KEY = "LastFluidId";
 
     private MagazineData() {}
 
@@ -90,6 +91,24 @@ public final class MagazineData {
         tag.putString(FLUID_ID_KEY, fluidId);
         tag.putInt(AMOUNT_KEY, Math.max(0, amount));
         tag.putBoolean(CREATIVE_KEY, creative);
+        // Enregistrer le dernier fluide equipe pour le reload
+        if (!fluidId.isEmpty()) {
+            tag.putString(LAST_FLUID_KEY, fluidId);
+        }
+        saveDataTag(holder, tag);
+    }
+
+    /** Retourne l'ID du dernier fluide equipe, ou "" si aucun. */
+    public static String getLastFluidId(ItemStack holder) {
+        CompoundTag tag = getDataTag(holder);
+        if (tag == null) return "";
+        return tag.getString(LAST_FLUID_KEY);
+    }
+
+    /** Definit le dernier fluide equipe (pour le reload). */
+    public static void setLastFluidId(ItemStack holder, String fluidId) {
+        CompoundTag tag = getOrCreateDataTag(holder);
+        tag.putString(LAST_FLUID_KEY, fluidId);
         saveDataTag(holder, tag);
     }
 
