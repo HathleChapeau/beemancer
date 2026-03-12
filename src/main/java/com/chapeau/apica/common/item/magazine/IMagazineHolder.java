@@ -6,7 +6,6 @@
  */
 package com.chapeau.apica.common.item.magazine;
 
-import com.chapeau.apica.Apica;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -45,12 +44,19 @@ public interface IMagazineHolder {
         return MagazineData.getFluidAmount(holder) > 0;
     }
 
-    /** True si peut reloader (mouse DOWN, magazine vide, pas déjà en reload). */
+    /** True si peut reloader (mouse DOWN, magazine vide, pas déjà en reload). Consomme le click. */
     default boolean canReload(Player player, ItemStack holder) {
         if (isReloading(player)) return false;
         if (!MagazineInputHelper.isMouseDown()) return false;
-        if (!MagazineData.hasMagazine(holder)) return true;
-        return MagazineData.getFluidAmount(holder) <= 0;
+        if (!MagazineData.hasMagazine(holder)) {
+            MagazineInputHelper.consume();
+            return true;
+        }
+        if (MagazineData.getFluidAmount(holder) <= 0) {
+            MagazineInputHelper.consume();
+            return true;
+        }
+        return false;
     }
 
     // =========================================================================

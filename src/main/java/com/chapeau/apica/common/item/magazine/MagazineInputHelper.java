@@ -18,4 +18,11 @@ public final class MagazineInputHelper {
         if (FMLEnvironment.dist == Dist.DEDICATED_SERVER) return true;
         return com.chapeau.apica.client.input.MouseButtonTracker.isMouseDown();
     }
+
+    /** Marquer le click comme consommé (bloque les prochains isMouseDown jusqu'au relâchement). */
+    public static void consume() {
+        if (FMLEnvironment.dist != Dist.DEDICATED_SERVER) {
+            com.chapeau.apica.client.input.MouseButtonTracker.consume();
+        }
+    }
 }

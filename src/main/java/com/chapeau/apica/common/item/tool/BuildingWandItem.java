@@ -69,13 +69,11 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
 
         ItemStack wandStack = context.getItemInHand();
 
-        // Reload si possible
         if (canReload(player, wandStack)) {
             if (!level.isClientSide()) {
                 doReload(player, wandStack);
-            } else {
-                setReloading(player, true);
             }
+            setReloading(player, true);
             return InteractionResult.SUCCESS;
         }
 
@@ -269,13 +267,11 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        // Reload si possible
         if (canReload(player, stack)) {
             if (!level.isClientSide()) {
                 doReload(player, stack);
-            } else {
-                setReloading(player, true);
             }
+            setReloading(player, true);
             return InteractionResultHolder.success(stack);
         }
 

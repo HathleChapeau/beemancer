@@ -6,8 +6,6 @@
  */
 package com.chapeau.apica.client.input;
 
-import com.chapeau.apica.Apica;
-import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.item.magazine.IMagazineHolder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -21,6 +19,7 @@ public final class MouseButtonTracker {
 
     private static boolean wasDown = false;
     private static boolean isDown = false;
+    private static boolean consumed = false;  // true après un reload, reset au mouse UP
 
     private MouseButtonTracker() {}
 
@@ -32,8 +31,9 @@ public final class MouseButtonTracker {
         wasDown = isDown;
         isDown = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS;
 
-        // Mouse UP: reset reload state
+        // Mouse UP: reset consumed et reload state
         if (wasDown && !isDown) {
+            consumed = false;
             LocalPlayer player = mc.player;
             if (player != null) {
                 ItemStack mainHand = player.getMainHandItem();
@@ -49,15 +49,19 @@ public final class MouseButtonTracker {
         }
     }
 
-    /** True si click DOWN (lecture directe GLFW, pas cached). */
+    /** True si click DOWN et pas encore consommé. */
     public static boolean isMouseDown() {
+        if (consumed) return false;
         Minecraft mc = Minecraft.getInstance();
         if (mc.getWindow() == null) return false;
         long window = mc.getWindow().getWindow();
         boolean currentlyDown = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS;
-        // DOWN = appuyé maintenant ET pas appuyé au dernier tick
-        //Apica.LOGGER.info("mousedown {}{}", currentlyDown, wasDown);
         return currentlyDown && !wasDown;
+    }
+
+    /** Marquer le click comme consommé (après reload). */
+    public static void consume() {
+        consumed = true;
     }
 
     /** True si bouton actuellement enfoncé. */
