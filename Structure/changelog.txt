@@ -22,7 +22,12 @@ All IMagazineHolder items refactored:
   getAcceptedFluids() → MagazineConstants.STANDARD_FLUIDS
   getBarColor() → MagazineConstants.getBarColorForFluid()
 
-MagazineSweepShader.java: Use MagazineConstants for fluid colors
+Other color constant cleanup:
+- MagazineItem.java: getBarColor() → MagazineConstants.getBarColorForFluid()
+- CreativeMagazineItem.java: NECTAR_FLUID_ID → MagazineConstants.NECTAR_ID,
+  NECTAR_COLOR → MagazineConstants.NECTAR_BAR_COLOR
+- MagazineGaugeHud.java: Removed 4 color constants, uses MagazineConstants
+- MagazineSweepShader.java: Use MagazineConstants for fluid colors
 
 Excavation Laser (MiningLaserItem) Balance:
 - Level 2 AoE radius: 1 → 2

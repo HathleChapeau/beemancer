@@ -9,6 +9,7 @@
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | MagazineItem        | Base class           | Comportement magazine          |
+ * | MagazineConstants   | Constantes fluides   | NECTAR_ID, NECTAR_BAR_COLOR    |
  * | MagazineFluidData   | Constantes           | MAX_CAPACITY                   |
  * ------------------------------------------------------------
  *
@@ -33,9 +34,7 @@ import java.util.List;
  */
 public class CreativeMagazineItem extends MagazineItem {
 
-    public static final String NECTAR_FLUID_ID = "apica:nectar";
     public static final int INFINITE_AMOUNT = 999_999_999;
-    private static final int NECTAR_COLOR = 0xB050FF;
 
     public CreativeMagazineItem(Properties properties) {
         super(properties);
@@ -44,7 +43,7 @@ public class CreativeMagazineItem extends MagazineItem {
     @Override
     public ItemStack getDefaultInstance() {
         ItemStack stack = new ItemStack(this);
-        MagazineFluidData.setFluid(stack, NECTAR_FLUID_ID, INFINITE_AMOUNT);
+        MagazineFluidData.setFluid(stack, MagazineConstants.NECTAR_ID, INFINITE_AMOUNT);
         return stack;
     }
 
@@ -60,7 +59,7 @@ public class CreativeMagazineItem extends MagazineItem {
 
     @Override
     public int getBarColor(ItemStack stack) {
-        return NECTAR_COLOR;
+        return MagazineConstants.NECTAR_BAR_COLOR;
     }
 
     @Override

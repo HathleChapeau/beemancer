@@ -9,6 +9,7 @@
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | MagazineFluidData   | Stockage fluide      | R/W donnees CUSTOM_DATA        |
+ * | MagazineConstants   | Couleurs fluides     | getBarColorForFluid            |
  * | ApicaItems          | Registre             | createFilled() factory         |
  * ------------------------------------------------------------
  *
@@ -55,11 +56,7 @@ public class MagazineItem extends Item {
 
     @Override
     public int getBarColor(ItemStack stack) {
-        String fluidId = MagazineFluidData.getFluidId(stack);
-        if (fluidId.contains("honey")) return HONEY_COLOR;
-        if (fluidId.contains("royal_jelly")) return ROYAL_JELLY_COLOR;
-        if (fluidId.contains("nectar")) return NECTAR_COLOR;
-        return DEFAULT_COLOR;
+        return MagazineConstants.getBarColorForFluid(MagazineFluidData.getFluidId(stack));
     }
 
     @Override

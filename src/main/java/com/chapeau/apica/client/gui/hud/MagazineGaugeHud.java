@@ -9,6 +9,7 @@
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | IMagazineHolder     | Detection items      | instanceof check               |
+ * | MagazineConstants   | Couleurs fluides     | getBarColorForFluid            |
  * | MagazineData        | Lecture magazine     | Niveau fluide                  |
  * | GuiRenderHelper     | Rendu barre          | renderTintedBar                |
  * ------------------------------------------------------------
@@ -22,12 +23,12 @@ package com.chapeau.apica.client.gui.hud;
 
 import com.chapeau.apica.client.gui.GuiRenderHelper;
 import com.chapeau.apica.common.item.magazine.IMagazineHolder;
+import com.chapeau.apica.common.item.magazine.MagazineConstants;
 import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.magazine.MagazineFluidData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -41,11 +42,6 @@ import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
  */
 @OnlyIn(Dist.CLIENT)
 public class MagazineGaugeHud {
-
-    private static final int HONEY_COLOR = 0xE8A317;
-    private static final int ROYAL_JELLY_COLOR = 0xFFF8DC;
-    private static final int NECTAR_COLOR = 0xB050FF;
-    private static final int DEFAULT_COLOR = 0x888888;
 
     @SubscribeEvent
     public static void onRenderGui(RenderGuiLayerEvent.Post event) {
@@ -91,10 +87,7 @@ public class MagazineGaugeHud {
     }
 
     private static int getFluidColor(String fluidId) {
-        if (fluidId.contains("honey")) return HONEY_COLOR;
-        if (fluidId.contains("royal_jelly")) return ROYAL_JELLY_COLOR;
-        if (fluidId.contains("nectar")) return NECTAR_COLOR;
-        return DEFAULT_COLOR;
+        return MagazineConstants.getBarColorForFluid(fluidId);
     }
 
     private static String getFluidLabel(String fluidId) {
