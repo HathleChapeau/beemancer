@@ -1,7 +1,7 @@
 ################################################################################
 #                              APICA - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-03-10                     #
-#  (HoverBee Rename + Part System Overhaul - 2026-03-10)                         #
+#                         Dernière mise à jour: 2026-03-12                     #
+#  (Magazine System Refactoring + Auto-Reload - 2026-03-12)                     #
 ################################################################################
 
 ================================================================================
@@ -191,10 +191,14 @@ Philosophie:
 │ client/gui/widget/TransportBarWidget.java│ Barre play/stop/BPM/swing/volume     │
 │ client/gui/widget/InstrumentColumnWidget.java│ Colonne tracks + dropdown instr.  │
 │ client/gui/widget/SequenceGridWidget.java│ Grille notes toggle avec playhead    │
-│ common/item/magazine/IMagazineHolder.java│ Interface items acceptant magazines  │
+│ common/item/magazine/IMagazineHolder.java│ Interface items + tryReloadOnUse()   │
 │ common/item/magazine/MagazineItem.java │ Item magazine avec durability bar      │
 │ common/item/magazine/MagazineData.java │ R/W attachment data magazine sur holder│
 │ common/item/magazine/MagazineFluidData.java│ R/W fluid data sur MagazineItem    │
+│ common/item/magazine/MagazineConstants.java│ Fluid IDs, colors, STANDARD_FLUIDS  │
+│ common/item/magazine/MagazineReloadHelper.java│ Auto-reload swap empty/full     │
+│ common/item/magazine/MagazineInputHelper.java│ Bridge common→client mouse state │
+│ client/input/MouseButtonTracker.java   │ Track right mouse button transitions  │
 │ core/network/packets/MagazineEquipPacket.java│ Packet C2S equip/unequip magazine│
 │ mixin/client/ContainerScreenMagazineMixin.java│ Bonus slot magazine inventaire  │
 │ client/gui/hud/MagazineGaugeHud.java   │ HUD jauge fluide magazine             │
@@ -980,17 +984,18 @@ LISTE DES FEATURES:
     de fluide (honey, royal_jelly, nectar). Les items implementent IMagazineHolder pour accepter
     des fluides specifiques. Le magazine s'equipe via un slot bonus dans l'inventaire (mixin sur
     AbstractContainerScreen). Un HUD gauge affiche le niveau de fluide quand le joueur tient un
-    item equipe. LeafBlower est la premiere implementation: requiert un magazine honey, cout par
-    tier de charge (25/75/150 mB). L'Infuser remplit les magazines vides avec n'importe quel fluide.
+    item equipe. Auto-reload sur click droit si magazine vide: priorite meme fluide, swap empty/full.
+    5 implementations: LeafBlower, MiningLaser, Railgun, ChopperHive, BuildingWand.
   Scripts crees: MagazineFluidData.java, MagazineData.java, IMagazineHolder.java,
     MagazineItem.java, MagazineEquipPacket.java, ContainerScreenMagazineMixin.java,
-    MagazineGaugeHud.java
+    MagazineGaugeHud.java, MagazineConstants.java, MagazineReloadHelper.java,
+    MagazineInputHelper.java, MouseButtonTracker.java
   Scripts modifies: ApicaItems.java (+MAGAZINE), ApicaCreativeTabs.java (+4 magazines),
-    ApicaNetwork.java (+MagazineEquipPacket), ClientSetup.java (+MagazineGaugeHud),
+    ApicaNetwork.java (+MagazineEquipPacket), ClientSetup.java (+MagazineGaugeHud, +MouseButtonTracker),
     apica.mixins.json (+ContainerScreenMagazineMixin),
     InfuserBlockEntity.java (+tryMagazineFill, tank accepts all fluids),
-    LeafBlowerItem.java (+implements IMagazineHolder, honey-only, tier-based cost),
-    en_us.json (+item.apica.magazine, +tooltip.apica.magazine.empty)
+    LeafBlowerItem.java, MiningLaserItem.java, RailgunItem.java, ChopperHiveItem.java,
+    BuildingWandItem.java (all use MagazineConstants + interface reload methods)
   Dependances: IMagazineHolder, MagazineData, MagazineFluidData, MagazineItem, ApicaFluids
   Registres modifies: ApicaItems (+1 item), ApicaNetwork (+1 packet)
   Assets: textures/item/magazine.png, textures/gui/magazine_slot.png, models/item/magazine.json

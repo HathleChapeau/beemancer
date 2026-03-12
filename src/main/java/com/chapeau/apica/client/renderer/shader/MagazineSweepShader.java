@@ -28,6 +28,7 @@ package com.chapeau.apica.client.renderer.shader;
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.animation.AnimationTimer;
 import com.chapeau.apica.common.item.debug.DebugWandItem;
+import com.chapeau.apica.common.item.magazine.MagazineConstants;
 import com.chapeau.apica.common.item.magazine.MagazineData;
 import net.minecraft.client.Minecraft;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -55,17 +56,6 @@ public class MagazineSweepShader {
 
     private static ShaderInstance shaderInstance;
     private static RenderType cachedRenderType;
-
-    // Couleurs fluides (RGB normalise 0-1)
-    private static final Vector3f HONEY_COLOR = new Vector3f(0.91f, 0.64f, 0.09f);    // #E8A317
-    private static final Vector3f ROYAL_COLOR = new Vector3f(1.0f, 0.97f, 0.86f);     // #FFF8DC
-    private static final Vector3f NECTAR_COLOR = new Vector3f(0.69f, 0.31f, 1.0f);    // #B050FF
-    private static final Vector3f EMPTY_COLOR = new Vector3f(0.53f, 0.53f, 0.53f);    // #888888
-
-    // Fluid IDs
-    private static final String HONEY_ID = "apica:honey";
-    private static final String ROYAL_ID = "apica:royal_jelly";
-    private static final String NECTAR_ID = "apica:nectar";
 
     // Defaults
     private static final float DEFAULT_SPEED = 1.0f;
@@ -154,17 +144,9 @@ public class MagazineSweepShader {
      * Determine la couleur du fluide contenu dans le holder.
      */
     private static Vector3f getFluidColor(ItemStack holderStack) {
-        if (holderStack.isEmpty()) return EMPTY_COLOR;
-
+        if (holderStack.isEmpty()) return MagazineConstants.EMPTY_SHADER_COLOR;
         String fluidId = MagazineData.getFluidId(holderStack);
-        if (fluidId.isEmpty()) return EMPTY_COLOR;
-
-        return switch (fluidId) {
-            case HONEY_ID -> HONEY_COLOR;
-            case ROYAL_ID -> ROYAL_COLOR;
-            case NECTAR_ID -> NECTAR_COLOR;
-            default -> EMPTY_COLOR;
-        };
+        return MagazineConstants.getShaderColorForFluid(fluidId);
     }
 
     // ========== Uniform helpers ==========

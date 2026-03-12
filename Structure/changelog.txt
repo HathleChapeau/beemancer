@@ -3,6 +3,39 @@
 ################################################################################
 
 ================================================================================
+2026-03-12 - Magazine System Refactoring + Auto-Reload + Excavation Laser Buff
+================================================================================
+
+Magazine System Refactoring:
+- MagazineConstants.java (NEW): Centralised fluid IDs, bar colors, shader colors
+  STANDARD_FLUIDS set, getBarColorForFluid(), getShaderColorForFluid()
+- MagazineInputHelper.java (NEW): Bridge common→client pour detection mouse DOWN
+- MouseButtonTracker.java (NEW): Track right mouse button state each tick
+- IMagazineHolder.java: +tryReloadOnUse(), +tryReloadOnUseOn() default methods
+  Reload only on mouse DOWN transition (not held), returns Optional results
+- MagazineReloadHelper.java: Auto-reload system (same fluid priority, swap empty/full)
+
+All IMagazineHolder items refactored:
+- MiningLaserItem, LeafBlowerItem, ChopperHiveItem, BuildingWandItem, RailgunItem:
+  Removed duplicated color constants, use MagazineConstants
+  Use interface default methods for reload handling
+  getAcceptedFluids() → MagazineConstants.STANDARD_FLUIDS
+  getBarColor() → MagazineConstants.getBarColorForFluid()
+
+MagazineSweepShader.java: Use MagazineConstants for fluid colors
+
+Excavation Laser (MiningLaserItem) Balance:
+- Level 2 AoE radius: 1 → 2
+- Level 3 AoE radius: 2 → 3
+- Level 2 cost: 8 mB → 16 mB (x2)
+- Level 3 cost: 15 mB → 30 mB (x2)
+- Level 1 cost: unchanged (2 mB)
+
+Artifact Core Recipes:
+- All 3 cores (honey, royal, nectar): updated pattern
+  Corners: Iron Bars, Sides: Copper Ingot, Center: Crystal
+
+================================================================================
 2026-03-10 - HoverBee Rename + Part System Overhaul + Wing Underside Fix
 ================================================================================
 

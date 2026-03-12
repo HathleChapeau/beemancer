@@ -23,6 +23,7 @@
 package com.chapeau.apica.common.item.tool;
 
 import com.chapeau.apica.common.item.magazine.IMagazineHolder;
+import com.chapeau.apica.common.item.magazine.MagazineConstants;
 import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.magazine.MagazineFluidData;
 import com.chapeau.apica.core.util.ParticleHelper;
@@ -84,7 +85,7 @@ public class RailgunItem extends Item implements IMagazineHolder {
 
     @Override
     public Set<String> getAcceptedFluids() {
-        return Set.of("apica:honey", "apica:royal_jelly", "apica:nectar");
+        return MagazineConstants.STANDARD_FLUIDS;
     }
 
     @Override

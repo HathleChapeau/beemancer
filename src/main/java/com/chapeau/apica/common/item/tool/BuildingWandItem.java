@@ -23,6 +23,7 @@
 package com.chapeau.apica.common.item.tool;
 
 import com.chapeau.apica.common.item.magazine.IMagazineHolder;
+import com.chapeau.apica.common.item.magazine.MagazineConstants;
 import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.magazine.MagazineFluidData;
 import net.minecraft.core.BlockPos;
@@ -55,11 +56,6 @@ import java.util.Set;
  */
 public class BuildingWandItem extends Item implements IMagazineHolder {
 
-    private static final int HONEY_COLOR = 0xE8A317;
-    private static final int ROYAL_JELLY_COLOR = 0xFFF8DC;
-    private static final int NECTAR_COLOR = 0xB050FF;
-    private static final int DEFAULT_COLOR = 0x888888;
-
     /** Cout fixe en mB par bloc place (pas de multiplicateur). */
     private static final int COST_PER_BLOCK = 1;
 
@@ -69,7 +65,7 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
 
     @Override
     public Set<String> getAcceptedFluids() {
-        return Set.of("apica:honey", "apica:royal_jelly", "apica:nectar");
+        return MagazineConstants.STANDARD_FLUIDS;
     }
 
     @Override
@@ -85,11 +81,7 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
 
     @Override
     public int getBarColor(ItemStack stack) {
-        String fluidId = MagazineData.getFluidId(stack);
-        if (fluidId.contains("honey")) return HONEY_COLOR;
-        if (fluidId.contains("royal_jelly")) return ROYAL_JELLY_COLOR;
-        if (fluidId.contains("nectar")) return NECTAR_COLOR;
-        return DEFAULT_COLOR;
+        return MagazineConstants.getBarColorForFluid(MagazineData.getFluidId(stack));
     }
 
     /** Retourne le max de blocs selon le type de fluide equipe. */
