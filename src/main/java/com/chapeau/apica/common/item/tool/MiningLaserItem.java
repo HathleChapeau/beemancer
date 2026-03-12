@@ -6,6 +6,7 @@
  */
 package com.chapeau.apica.common.item.tool;
 
+import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.item.magazine.*;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -79,12 +80,14 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
             } else {
                 setReloading(player, true);
             }
-            setChargeLevel(stack, 0);
+            //setChargeLevel(stack, 0);
+            Apica.LOGGER.info("reload {}", 1);
             return InteractionResultHolder.success(stack);
         }
 
         // Bloqué si en reload ou pas de magazine
         if (!canUse(player, stack)) {
+            Apica.LOGGER.info("reload {}", 2);
             return InteractionResultHolder.fail(stack);
         }
 
@@ -105,6 +108,7 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
             }
 
             player.startUsingItem(hand);
+            Apica.LOGGER.info("reload {}", 3);
             return InteractionResultHolder.consume(stack);
         }
 
@@ -114,6 +118,7 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
 
         setLastClickTick(stack, gameTime);
         player.startUsingItem(hand);
+        Apica.LOGGER.info("reload {}", 4);
         return InteractionResultHolder.consume(stack);
     }
 

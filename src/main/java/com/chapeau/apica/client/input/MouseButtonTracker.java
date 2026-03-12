@@ -6,6 +6,8 @@
  */
 package com.chapeau.apica.client.input;
 
+import com.chapeau.apica.Apica;
+import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.item.magazine.IMagazineHolder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -54,6 +56,7 @@ public final class MouseButtonTracker {
         long window = mc.getWindow().getWindow();
         boolean currentlyDown = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS;
         // DOWN = appuyé maintenant ET pas appuyé au dernier tick
+        //Apica.LOGGER.info("mousedown {}{}", currentlyDown, wasDown);
         return currentlyDown && !wasDown;
     }
 
