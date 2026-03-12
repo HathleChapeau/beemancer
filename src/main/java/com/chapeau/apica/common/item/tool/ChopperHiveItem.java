@@ -70,15 +70,15 @@ public class ChopperHiveItem extends Item implements IMagazineHolder {
 
         if (level.isClientSide()) {
             if (MagazineInputHelper.isMouseDown()) {
-                setOnRightClick(player, true);
+                setOnRightClick(stack, true);
                 return InteractionResult.CONSUME;
             }
         } else {
-            if (isOnRightClick(player)) {
+            if (isOnRightClick(stack)) {
                 if (canReload(player, stack)) {
                     doReload(player, stack);
                 }
-                setOnRightClick(player, false);
+                setOnRightClick(stack, false);
                 return InteractionResult.CONSUME;
             }
         }
@@ -122,15 +122,15 @@ public class ChopperHiveItem extends Item implements IMagazineHolder {
 
         if (level.isClientSide()) {
             if (MagazineInputHelper.isMouseDown()) {
-                setOnRightClick(player, true);
+                setOnRightClick(stack, true);
                 return InteractionResultHolder.consume(stack);
             }
         } else {
-            if (isOnRightClick(player)) {
+            if (isOnRightClick(stack)) {
                 if (canReload(player, stack)) {
                     doReload(player, stack);
                 }
-                setOnRightClick(player, false);
+                setOnRightClick(stack, false);
                 return InteractionResultHolder.consume(stack);
             }
         }
@@ -140,9 +140,13 @@ public class ChopperHiveItem extends Item implements IMagazineHolder {
 
     @Override
     public void inventoryTick(ItemStack stack, Level level, Entity entity, int slot, boolean selected) {
-        if (level.isClientSide() || !(entity instanceof Player player)) return;
+        if (!(entity instanceof Player player)) return;
 
         boolean holding = selected || player.getOffhandItem() == stack;
+        trackHeldState(stack, holding);
+
+        if (level.isClientSide()) return;
+
         if (!holding) {
             ChopperHiveChoppingState.clear(player.getUUID());
             return;

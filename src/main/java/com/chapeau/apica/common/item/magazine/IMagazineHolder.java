@@ -6,8 +6,11 @@
  */
 package com.chapeau.apica.common.item.magazine;
 
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,9 +19,11 @@ import java.util.UUID;
 
 public interface IMagazineHolder {
 
+    String TAG_ON_RIGHT_CLICK = "OnRightClick";
+    String TAG_WAS_HELD = "WasHeld";
+
     // Track reload state par joueur (server + client)
     Map<UUID, Boolean> RELOAD_STATE = new HashMap<>();
-    Map<UUID, Boolean> ON_RIGHT_CLICK = new HashMap<>();
 
     Set<String> getAcceptedFluids();
 
@@ -34,12 +39,50 @@ public interface IMagazineHolder {
         RELOAD_STATE.put(player.getUUID(), reloading);
     }
 
-    default boolean isOnRightClick(Player player) {
-        return ON_RIGHT_CLICK.getOrDefault(player.getUUID(), false);
+    // =========================================================================
+    // OnRightClick (stocké sur l'item)
+    // =========================================================================
+
+    default boolean isOnRightClick(ItemStack stack) {
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        if (customData == null) return false;
+        return customData.copyTag().getBoolean(TAG_ON_RIGHT_CLICK);
     }
 
-    default void setOnRightClick(Player player, boolean value) {
-        ON_RIGHT_CLICK.put(player.getUUID(), value);
+    default void setOnRightClick(ItemStack stack, boolean value) {
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        CompoundTag tag = customData != null ? customData.copyTag() : new CompoundTag();
+        tag.putBoolean(TAG_ON_RIGHT_CLICK, value);
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+    }
+
+    // =========================================================================
+    // WasHeld tracking (pour reset onRightClick quand pris en main)
+    // =========================================================================
+
+    default boolean wasHeld(ItemStack stack) {
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        if (customData == null) return false;
+        return customData.copyTag().getBoolean(TAG_WAS_HELD);
+    }
+
+    default void setWasHeld(ItemStack stack, boolean value) {
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        CompoundTag tag = customData != null ? customData.copyTag() : new CompoundTag();
+        tag.putBoolean(TAG_WAS_HELD, value);
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+    }
+
+    /** Appeler dans inventoryTick. Reset onRightClick quand l'item est pris en main. */
+    default void trackHeldState(ItemStack stack, boolean isHeld) {
+        if (isHeld && !wasHeld(stack)) {
+            // Vient d'être pris en main -> reset
+            setOnRightClick(stack, false);
+            setWasHeld(stack, true);
+        } else if (!isHeld && wasHeld(stack)) {
+            // Vient d'être posé
+            setWasHeld(stack, false);
+        }
     }
 
     // =========================================================================

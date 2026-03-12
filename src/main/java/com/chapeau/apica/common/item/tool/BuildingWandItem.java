@@ -71,15 +71,15 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
 
         if (level.isClientSide()) {
             if (MagazineInputHelper.isMouseDown()) {
-                setOnRightClick(player, true);
+                setOnRightClick(wandStack, true);
                 return InteractionResult.CONSUME;
             }
         } else {
-            if (isOnRightClick(player)) {
+            if (isOnRightClick(wandStack)) {
                 if (canReload(player, wandStack)) {
                     doReload(player, wandStack);
                 }
-                setOnRightClick(player, false);
+                setOnRightClick(wandStack, false);
                 return InteractionResult.CONSUME;
             }
         }
@@ -275,19 +275,26 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
 
         if (level.isClientSide()) {
             if (MagazineInputHelper.isMouseDown()) {
-                setOnRightClick(player, true);
+                setOnRightClick(stack, true);
                 return InteractionResultHolder.consume(stack);
             }
         } else {
-            if (isOnRightClick(player)) {
+            if (isOnRightClick(stack)) {
                 if (canReload(player, stack)) {
                     doReload(player, stack);
                 }
-                setOnRightClick(player, false);
+                setOnRightClick(stack, false);
                 return InteractionResultHolder.consume(stack);
             }
         }
 
         return InteractionResultHolder.fail(stack);
+    }
+
+    @Override
+    public void inventoryTick(ItemStack stack, Level level, net.minecraft.world.entity.Entity entity, int slot, boolean selected) {
+        if (!(entity instanceof Player player)) return;
+        boolean holding = selected || player.getOffhandItem() == stack;
+        trackHeldState(stack, holding);
     }
 }

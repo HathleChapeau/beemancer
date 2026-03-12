@@ -63,15 +63,15 @@ public class LeafBlowerItem extends Item implements IMagazineHolder {
 
         if (level.isClientSide()) {
             if (MagazineInputHelper.isMouseDown()) {
-                setOnRightClick(player, true);
+                setOnRightClick(stack, true);
                 return InteractionResultHolder.consume(stack);
             }
         } else {
-            if (isOnRightClick(player)) {
+            if (isOnRightClick(stack)) {
                 if (canReload(player, stack)) {
                     doReload(player, stack);
                 }
-                setOnRightClick(player, false);
+                setOnRightClick(stack, false);
                 return InteractionResultHolder.consume(stack);
             }
         }
@@ -180,6 +180,13 @@ public class LeafBlowerItem extends Item implements IMagazineHolder {
     @Override
     public UseAnim getUseAnimation(ItemStack stack) {
         return UseAnim.NONE;
+    }
+
+    @Override
+    public void inventoryTick(ItemStack stack, Level level, net.minecraft.world.entity.Entity entity, int slot, boolean selected) {
+        if (!(entity instanceof Player player)) return;
+        boolean holding = selected || player.getOffhandItem() == stack;
+        trackHeldState(stack, holding);
     }
 
     @Override
