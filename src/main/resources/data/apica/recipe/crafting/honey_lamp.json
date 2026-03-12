@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "R": { "item": "apica:blank_rune" },
+    "B": { "item": "minecraft:iron_bars" }
+  },
+  "pattern": [ "IRI", "B B", "IRI" ],
+  "result": { "id": "apica:honey_lamp", "count": 1 }
+}

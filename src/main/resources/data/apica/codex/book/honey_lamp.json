@@ -8,14 +8,8 @@
       "key": "codex.apica.artifacts.honey_lamp.lore.p1"
     },
     {
-      "type": "handraw_line"
-    },
-    {
       "type": "text",
       "key": "codex.apica.artifacts.honey_lamp.lore.p2"
-    },
-    {
-      "type": "page_break"
     },
     {
       "type": "handraw_line",
@@ -25,6 +19,9 @@
       "type": "text",
       "key": "codex.apica.artifacts.honey_lamp.lore.p3",
       "quest": "royal_upgrade"
+    },
+    {
+      "type": "page_break"
     },
     {
       "type": "handraw_line",
