@@ -1,6 +1,6 @@
 {
   "type": "apica:centrifuging",
-  "ingredient": { "item": "apica:phosphor_comb" },
+  "ingredient": { "item": "apica:frogish_comb" },
   "results": [
     { "item": { "id": "minecraft:ochre_froglight" }, "chance": 0.33 },
     { "item": { "id": "minecraft:pearlescent_froglight" }, "chance": 0.33 },

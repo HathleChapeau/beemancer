@@ -969,7 +969,7 @@
       "breeding_parent2": "savanna_bee"
     },
     {
-      "id": "phosphor_bee",
+      "id": "frogish_bee",
       "position": {
         "x": -12,
         "y": 3
@@ -978,7 +978,7 @@
       "parent": "marsh_bee",
       "hidden_until_parent_unlocked": true,
       "visibility": "SECRET",
-      "quest_id": "phosphor_bee_incubator",
+      "quest_id": "frogish_bee_incubator",
       "breeding_parent1": "mushroom_bee",
       "breeding_parent2": "marsh_bee"
     },

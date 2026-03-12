@@ -572,8 +572,8 @@ public class ApicaItems {
             () -> new CombItem(new Item.Properties(), "geode"));
     public static final DeferredItem<Item> MARSH_COMB = ITEMS.register("marsh_comb",
             () -> new CombItem(new Item.Properties(), "marsh"));
-    public static final DeferredItem<Item> PHOSPHOR_COMB = ITEMS.register("phosphor_comb",
-            () -> new CombItem(new Item.Properties(), "phosphor"));
+    public static final DeferredItem<Item> FROGISH_COMB = ITEMS.register("frogish_comb",
+            () -> new CombItem(new Item.Properties(), "frogish"));
     public static final DeferredItem<Item> HYPHAE_COMB = ITEMS.register("hyphae_comb",
             () -> new CombItem(new Item.Properties(), "hyphae"));
     public static final DeferredItem<Item> WARPED_COMB = ITEMS.register("warped_comb",

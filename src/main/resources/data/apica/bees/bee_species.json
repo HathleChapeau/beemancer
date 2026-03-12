@@ -3034,7 +3034,7 @@
       },
       "harmonized": false
     },
-    "phosphor": {
+    "frogish": {
       "tier": "VI",
       "parents": [
         "mushroom",
@@ -3057,7 +3057,7 @@
       },
       "day_night": "night",
       "loot": {
-        "item": "apica:phosphor_comb"
+        "item": "apica:frogish_comb"
       },
       "pollen": null,
       "texture": "Phosphor_Bee",
@@ -3125,7 +3125,7 @@
         "wing": "#C84060",
         "antenna": "#3D0A12",
         "stinger": "#3D0A12",
-        "eye": "#1A1A1A",
+        "eye": "#B83050",
         "pupil": "#FFAAAA"
       },
       "waveform": {
