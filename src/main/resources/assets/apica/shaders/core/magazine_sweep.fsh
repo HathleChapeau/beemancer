@@ -46,9 +46,12 @@ void main() {
     // Sample lightmap
     vec4 lightColor = texture(Sampler2, texCoord2);
 
-    // Utiliser les UV pour le sweep (stable peu importe la camera)
-    vec2 sweepCoord = texCoord0;
-    sweepCoord = rotate2D(SweepAngle) * (sweepCoord - 0.5) + 0.5;
+    // Normalize local Y position (models typically span -0.5 to 0.5 or 0 to 1)
+    float normalizedY = fract(localPos.y * 0.5 + 0.5);
+
+    // Apply rotation for diagonal sweep
+    vec2 sweepCoord = vec2(localPos.x * 0.5, normalizedY);
+    sweepCoord = rotate2D(SweepAngle) * sweepCoord;
 
     // Sweep position (0-1, pre-calculated in Java)
     float sweepPos = SweepPos;
