@@ -20,7 +20,7 @@
     {"id": "launchpad", "position": {"x": -2, "y": 3}, "category": "NORMAL", "parent": "honey_artifact_core", "hidden_until_parent_unlocked": false},
 
     {"id": "royal_artifact_core", "position": {"x": 0, "y": 4}, "category": "NORMAL", "parent": "honey_artifact_core", "hidden_until_parent_unlocked": false},
-    {"id": "mining_laser", "position": {"x": 3, "y": 4}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
+    {"id": "excavation_laser", "position": {"x": 3, "y": 4}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
     {"id": "chopper_hive", "position": {"x": -3, "y": 5}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
 
     {"id": "nectar_artifact_core", "position": {"x": 0, "y": 6}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
