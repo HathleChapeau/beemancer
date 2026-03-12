@@ -24,10 +24,6 @@
       "type": "page_break"
     },
     {
-      "type": "handraw_line",
-      "quest": "nectar_upgrade"
-    },
-    {
       "type": "text",
       "key": "codex.apica.artifacts.honey_lamp.lore.p4",
       "quest": "nectar_upgrade"

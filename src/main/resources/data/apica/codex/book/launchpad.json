@@ -6,7 +6,14 @@
     {
       "type": "text",
       "key": "codex.apica.artifacts.launchpad.lore.p1"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.artifacts.launchpad.lore.p2"
     }
   ],
-  "sticky_notes": []
+  "sticky_notes": [
+    {"craft": "apica:launchpad", "type": "altar"},
+    {"craft": "apica:honey_artifact_core"}
+  ]
 }

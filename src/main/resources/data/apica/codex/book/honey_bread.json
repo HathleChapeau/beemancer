@@ -4,14 +4,14 @@
       "type": "header"
     },
     {
+      "type": "text",
+      "key": "codex.apica.artifacts.honey_bread.lore.p1"
+    },
+    {
       "type": "process",
       "input": "minecraft:bread",
       "output": "apica:infuser",
       "top_slot": "apica:honey_bucket"
-    },
-    {
-      "type": "text",
-      "key": "codex.apica.artifacts.honey_bread.lore.p1"
     }
   ],
   "sticky_notes": []
