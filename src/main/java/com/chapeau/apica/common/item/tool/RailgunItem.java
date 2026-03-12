@@ -1,32 +1,15 @@
 /**
  * ============================================================
  * [RailgunItem.java]
- * Description: Arme chargeable one-shot avec beam instantane et degats par fluide
- * ============================================================
- *
- * DEPENDANCES:
- * ------------------------------------------------------------
- * | Dependance              | Raison                | Utilisation                    |
- * |-------------------------|----------------------|--------------------------------|
- * | IMagazineHolder         | Interface magazine   | Requiert magazine pour charger  |
- * | MagazineData            | Data magazine        | Lecture/consommation fluide    |
- * | ParticleHelper          | Particules impact    | burst() au point d'impact      |
- * ------------------------------------------------------------
- *
- * UTILISE PAR:
- * - ApicaItems.java (registration)
- * - RailgunBeamRenderer.java (lecture constantes charge)
- * - RailgunItemRenderer.java (rendu BEWLR)
- *
+ * Description: Arme chargeable one-shot avec beam instantane
  * ============================================================
  */
 package com.chapeau.apica.common.item.tool;
 
-import com.chapeau.apica.common.item.magazine.IMagazineHolder;
-import com.chapeau.apica.common.item.magazine.MagazineConstants;
-import com.chapeau.apica.common.item.magazine.MagazineData;
-import com.chapeau.apica.common.item.magazine.MagazineFluidData;
+import com.chapeau.apica.common.item.magazine.*;
 import com.chapeau.apica.core.util.ParticleHelper;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -38,6 +21,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -45,34 +30,19 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.Enchantments;
-
 import java.util.Optional;
 import java.util.Set;
 
-/**
- * Railgun — arme chargeable one-shot. Hold right-click pour charger, release pour tirer.
- * Le beam apparait instantanement puis retrecit en epaisseur (rendu par RailgunBeamRenderer).
- * Accepte honey, royal_jelly, nectar. Degats et vitesse de charge varient par fluide.
- */
 public class RailgunItem extends Item implements IMagazineHolder {
 
-    // Couleurs par fluide (partagees avec RailgunRenderUtil)
     public static final int HONEY_TINT = 0xFADE29;
     public static final int ROYAL_JELLY_TINT = 0xFFFAD0;
     public static final int NECTAR_TINT = 0xE855FF;
     public static final int DEFAULT_TINT = 0xFFFFFF;
 
-    /** Ticks de charge base (honey). Royal jelly = /1.4, nectar = /2. */
     public static final int CHARGE_THRESHOLD = 43;
-    /** Portee max en blocs */
     public static final int MAX_RANGE = 48;
-    /** Cooldown apres tir en ticks */
     private static final int FIRE_COOLDOWN = 40;
-    /** Cout en mB par tir (avant multiplicateur fluide) */
     private static final int SHOT_COST = 100;
 
     private static final float DAMAGE_HONEY = 15f;
@@ -113,10 +83,20 @@ public class RailgunItem extends Item implements IMagazineHolder {
         ItemStack stack = player.getItemInHand(hand);
         if (player.getCooldowns().isOnCooldown(this)) return InteractionResultHolder.pass(stack);
 
-        // Reload au clic DOWN si magazine vide/absent → STOP, nouveau clic requis
-        var reloadResult = tryReloadOnUse(level, player, stack);
-        if (reloadResult.isPresent()) {
-            return reloadResult.get();
+        if (isReloading(player)) {
+            return InteractionResultHolder.pass(stack);
+        }
+
+        if (canReload(player, stack)) {
+            if (level.isClientSide() && !MagazineInputHelper.isMouseDown()) {
+                return InteractionResultHolder.pass(stack);
+            }
+            if (!level.isClientSide()) {
+                doReload(player, stack);
+            } else {
+                setReloading(player, true);
+            }
+            return InteractionResultHolder.success(stack);
         }
 
         player.startUsingItem(hand);
@@ -137,7 +117,6 @@ public class RailgunItem extends Item implements IMagazineHolder {
             level.playLocalSound(player.blockPosition(), SoundEvents.BREEZE_CHARGE,
                 SoundSource.PLAYERS, 0.2f, pitch, false);
         }
-
     }
 
     @Override
@@ -194,7 +173,6 @@ public class RailgunItem extends Item implements IMagazineHolder {
             SoundSource.PLAYERS, 1.0f, 2.0f);
     }
 
-    /** Multiplicateur de vitesse de charge. Honey=1x, Royal Jelly=1.4x, Nectar=2x. */
     public static float getChargeSpeedMultiplier(ItemStack stack) {
         String fluidId = MagazineData.getFluidId(stack);
         if (fluidId.contains("nectar")) return 1.5f;

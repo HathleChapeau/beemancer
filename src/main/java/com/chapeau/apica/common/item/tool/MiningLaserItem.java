@@ -3,22 +3,6 @@
  * [MiningLaserItem.java]
  * Description: Arme chargeable qui tire un rayon laser detruisant des blocs
  * ============================================================
- *
- * DEPENDANCES:
- * ------------------------------------------------------------
- * | Dependance              | Raison                | Utilisation                    |
- * |-------------------------|----------------------|--------------------------------|
- * | MiningLaserBlockBreaker | Destruction blocs    | tryBreakBlock() server-side    |
- * | CustomData              | Stockage metadata    | chargeLevel + lastClickTick    |
- * | IMagazineHolder         | Interface magazine   | Requiert magazine pour charger  |
- * | MagazineData            | Data magazine        | Lecture/consommation fluide    |
- * ------------------------------------------------------------
- *
- * UTILISE PAR:
- * - ApicaItems.java (registration)
- * - MiningLaserItemRenderer.java (lecture chargeLevel pour rendu)
- *
- * ============================================================
  */
 package com.chapeau.apica.common.item.tool;
 
@@ -41,43 +25,17 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
-/**
- * Mining Laser — arme chargeable qui tire un rayon laser detruisant des blocs.
- * Necessite un magazine pour charger. Sans magazine = pas de charge.
- * Accepte honey, royal_jelly, nectar. Cout par tir selon niveau AoE + multiplicateur fluide.
- *
- * Mecanique :
- * 1. Sans magazine : bloque au niveau 0, pas de charge
- * 2. Avec magazine : double right-click cycle le niveau (1-2-3-1)
- * 3. Hold right-click : charge la jauge
- * 4. Jauge pleine : tir continu (1 tir / 5 ticks), consomme du fluide
- * 5. Fluide epuise en cours de tir : arret automatique
- * AoE : niveau 1 = bloc unique, niveau 2 = voisins directs (r1), niveau 3 = sphere r2
- */
 public class MiningLaserItem extends Item implements IMagazineHolder {
-    private static final Logger LOG = LoggerFactory.getLogger("MiningLaser");
 
-    /** Nombre de ticks pour atteindre la pleine charge */
     public static final int CHARGE_TICKS = 40;
-
-    /** Intervalle entre chaque tir en mode continu (en ticks) */
     private static final int FIRE_INTERVAL = 5;
-
-    /** Portee maximale du laser en blocs */
     public static final int MAX_RANGE = 24;
-
-    /** Nombre max de niveaux de charge (3 barres) */
     public static final int MAX_CHARGE_LEVEL = 3;
-
-    /** Fenetre de double-click en ticks */
     private static final int DOUBLE_CLICK_WINDOW = 10;
 
-    /** Cout base par tir selon niveau de charge (avant multiplicateur fluide) */
     private static final int COST_LEVEL1 = 2;
     private static final int COST_LEVEL2 = 16;
     private static final int COST_LEVEL3 = 30;
@@ -113,14 +71,31 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        var reloadResult = tryReloadOnUse(level, player, stack);
 
+        // Check reload state
+        if (isReloading(player)) {
+            return InteractionResultHolder.pass(stack);
+        }
 
-
-        // Reload au clic DOWN si magazine vide/absent → STOP, nouveau clic requis
-        if (reloadResult.isPresent()) {
+        // Magazine vide → tenter reload
+        if (canReload(player, stack)) {
+            // Client: seulement sur mouse DOWN
+            if (level.isClientSide() && !MagazineInputHelper.isMouseDown()) {
+                return InteractionResultHolder.pass(stack);
+            }
+            // Server: faire le reload
+            if (!level.isClientSide()) {
+                doReload(player, stack);
+            } else {
+                setReloading(player, true);
+            }
             setChargeLevel(stack, 0);
-            return reloadResult.get();
+            return InteractionResultHolder.success(stack);
+        }
+
+        // Magazine OK → utiliser
+        if (!canUse(player, stack)) {
+            return InteractionResultHolder.pass(stack);
         }
 
         long gameTime = level.getGameTime();
@@ -129,10 +104,8 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
         // Double-click: cycle le niveau (1-2-3-1)
         if (gameTime - lastClick <= DOUBLE_CLICK_WINDOW) {
             setLastClickTick(stack, 0);
-
             int current = getChargeLevel(stack);
             int next = current >= MAX_CHARGE_LEVEL ? 1 : current + 1;
-            if (next < 1) next = 1;
             setChargeLevel(stack, next);
 
             if (!level.isClientSide()) {
@@ -145,7 +118,6 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
             return InteractionResultHolder.consume(stack);
         }
 
-        // Avec magazine, force minimum niveau 1
         if (getChargeLevel(stack) < 1) {
             setChargeLevel(stack, 1);
         }
@@ -182,25 +154,13 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
         }
     }
 
-    /**
-     * Server-side : tir continu une fois la jauge pleine.
-     * Consomme du fluide a chaque tir. Arret auto si fluide epuise.
-     */
     private void onServerUseTick(ServerLevel level, Player player, ItemStack stack,
                                   int useTicks, int chargeLevel) {
-        LOG.info("ID: {}, {}, {}",
-                //stack.getFrame().getUUID(),
-                //reloadResult.isPresent(),
-                com.chapeau.apica.client.input.MouseButtonTracker.canReload(),
-                MagazineInputHelper.canReload(),
-                MagazineInputHelper.isBlocked());
-
         if (useTicks < CHARGE_TICKS) return;
 
         if ((useTicks - CHARGE_TICKS) % FIRE_INTERVAL == 0) {
             int cost = MagazineData.computeEffectiveCost(stack, getBaseCostForAoE(chargeLevel));
             if (!MagazineData.consumeFluid(stack, cost)) {
-                // Fluide epuise → arret, nouveau clic requis pour reload
                 setChargeLevel(stack, 0);
                 player.stopUsingItem();
                 return;
@@ -216,7 +176,6 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
         }
     }
 
-    /** Retourne le cout base par tir selon le niveau de charge. */
     private static int getBaseCostForAoE(int chargeLevel) {
         return switch (chargeLevel) {
             case 2 -> COST_LEVEL2;
@@ -227,7 +186,6 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
 
     @Override
     public void releaseUsing(ItemStack stack, Level level, LivingEntity entity, int timeLeft) {
-        // Le laser s'arrete quand le joueur relache
     }
 
     // =========================================================================
@@ -237,8 +195,7 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
     public static int getChargeLevel(ItemStack stack) {
         CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
         if (customData == null) return 0;
-        CompoundTag tag = customData.copyTag();
-        return tag.getInt(TAG_CHARGE_LEVEL);
+        return customData.copyTag().getInt(TAG_CHARGE_LEVEL);
     }
 
     public static void setChargeLevel(ItemStack stack, int level) {
@@ -251,8 +208,7 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
     private static long getLastClickTick(ItemStack stack) {
         CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
         if (customData == null) return 0;
-        CompoundTag tag = customData.copyTag();
-        return tag.getLong(TAG_LAST_CLICK_TICK);
+        return customData.copyTag().getLong(TAG_LAST_CLICK_TICK);
     }
 
     private static void setLastClickTick(ItemStack stack, long tick) {

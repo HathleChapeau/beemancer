@@ -1,12 +1,15 @@
 /**
  * ============================================================
  * [MouseButtonTracker.java]
- * Description: Track mouse button state pour reload magazine
+ * Description: Track mouse button state, reset reload on mouse UP
  * ============================================================
  */
 package com.chapeau.apica.client.input;
 
+import com.chapeau.apica.common.item.magazine.IMagazineHolder;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.lwjgl.glfw.GLFW;
@@ -16,33 +19,41 @@ public final class MouseButtonTracker {
 
     private static boolean wasDown = false;
     private static boolean isDown = false;
-    private static boolean blocked = false;
 
     private MouseButtonTracker() {}
 
     public static void tick() {
-        long window = Minecraft.getInstance().getWindow().getWindow();
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.getWindow() == null) return;
+
+        long window = mc.getWindow().getWindow();
         wasDown = isDown;
         isDown = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS;
 
-        // Debloquer au relachement
-        if (!isDown) {
-            blocked = false;
+        // Mouse UP: reset reload state
+        if (wasDown && !isDown) {
+            LocalPlayer player = mc.player;
+            if (player != null) {
+                ItemStack mainHand = player.getMainHandItem();
+                ItemStack offHand = player.getOffhandItem();
+
+                if (mainHand.getItem() instanceof IMagazineHolder holder) {
+                    holder.resetReload(player);
+                }
+                if (offHand.getItem() instanceof IMagazineHolder holder) {
+                    holder.resetReload(player);
+                }
+            }
         }
     }
 
-    /** True si click DOWN ce tick (pas maintenu) ET pas bloque. */
-    public static boolean canReload() {
-        return isDown && !wasDown && !blocked;
+    /** True si click DOWN ce tick (transition false→true). */
+    public static boolean isMouseDown() {
+        return isDown && !wasDown;
     }
 
-    /** True si bloque (reload deja fait, attendre relachement). */
-    public static boolean isBlocked() {
-        return blocked;
-    }
-
-    /** Bloquer jusqu'au relachement. */
-    public static void block() {
-        blocked = true;
+    /** True si bouton actuellement enfoncé. */
+    public static boolean isMouseHeld() {
+        return isDown;
     }
 }

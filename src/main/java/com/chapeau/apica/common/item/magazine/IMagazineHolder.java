@@ -3,154 +3,78 @@
  * [IMagazineHolder.java]
  * Description: Interface pour items acceptant un magazine de fluide
  * ============================================================
- *
- * DEPENDANCES:
- * ------------------------------------------------------------
- * | Dependance          | Raison                | Utilisation                    |
- * |---------------------|----------------------|--------------------------------|
- * | MagazineConstants   | Constantes fluides   | NECTAR_ID                      |
- * | MagazineFluidData   | Lecture fluide mag   | Verification compatibilite     |
- * | CreativeMagazineItem| Magazine creatif     | Detection instanceof           |
- * ------------------------------------------------------------
- *
- * UTILISE PAR:
- * - LeafBlowerItem.java (implementation)
- * - MiningLaserItem.java (implementation)
- * - BuildingWandItem.java (implementation)
- * - ChopperHiveItem.java (implementation)
- * - ContainerScreenMagazineMixin.java (detection items)
- * - MagazineGaugeHud.java (detection items)
- * - MagazineEquipPacket.java (validation)
- *
- * ============================================================
  */
 package com.chapeau.apica.common.item.magazine;
 
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
-/**
- * Interface pour les items qui acceptent un magazine de fluide.
- * L'item implementant cette interface controle entierement quand et combien
- * de fluide consommer via MagazineData.consumeFluid().
- * Aucune consommation automatique n'est effectuee par le systeme.
- */
 public interface IMagazineHolder {
 
-    static final Logger LOG = LoggerFactory.getLogger("MiningLaser");
-    /**
-     * Retourne les identifiants des fluides acceptes par cet item.
-     * Ex: Set.of("apica:honey") pour le LeafBlower.
-     */
+    // Track reload state par joueur (server + client)
+    Map<UUID, Boolean> RELOAD_STATE = new HashMap<>();
+
     Set<String> getAcceptedFluids();
 
-    Boolean isReloading();
+    // =========================================================================
+    // Reload state
+    // =========================================================================
 
-    /**
-     * Verifie si un MagazineItem peut etre equipe sur cet item.
-     * Par defaut, verifie que le fluide du magazine est dans la liste acceptee.
-     * Les magazines creatifs sont traites comme du nectar.
-     */
-    default boolean canUse(MagazineItem magazine, ItemStack holder){
-
-        if (magazine instanceof CreativeMagazineItem) return true;
-
-        if(MagazineFluidData.isEmpty(magazine.getDefaultInstance())) return false;
-
-        if (holder.getItem() instanceof IMagazineHolder item) {
-            return !item.isReloading();
-        }
-
-        return true;
+    default boolean isReloading(Player player) {
+        return RELOAD_STATE.getOrDefault(player.getUUID(), false);
     }
 
-    default boolean canReload(MagazineItem magazine, ItemStack holder){
-        if(magazine != null)
-            if (magazine instanceof CreativeMagazineItem) return false;
-
-        if (holder.getItem() instanceof IMagazineHolder item) {
-            if((magazine == null ||
-                    MagazineFluidData.isEmpty(magazine.getDefaultInstance())) &&
-                    !item.isReloading() &&
-                    MagazineFluidData.isEmpty(magazine.getDefaultInstance())
-            ) return true;
-        }
-
-        return false;
+    default void setReloading(Player player, boolean reloading) {
+        RELOAD_STATE.put(player.getUUID(), reloading);
     }
 
-    default void setReload(Boolean bool){
+    // =========================================================================
+    // Check methods
+    // =========================================================================
 
-    };
-
-    default void useReload(){
-        setReload(true);
+    /** True si peut utiliser l'item (magazine plein ET pas en reload). */
+    default boolean canUse(Player player, ItemStack holder) {
+        if (isReloading(player)) return false;
+        if (!MagazineData.hasMagazine(holder)) return false;
+        return MagazineData.getFluidAmount(holder) > 0;
     }
 
-    default void useMagazine(){
-        //a override
+    /** True si peut reloader (magazine vide ET pas déjà en reload). */
+    default boolean canReload(Player player, ItemStack holder) {
+        if (isReloading(player)) return false;
+        if (!MagazineData.hasMagazine(holder)) return true;
+        return MagazineData.getFluidAmount(holder) <= 0;
     }
+
+    // =========================================================================
+    // Actions
+    // =========================================================================
+
+    /** Effectue le reload. Appeler côté server uniquement. */
+    default void doReload(Player player, ItemStack holder) {
+        MagazineReloadHelper.tryReload(player, holder);
+        setReloading(player, true);
+    }
+
+    /** Reset le reload state. Appeler quand mouse UP. */
+    default void resetReload(Player player) {
+        setReloading(player, false);
+    }
+
+    // =========================================================================
+    // Magazine acceptance
+    // =========================================================================
 
     default boolean canAcceptMagazine(ItemStack magazineStack) {
-        // Creative magazine = nectar
         if (magazineStack.getItem() instanceof CreativeMagazineItem) {
             return getAcceptedFluids().contains(MagazineConstants.NECTAR_ID);
         }
         String fluidId = MagazineFluidData.getFluidId(magazineStack);
         return !fluidId.isEmpty() && getAcceptedFluids().contains(fluidId);
-    }
-
-    /**
-     * Tente un reload si magazine vide. Bloque les actions jusqu'au mouse UP apres reload.
-     */
-    default Optional<InteractionResultHolder<ItemStack>> tryReloadOnUse(Level level, Player player, ItemStack holder) {
-        if (level.isClientSide() && MagazineInputHelper.isBlocked()) {
-            return Optional.of(InteractionResultHolder.pass(holder));
-        }
-
-        if (!MagazineData.hasMagazine(holder) || MagazineData.getFluidAmount(holder) <= 0) {
-            if (level.isClientSide() && !MagazineInputHelper.canReload()) {
-                return Optional.of(InteractionResultHolder.pass(holder));
-            }
-            if (!level.isClientSide()) {
-                MagazineReloadHelper.tryReload(player, holder);
-            }
-            if (level.isClientSide()) {
-                MagazineInputHelper.block();
-            }
-            return Optional.of(InteractionResultHolder.success(holder));
-        }
-        return Optional.empty();
-    }
-
-    /**
-     * Version useOn() - meme logique.
-     */
-    default Optional<InteractionResult> tryReloadOnUseOn(Level level, Player player, ItemStack holder) {
-        if (level.isClientSide() && MagazineInputHelper.isBlocked()) {
-            return Optional.of(InteractionResult.PASS);
-        }
-
-        if (!MagazineData.hasMagazine(holder) || MagazineData.getFluidAmount(holder) <= 0) {
-            if (level.isClientSide() && !MagazineInputHelper.canReload()) {
-                return Optional.of(InteractionResult.PASS);
-            }
-            if (!level.isClientSide()) {
-                MagazineReloadHelper.tryReload(player, holder);
-            }
-            if (level.isClientSide()) {
-                MagazineInputHelper.block();
-            }
-            return Optional.of(InteractionResult.SUCCESS);
-        }
-        return Optional.empty();
     }
 }

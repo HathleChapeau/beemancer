@@ -3,30 +3,10 @@
  * [ChopperHiveItem.java]
  * Description: Cube qui detecte, surligne et abat les buches connectees
  * ============================================================
- *
- * DEPENDANCES:
- * ------------------------------------------------------------
- * | Dependance                | Raison                | Utilisation                    |
- * |---------------------------|----------------------|--------------------------------|
- * | BlockTags                 | Detection buches     | Verification tag logs          |
- * | ChopperHiveChoppingState  | Destruction queue    | Gestion server-side            |
- * | ChopperHiveLockHelper     | Preview client       | Verrouillage glow              |
- * | IMagazineHolder           | Interface magazine   | Requiert magazine              |
- * | MagazineData              | Data magazine        | Consommation fluide            |
- * ------------------------------------------------------------
- *
- * UTILISE PAR:
- * - ApicaItems.java (registration)
- * - ChopperHivePreviewRenderer.java (lecture des positions)
- *
- * ============================================================
  */
 package com.chapeau.apica.common.item.tool;
 
-import com.chapeau.apica.common.item.magazine.IMagazineHolder;
-import com.chapeau.apica.common.item.magazine.MagazineConstants;
-import com.chapeau.apica.common.item.magazine.MagazineData;
-import com.chapeau.apica.common.item.magazine.MagazineFluidData;
+import com.chapeau.apica.common.item.magazine.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
@@ -42,23 +22,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
-/**
- * Chopper Hive — outil d'abattage d'arbres.
- * Necessite un magazine pour fonctionner. 5 mB par buche detruite.
- * Vitesse selon fluide: Honey=12 ticks/buche, Royal Jelly=8, Nectar=6.
- * Session s'arrete si fluide epuise.
- */
 public class ChopperHiveItem extends Item implements IMagazineHolder {
 
-    /** Nombre max de blocs scannes pour eviter les lags */
     public static final int MAX_SCAN = 256;
 
     public ChopperHiveItem(Properties properties) {
@@ -86,7 +53,6 @@ public class ChopperHiveItem extends Item implements IMagazineHolder {
         return MagazineConstants.getBarColorForFluid(MagazineData.getFluidId(stack));
     }
 
-    /** Retourne la vitesse de destruction en ticks par buche selon le fluide equipe. */
     public static int getTicksPerBlockForFluid(ItemStack stack) {
         String fluidId = MagazineData.getFluidId(stack);
         if (fluidId.contains("nectar")) return 6;
@@ -102,10 +68,21 @@ public class ChopperHiveItem extends Item implements IMagazineHolder {
 
         ItemStack stack = context.getItemInHand();
 
-        // Reload au clic DOWN si magazine vide/absent → STOP, nouveau clic requis
-        var reloadResult = tryReloadOnUseOn(level, player, stack);
-        if (reloadResult.isPresent()) {
-            return reloadResult.get();
+        if (isReloading(player)) {
+            return InteractionResult.PASS;
+        }
+
+        // Magazine vide → reload
+        if (canReload(player, stack)) {
+            if (level.isClientSide() && !MagazineInputHelper.isMouseDown()) {
+                return InteractionResult.PASS;
+            }
+            if (!level.isClientSide()) {
+                doReload(player, stack);
+            } else {
+                setReloading(player, true);
+            }
+            return InteractionResult.SUCCESS;
         }
 
         BlockPos clickedPos = context.getClickedPos();
@@ -141,10 +118,20 @@ public class ChopperHiveItem extends Item implements IMagazineHolder {
             return InteractionResultHolder.success(stack);
         }
 
-        // Reload au clic DOWN si magazine vide/absent → STOP, nouveau clic requis
-        var reloadResult = tryReloadOnUse(level, player, stack);
-        if (reloadResult.isPresent()) {
-            return reloadResult.get();
+        if (isReloading(player)) {
+            return InteractionResultHolder.pass(stack);
+        }
+
+        if (canReload(player, stack)) {
+            if (level.isClientSide() && !MagazineInputHelper.isMouseDown()) {
+                return InteractionResultHolder.pass(stack);
+            }
+            if (!level.isClientSide()) {
+                doReload(player, stack);
+            } else {
+                setReloading(player, true);
+            }
+            return InteractionResultHolder.success(stack);
         }
 
         return InteractionResultHolder.pass(stack);
@@ -168,10 +155,6 @@ public class ChopperHiveItem extends Item implements IMagazineHolder {
         return slotChanged;
     }
 
-    /**
-     * Trouve toutes les buches connectees (26-way) du meme type,
-     * a partir d'une position de depart, en ne descendant jamais en dessous du startY.
-     */
     public static List<BlockPos> findConnectedLogs(Level level, BlockPos startPos) {
         List<BlockPos> result = new ArrayList<>();
         BlockState startState = level.getBlockState(startPos);

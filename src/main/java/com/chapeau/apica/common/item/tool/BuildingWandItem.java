@@ -3,29 +3,10 @@
  * [BuildingWandItem.java]
  * Description: Baguette de construction avec previsualisation et placement
  * ============================================================
- *
- * DEPENDANCES:
- * ------------------------------------------------------------
- * | Dependance          | Raison                | Utilisation           |
- * |---------------------|----------------------|-----------------------|
- * | Level               | Acces monde          | Raycast, placement    |
- * | Player              | Inventaire           | Compte items          |
- * | IMagazineHolder     | Interface magazine   | Requiert magazine     |
- * | MagazineData        | Data magazine        | Consommation fluide   |
- * ------------------------------------------------------------
- *
- * UTILISE PAR:
- * - ApicaItems.java (enregistrement)
- * - BuildingWandRenderer.java (previsualisation)
- *
- * ============================================================
  */
 package com.chapeau.apica.common.item.tool;
 
-import com.chapeau.apica.common.item.magazine.IMagazineHolder;
-import com.chapeau.apica.common.item.magazine.MagazineConstants;
-import com.chapeau.apica.common.item.magazine.MagazineData;
-import com.chapeau.apica.common.item.magazine.MagazineFluidData;
+import com.chapeau.apica.common.item.magazine.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
@@ -41,22 +22,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
-/**
- * Baguette de construction magique.
- * Necessite un magazine pour fonctionner. 1 mB par bloc place.
- * Max blocs selon fluide: Honey=10, Royal Jelly=15, Nectar=20.
- * Consomme aussi les blocs de l'inventaire (double cout).
- */
 public class BuildingWandItem extends Item implements IMagazineHolder {
 
-    /** Cout fixe en mB par bloc place (pas de multiplicateur). */
     private static final int COST_PER_BLOCK = 1;
 
     public BuildingWandItem(Properties properties) {
@@ -84,7 +53,6 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
         return MagazineConstants.getBarColorForFluid(MagazineData.getFluidId(stack));
     }
 
-    /** Retourne le max de blocs selon le type de fluide equipe. */
     public static int getMaxBlocksForFluid(ItemStack stack) {
         String fluidId = MagazineData.getFluidId(stack);
         if (fluidId.contains("nectar")) return 20;
@@ -101,10 +69,20 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
 
         ItemStack wandStack = context.getItemInHand();
 
-        // Reload au clic DOWN si magazine vide/absent → STOP, nouveau clic requis
-        var reloadResult = tryReloadOnUseOn(level, player, wandStack);
-        if (reloadResult.isPresent()) {
-            return reloadResult.get();
+        if (isReloading(player)) {
+            return InteractionResult.PASS;
+        }
+
+        if (canReload(player, wandStack)) {
+            if (level.isClientSide() && !MagazineInputHelper.isMouseDown()) {
+                return InteractionResult.PASS;
+            }
+            if (!level.isClientSide()) {
+                doReload(player, wandStack);
+            } else {
+                setReloading(player, true);
+            }
+            return InteractionResult.SUCCESS;
         }
 
         BlockPos clickedPos = context.getClickedPos();
@@ -113,22 +91,18 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
 
         if (sourceState.isAir()) return InteractionResult.PASS;
 
-        // Calculer les positions de previsualisation
         List<BlockPos> previewPositions = calculatePreviewPositions(
             level, player, wandStack, clickedPos, face, sourceState
         );
 
         if (previewPositions.isEmpty()) return InteractionResult.PASS;
 
-        // Cote serveur: placer les blocs
         if (!level.isClientSide()) {
             int placed = 0;
             Block sourceBlock = sourceState.getBlock();
 
             for (BlockPos pos : previewPositions) {
                 if (!level.getBlockState(pos).canBeReplaced()) continue;
-
-                // Verifier fluide suffisant
                 if (!MagazineData.consumeFluid(wandStack, COST_PER_BLOCK)) break;
 
                 BlockPos behindPos = pos.relative(face.getOpposite());
@@ -137,7 +111,6 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
                 level.setBlock(pos, behindState, 3);
                 placed++;
 
-                // Consommer le bloc de l'inventaire (sauf creatif)
                 if (!player.isCreative()) {
                     consumeItem(player, sourceBlock);
                 }
@@ -153,10 +126,6 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
         return InteractionResult.sidedSuccess(level.isClientSide());
     }
 
-    /**
-     * Calcule les positions de previsualisation.
-     * Limite: min(maxBlocsParFluide, items inventaire, fluide/coutParBloc).
-     */
     public static List<BlockPos> calculatePreviewPositions(Level level, Player player,
                                                             ItemStack wandStack,
                                                             BlockPos sourcePos, Direction face,
@@ -170,7 +139,6 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
             return result;
         }
 
-        // Limite triple: fluide, items, max par fluide
         int maxByFluid = getMaxBlocksForFluid(wandStack);
         int maxByAmount = MagazineData.getFluidAmount(wandStack) / COST_PER_BLOCK;
         int limit = maxByFluid;
@@ -216,7 +184,6 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
         return result;
     }
 
-    /** Surcharge pour retrocompatibilite avec le preview renderer. */
     public static List<BlockPos> calculatePreviewPositions(Level level, Player player,
                                                             BlockPos sourcePos, Direction face,
                                                             BlockState sourceState) {
@@ -303,10 +270,20 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        // Reload au clic DOWN si magazine vide/absent → STOP, nouveau clic requis
-        var reloadResult = tryReloadOnUse(level, player, stack);
-        if (reloadResult.isPresent()) {
-            return reloadResult.get();
+        if (isReloading(player)) {
+            return InteractionResultHolder.pass(stack);
+        }
+
+        if (canReload(player, stack)) {
+            if (level.isClientSide() && !MagazineInputHelper.isMouseDown()) {
+                return InteractionResultHolder.pass(stack);
+            }
+            if (!level.isClientSide()) {
+                doReload(player, stack);
+            } else {
+                setReloading(player, true);
+            }
+            return InteractionResultHolder.success(stack);
         }
 
         return InteractionResultHolder.pass(stack);
