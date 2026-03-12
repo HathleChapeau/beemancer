@@ -135,7 +135,7 @@ public class MagazineSweepShader {
 
         // Speed multiplicateur, sweep boucle de 0 a 1
         float speed = DebugWandItem.value1 > 0.01f ? DebugWandItem.value1 : DEFAULT_SPEED;
-        float sweepPos = (time * speed * 0.05f) % 1.0f;
+        float sweepPos = (time * speed * 0.025f) % 1.0f;
         setUniform("SweepPos", sweepPos);
 
         // Angle depuis DebugWandItem.value2 (default 0.0 = vertical)
