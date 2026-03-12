@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": { "item": "minecraft:copper_ingot" },
+    "I": { "item": "apica:honeyed_iron" },
+    "X": { "item": "apica:honey_crystal" }
+  },
+  "pattern": [ "CIC", "IXI", "CIC" ],
+  "result": { "id": "apica:honey_artifact_core", "count": 1 }
+}

@@ -1125,16 +1125,16 @@
   "codex.apica.artifacts.railgun.lore.p3": "Tested it on a ravager at full charge. One shot. The beast did not get back up. I sat there for a moment, ears ringing, magazine half empty, wondering if maybe I had gone too far. Then I reloaded.",
 
   "codex.apica.artifacts.honey_artifact_core.title": "Honey Artifact Core",
-  "codex.apica.artifacts.honey_artifact_core.desc": "A core infused with honey energy.",
-  "codex.apica.artifacts.honey_artifact_core.lore.p1": "TBD",
+  "codex.apica.artifacts.honey_artifact_core.desc": "Stabilized honey energy. Base for artifacts.",
+  "codex.apica.artifacts.honey_artifact_core.lore.p1": "Embedded a honey crystal into a frame of honeyed iron. The crystal pulses steadily, holding its charge. This seems stable enough to build upon.",
 
   "codex.apica.artifacts.royal_artifact_core.title": "Royal Artifact Core",
-  "codex.apica.artifacts.royal_artifact_core.desc": "A core infused with royal jelly energy.",
-  "codex.apica.artifacts.royal_artifact_core.lore.p1": "TBD",
+  "codex.apica.artifacts.royal_artifact_core.desc": "Amplified energy output. Stronger artifacts.",
+  "codex.apica.artifacts.royal_artifact_core.lore.p1": "Replaced the honey crystal with a royal one. The energy output increased noticeably. The frame needed royal gold to handle the load without degrading.",
 
   "codex.apica.artifacts.nectar_artifact_core.title": "Nectar Artifact Core",
-  "codex.apica.artifacts.nectar_artifact_core.desc": "A core infused with pure nectar energy.",
-  "codex.apica.artifacts.nectar_artifact_core.lore.p1": "TBD",
+  "codex.apica.artifacts.nectar_artifact_core.desc": "Peak energy density. Maximum power.",
+  "codex.apica.artifacts.nectar_artifact_core.lore.p1": "A nectar crystal at the center, surrounded by nectar-infused diamond. The energy is intense, almost uncomfortable to hold. Artifacts built from this will be something else entirely.",
   "codex.apica.artifacts.accessories.title": "Companion: Bee",
   "codex.apica.artifacts.accessories.desc": "A decorative companion bee that follows you.",
   "codex.apica.artifacts.accessories.lore.p1": "The simplest form of bee companionship. A trained worker bee follows its keeper at shoulder height. No utility, no storage. Just a faithful presence.",

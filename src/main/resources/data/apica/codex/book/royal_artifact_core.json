@@ -6,6 +6,10 @@
     {
       "type": "text",
       "key": "codex.apica.artifacts.royal_artifact_core.lore.p1"
+    },
+    {
+      "type": "craft",
+      "result": "apica:royal_artifact_core"
     }
   ],
   "sticky_notes": []
