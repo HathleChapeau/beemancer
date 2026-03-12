@@ -90,12 +90,13 @@ import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Mod(Apica.MOD_ID)
 public class Apica {
 
     public static final String MOD_ID = "apica";
-    public static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LoggerFactory.getLogger("Apica");
 
     // Timing des RegisterEvents (bloc instanciation réelle, pas juste abonnement bus)
     private final java.util.Map<ResourceKey<?>, Long> registerEventTimings = new java.util.HashMap<>();
