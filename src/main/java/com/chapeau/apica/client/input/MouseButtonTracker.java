@@ -19,7 +19,6 @@ public final class MouseButtonTracker {
 
     private static boolean wasDown = false;
     private static boolean isDown = false;
-    private static boolean consumed = false;  // true après un reload, reset au mouse UP
 
     private MouseButtonTracker() {}
 
@@ -31,9 +30,8 @@ public final class MouseButtonTracker {
         wasDown = isDown;
         isDown = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS;
 
-        // Mouse UP: reset consumed et reload state
+        // Mouse UP: reset reload state
         if (wasDown && !isDown) {
-            consumed = false;
             LocalPlayer player = mc.player;
             if (player != null) {
                 ItemStack mainHand = player.getMainHandItem();
@@ -49,19 +47,9 @@ public final class MouseButtonTracker {
         }
     }
 
-    /** True si click DOWN et pas encore consommé. */
+    /** True si click DOWN cette frame (transition UP -> DOWN). */
     public static boolean isMouseDown() {
-        if (consumed) return false;
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.getWindow() == null) return false;
-        long window = mc.getWindow().getWindow();
-        boolean currentlyDown = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS;
-        return currentlyDown && !wasDown;
-    }
-
-    /** Marquer le click comme consommé (après reload). */
-    public static void consume() {
-        consumed = true;
+        return isDown && !wasDown;
     }
 
     /** True si bouton actuellement enfoncé. */

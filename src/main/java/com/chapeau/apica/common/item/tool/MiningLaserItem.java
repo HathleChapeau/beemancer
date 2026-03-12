@@ -75,7 +75,6 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
         // Client: vérifie mouseDown, serveur: vérifie et exécute le reload
         if (level.isClientSide()) {
             if (MagazineInputHelper.isMouseDown()) {
-                MagazineInputHelper.consume();
                 return InteractionResultHolder.consume(stack);
             }
         } else {
