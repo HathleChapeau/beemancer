@@ -331,11 +331,11 @@ public class CodexNodeWidget extends AbstractWidget {
         float r, g, b;
 
         if (isHeader || node.isDefault()) {
-            frame = TASK_FRAME;
+            frame = TASK_FRAME_UNOBTAINED;
             r = 0.2f; g = 0.58f; b = 0.86f;   // Bleu (#3498DB)
         } else if (unlocked) {
             frame = challenge ? CHALLENGE_FRAME_OBTAINED : TASK_FRAME_OBTAINED;
-            r = 0.95f; g = 0.77f; b = 0.06f;   // Or (#F1C40F)
+            r = 1.0f; g = 1.0f; b = 1.0f;       // Pas de teinte
         } else if (canUnlock) {
             frame = challenge ? CHALLENGE_FRAME_UNOBTAINED : TASK_FRAME_UNOBTAINED;
             r = 1.0f; g = 1.0f; b = 1.0f;       // Blanc
