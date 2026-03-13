@@ -38,13 +38,13 @@ public final class DefaultWingLayer {
         bone.addOrReplaceChild("right_wing",
                 CubeListBuilder.create().texOffs(2, 18)
                         .mirror()
-                        .addBox(-18.0F, -0.001F, 0.0F, 18.0F, 0.0F, 12.0F),
+                        .addBox(-18.0F, -0.0001F, 0.0F, 18.0F, 0.0F, 12.0F),
                 PartPose.offsetAndRotation(-1.5F, -4.0F, -3.0F, 0.0F, -0.2618F, 0.0F));
 
 
         bone.addOrReplaceChild("left_wing",
                 CubeListBuilder.create().texOffs(2, 18)
-                        .addBox(0.0F, -0.001F, 0.0F, 18.0F, 0.0F, 12.0F),
+                        .addBox(0.0F, -0.0001F, 0.0F, 18.0F, 0.0F, 12.0F),
                 PartPose.offsetAndRotation(1.5F, -4.0F, -3.0F, 0.0F, 0.2618F, 0.0F));
 
         return LayerDefinition.create(mesh, 64, 32);
