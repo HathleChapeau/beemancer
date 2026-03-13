@@ -330,12 +330,9 @@ public class CodexNodeWidget extends AbstractWidget {
         ResourceLocation frame;
         float r, g, b;
 
-        if (isHeader) {
+        if (isHeader || node.isDefault()) {
             frame = TASK_FRAME;
             r = 0.2f; g = 0.58f; b = 0.86f;   // Bleu (#3498DB)
-        } else if (unlocked && node.isDefault()) {
-            frame = challenge ? CHALLENGE_FRAME_OBTAINED : TASK_FRAME_OBTAINED;
-            r = 0.45f; g = 0.50f; b = 0.55f;   // Bleu/gris terne (default)
         } else if (unlocked) {
             frame = challenge ? CHALLENGE_FRAME_OBTAINED : TASK_FRAME_OBTAINED;
             r = 0.95f; g = 0.77f; b = 0.06f;   // Or (#F1C40F)
