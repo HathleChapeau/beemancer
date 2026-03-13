@@ -332,7 +332,7 @@ public class CodexNodeWidget extends AbstractWidget {
 
         if (isHeader || node.isDefault()) {
             frame = TASK_FRAME_UNOBTAINED;
-            r = 0.2f; g = 0.58f; b = 0.86f;   // Bleu (#3498DB)
+            r = 0.6f; g = 0.7f; b = 0.8f;   // Bleu-gris clair
         } else if (unlocked) {
             frame = challenge ? CHALLENGE_FRAME_OBTAINED : TASK_FRAME_OBTAINED;
             r = 1.0f; g = 1.0f; b = 1.0f;       // Pas de teinte
