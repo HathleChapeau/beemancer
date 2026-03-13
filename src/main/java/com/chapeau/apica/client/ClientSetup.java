@@ -39,6 +39,7 @@ import com.chapeau.apica.client.renderer.BuildingWandPreviewRenderer;
 import com.chapeau.apica.client.renderer.ChopperHivePreviewRenderer;
 import com.chapeau.apica.client.renderer.MiningLaserBeamRenderer;
 import com.chapeau.apica.client.renderer.RailgunBeamRenderer;
+import com.chapeau.apica.client.renderer.PlayerAlignmentHandler;
 import com.chapeau.apica.client.renderer.block.AssemblyTableRenderer;
 import com.chapeau.apica.client.renderer.block.AssemblyTableStatsRenderer;
 import com.chapeau.apica.client.renderer.block.ApiRenderer;
@@ -170,6 +171,9 @@ public class ClientSetup {
         // Magazine gauge HUD
         NeoForge.EVENT_BUS.register(MagazineGaugeHud.class);
         NeoForge.EVENT_BUS.register(MagazineReloadHud.class);
+
+        // Player alignment (pour animations reload)
+        NeoForge.EVENT_BUS.register(PlayerAlignmentHandler.class);
 
         // Fix outline translucent pour blocs comme le Crystallizer
         NeoForge.EVENT_BUS.register(TranslucentOutlineRenderer.class);

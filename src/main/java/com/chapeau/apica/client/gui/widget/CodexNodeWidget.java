@@ -125,6 +125,8 @@ public class CodexNodeWidget extends AbstractWidget {
         NODE_TO_ITEM.put("uncrafting_table", "apica:uncrafting_table");
         NODE_TO_ITEM.put("launchpad", "apica:launchpad");
         NODE_TO_ITEM.put("dubstep_radio", "apica:dubstep_radio");
+        NODE_TO_ITEM.put("wave_mixer", "apica:wave_mixer");
+        NODE_TO_ITEM.put("dubstep_gun", "apica:dubstep_gun");
         NODE_TO_ITEM.put("accessories", "apica:companion_bee");
         NODE_TO_ITEM.put("magnet", "apica:bee_magnet");
         NODE_TO_ITEM.put("bee_backpack", "apica:backpack");

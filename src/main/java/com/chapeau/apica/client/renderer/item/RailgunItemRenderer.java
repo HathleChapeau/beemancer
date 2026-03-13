@@ -23,6 +23,7 @@ package com.chapeau.apica.client.renderer.item;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.animation.AnimationTimer;
+import com.chapeau.apica.client.renderer.PlayerAlignmentHandler;
 import com.chapeau.apica.client.renderer.RailgunRenderUtil;
 import com.chapeau.apica.client.renderer.shader.MagazineSweepShader;
 import com.chapeau.apica.client.vfx.BlackHoleEffect;
@@ -192,6 +193,12 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
         if (inHand) {
             updateAnimation();
             renderChargingOverlay(poseStack, buffer, packedLight, (int) currentFrame, tint);
+
+            // Aligner corps/tete pendant le chargement
+            Minecraft mc = Minecraft.getInstance();
+            if ( mc.player != null && currentFrame <= 0) {
+                PlayerAlignmentHandler.setAlignmentEnabled(true);
+            }
 
             if (RailgunRenderUtil.isFps(displayContext)) {
                 renderBlackHoleEffect(poseStack, buffer, packedLight, tint, displayContext);
