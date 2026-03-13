@@ -5,14 +5,11 @@
     },
     {
       "type": "text",
-      "key": "codex.apica.artifacts.anti_breeding_crystal.lore.p1"
-    },
-    {
-      "type": "page_break"
+      "key": "codex.apica.artifacts.bee_backpack.lore.p1"
     },
     {
       "type": "altar_craft",
-      "result": "apica:antibreeding_crystal"
+      "result": "apica:backpack"
     }
   ],
   "sticky_notes": []

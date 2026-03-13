@@ -6,6 +6,10 @@
     {
       "type": "text",
       "key": "codex.apica.artifacts.magnet.lore.p1"
+    },
+    {
+      "type": "altar_craft",
+      "result": "apica:bee_magnet"
     }
   ],
   "sticky_notes": []

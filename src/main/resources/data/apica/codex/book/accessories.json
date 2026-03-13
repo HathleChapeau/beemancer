@@ -6,6 +6,10 @@
     {
       "type": "text",
       "key": "codex.apica.artifacts.accessories.lore.p1"
+    },
+    {
+      "type": "altar_craft",
+      "result": "apica:companion_bee"
     }
   ],
   "sticky_notes": []

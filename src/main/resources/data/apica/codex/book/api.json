@@ -8,6 +8,10 @@
       "key": "codex.apica.artifacts.api.lore.p1"
     },
     {
+      "type": "text",
+      "key": "codex.apica.artifacts.api.lore.p1b"
+    },
+    {
       "type": "handraw_line",
       "quest": "api_fed"
     },
