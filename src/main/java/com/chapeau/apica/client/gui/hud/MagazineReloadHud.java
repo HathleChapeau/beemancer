@@ -39,7 +39,7 @@ public class MagazineReloadHud {
 
     // Dimensions de la barre (style Crystallizer)
     private static final int BAR_WIDTH = 58;
-    private static final int BAR_HEIGHT = 6;
+    private static final int BAR_HEIGHT = 3;
     private static final int OFFSET_Y = 16; // Pixels sous le centre de l'écran
 
     @SubscribeEvent

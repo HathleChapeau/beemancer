@@ -504,6 +504,12 @@ public class ApiBlockEntity extends BlockEntity {
         boolean isDay = dayTime < 13000 || dayTime >= 23000;
         if (!isDay) return;
 
+        // Initialiser le cooldown si jamais fait (premier tick ou après placement)
+        if (lastRandomAnimTick == 0) {
+            lastRandomAnimTick = gameTime;
+            return;
+        }
+
         // Toutes les 5 min
         if (gameTime - lastRandomAnimTick < RANDOM_ANIM_INTERVAL_TICKS) return;
         lastRandomAnimTick = gameTime;
