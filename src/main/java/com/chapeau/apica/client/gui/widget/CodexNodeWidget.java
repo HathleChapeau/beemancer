@@ -46,6 +46,8 @@ public class CodexNodeWidget extends AbstractWidget {
     private static final int FRAME_SIZE = 26;
 
     // Vanilla advancement frame textures
+    private static final ResourceLocation TASK_FRAME = ResourceLocation.withDefaultNamespace(
+            "textures/gui/sprites/advancements/task_frame.png");
     private static final ResourceLocation TASK_FRAME_OBTAINED = ResourceLocation.withDefaultNamespace(
             "textures/gui/sprites/advancements/task_frame_obtained.png");
     private static final ResourceLocation TASK_FRAME_UNOBTAINED = ResourceLocation.withDefaultNamespace(
@@ -329,7 +331,7 @@ public class CodexNodeWidget extends AbstractWidget {
         float r, g, b;
 
         if (isHeader) {
-            frame = challenge ? CHALLENGE_FRAME_OBTAINED : TASK_FRAME_OBTAINED;
+            frame = TASK_FRAME;
             r = 0.2f; g = 0.58f; b = 0.86f;   // Bleu (#3498DB)
         } else if (unlocked && node.isDefault()) {
             frame = challenge ? CHALLENGE_FRAME_OBTAINED : TASK_FRAME_OBTAINED;
