@@ -316,14 +316,17 @@ public class ChopperHiveItemRenderer extends BlockEntityWithoutLevelRenderer imp
 
         boolean isFirstPerson = displayContext == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND
                              || displayContext == ItemDisplayContext.FIRST_PERSON_LEFT_HAND;
+        boolean inHand = isFirstPerson
+                      || displayContext == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND
+                      || displayContext == ItemDisplayContext.THIRD_PERSON_LEFT_HAND;
 
         int currentTick = AnimationTimer.getTicks();
         float currentTime = AnimationTimer.getRenderTime(
                 net.minecraft.client.Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true));
 
-        // Tick et applique l'animation de reload
+        // Tick et applique l'animation de reload (seulement en main)
         reloadAnimator.tick(currentTime);
-        boolean reloadAnimating = reloadAnimator.isAnimating();
+        boolean reloadAnimating = inHand && reloadAnimator.isAnimating();
         if (reloadAnimating) {
             poseStack.pushPose();
             reloadAnimator.apply(poseStack, currentTime);

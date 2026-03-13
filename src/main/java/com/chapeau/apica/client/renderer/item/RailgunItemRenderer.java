@@ -177,9 +177,9 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
         float currentTime = AnimationTimer.getRenderTime(
                 Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true));
 
-        // Tick et applique l'animation de reload
+        // Tick et applique l'animation de reload (seulement en main)
         reloadAnimator.tick(currentTime);
-        boolean animating = reloadAnimator.isAnimating();
+        boolean animating = inHand && reloadAnimator.isAnimating();
         if (animating) {
             poseStack.pushPose();
             reloadAnimator.apply(poseStack, currentTime);
