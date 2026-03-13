@@ -340,12 +340,12 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
         float shake = Mth.sin(time * 0.75f) * 2f;
         f.bodyPitch = 15f * p + shake;
         f.bodyRoll = Mth.cos(time * 0.9f) * 1.5f;
-        f.armLeftPitch = 10f * p;
-        f.armLeftRoll = -10f * p + shake;
-        f.armRightPitch = 10f * p;
-        f.armRightRoll = 10f * p - shake;
-        f.legLeftRoll = -5f * p;
-        f.legRightRoll = 5f * p;
+        f.armLeftPitch = 18f * p;
+        f.armLeftRoll = -18f * p + shake * 1.5f;
+        f.armRightPitch = 18f * p;
+        f.armRightRoll = 18f * p - shake * 1.5f;
+        f.legLeftRoll = -10f * p;
+        f.legRightRoll = 10f * p;
 
         return f;
     }
