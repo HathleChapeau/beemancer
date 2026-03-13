@@ -1,0 +1,21 @@
+{
+  "texture_size": [32, 32],
+  "textures": {
+    "all": "apica:block/machines/api"
+  },
+  "elements": [
+    {
+      "name": "Leg Right",
+      "from": [-0.5, 0, -1.5],
+      "to": [0.5, 0, 1.5],
+      "faces": {
+        "north": {"uv": [0, 15, 0.5, 15], "texture": "#all"},
+        "east": {"uv": [-1.5, 15, 0, 15], "texture": "#all"},
+        "south": {"uv": [2, 15, 2.5, 15], "texture": "#all"},
+        "west": {"uv": [0.5, 15, 2, 15], "texture": "#all"},
+        "up": {"uv": [0.5, 15, 0, 13.5], "texture": "#all"},
+        "down": {"uv": [1, 13.5, 0.5, 15], "texture": "#all"}
+      }
+    }
+  ]
+}

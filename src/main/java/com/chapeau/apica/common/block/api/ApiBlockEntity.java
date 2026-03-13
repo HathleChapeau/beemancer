@@ -70,6 +70,8 @@ public class ApiBlockEntity extends BlockEntity {
     private UUID ownerUUID = null;
     @Nullable
     private Component customName = null;
+    private ApiAnimationState animState = ApiAnimationState.IDLE;
+    private long animStartTick = 0;
 
     public ApiBlockEntity(BlockPos pos, BlockState state) {
         super(ApicaBlockEntities.API.get(), pos, state);
@@ -107,6 +109,27 @@ public class ApiBlockEntity extends BlockEntity {
     @Nullable
     public Component getCustomName() {
         return customName;
+    }
+
+    public ApiAnimationState getAnimState() {
+        return animState;
+    }
+
+    public long getAnimStartTick() {
+        return animStartTick;
+    }
+
+    public void setAnimState(ApiAnimationState state) {
+        this.animState = state;
+        this.animStartTick = level != null ? level.getGameTime() : 0;
+        setChanged();
+        syncToClient();
+    }
+
+    public void cycleAnimState() {
+        ApiAnimationState[] states = ApiAnimationState.values();
+        int next = (animState.ordinal() + 1) % states.length;
+        setAnimState(states[next]);
     }
 
     /**
@@ -316,6 +339,8 @@ public class ApiBlockEntity extends BlockEntity {
         if (customName != null) {
             tag.putString("CustomName", Component.Serializer.toJson(customName, registries));
         }
+        tag.putString("AnimState", animState.name());
+        tag.putLong("AnimStartTick", animStartTick);
     }
 
     @Override
@@ -332,6 +357,14 @@ public class ApiBlockEntity extends BlockEntity {
         if (tag.contains("CustomName", 8)) {
             customName = parseCustomNameSafe(tag.getString("CustomName"), registries);
         }
+        if (tag.contains("AnimState", 8)) {
+            try {
+                animState = ApiAnimationState.valueOf(tag.getString("AnimState"));
+            } catch (IllegalArgumentException e) {
+                animState = ApiAnimationState.IDLE;
+            }
+        }
+        animStartTick = tag.getLong("AnimStartTick");
     }
 
     @Override

@@ -790,8 +790,12 @@ public class ClientSetup {
         event.register(PipeExtractRenderer.ITEM_EXTRACT_MODEL_LOC);
         event.register(PipeExtractRenderer.LIQUID_EXTRACT_MODEL_LOC);
 
-        // Modèle Api (bloc vivant scalé dynamiquement)
-        event.register(ApiRenderer.API_MODEL_LOC);
+        // Modeles Api (parties separees pour animation)
+        event.register(ApiRenderer.BODY_LOC);
+        event.register(ApiRenderer.ARM_LEFT_LOC);
+        event.register(ApiRenderer.ARM_RIGHT_LOC);
+        event.register(ApiRenderer.LEG_LEFT_LOC);
+        event.register(ApiRenderer.LEG_RIGHT_LOC);
 
         // Modèles plaque du Launchpad (rendu BER avec rotation dynamique, variantes par fluide)
         event.register(LaunchpadRenderer.PLATE_MODEL_LOC);

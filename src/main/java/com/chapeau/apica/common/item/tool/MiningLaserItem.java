@@ -150,7 +150,7 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
         if ((useTicks - CHARGE_TICKS) % FIRE_INTERVAL == 0) {
             int cost = MagazineData.computeEffectiveCost(stack, getBaseCostForAoE(chargeLevel));
             if (!MagazineData.consumeFluid(stack, cost)) {
-                // Ne pas reset chargeLevel - le mode de tir persiste après reload
+                setChargeLevel(stack, 0);
                 player.stopUsingItem();
                 return;
             }
