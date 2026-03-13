@@ -171,6 +171,13 @@ public class ChopperHiveItemRenderer extends BlockEntityWithoutLevelRenderer imp
     /** Temps fige au debut de l'envol pour geler l'angle d'orbite. */
     private float frozenTime = 0f;
 
+    // Reload animation (shared)
+    private final MagazineReloadAnimator reloadAnimator = new MagazineReloadAnimator();
+
+    public MagazineReloadAnimator getReloadAnimator() {
+        return reloadAnimator;
+    }
+
     public ChopperHiveItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
               Minecraft.getInstance().getEntityModels());
@@ -304,6 +311,16 @@ public class ChopperHiveItemRenderer extends BlockEntityWithoutLevelRenderer imp
                              || displayContext == ItemDisplayContext.FIRST_PERSON_LEFT_HAND;
 
         int currentTick = AnimationTimer.getTicks();
+        float currentTime = AnimationTimer.getRenderTime(
+                net.minecraft.client.Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true));
+
+        // Tick et applique l'animation de reload
+        reloadAnimator.tick(currentTime);
+        boolean reloadAnimating = reloadAnimator.isAnimating();
+        if (reloadAnimating) {
+            poseStack.pushPose();
+            reloadAnimator.apply(poseStack, currentTime);
+        }
 
         // Reset animation si on n'a pas rendu en FP depuis plus de 2 ticks
         if (lastFpRenderTick >= 0 && currentTick - lastFpRenderTick > 2) {
@@ -321,6 +338,10 @@ public class ChopperHiveItemRenderer extends BlockEntityWithoutLevelRenderer imp
             renderAnimated(stack, poseStack, buffer, packedLight, packedOverlay, true);
         } else {
             renderStatic(stack, poseStack, buffer, packedLight, packedOverlay, false);
+        }
+
+        if (reloadAnimating) {
+            poseStack.popPose();
         }
     }
 

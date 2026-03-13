@@ -134,9 +134,20 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     private final LightningArcRenderer.LightningArc[] lightningArcs = new LightningArcRenderer.LightningArc[2];
     private int lastArcTick = -1;
 
+    // Reload animation (shared)
+    private final MagazineReloadAnimator reloadAnimator = new MagazineReloadAnimator();
+
     public MiningLaserItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
                 Minecraft.getInstance().getEntityModels());
+    }
+
+    // =========================================================================
+    // Reload animation (delegated to MagazineReloadAnimator)
+    // =========================================================================
+
+    public MagazineReloadAnimator getReloadAnimator() {
+        return reloadAnimator;
     }
 
     @Override
@@ -147,6 +158,17 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
                 || displayContext == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND
                 || displayContext == ItemDisplayContext.THIRD_PERSON_LEFT_HAND
                 || displayContext == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND;
+
+        float currentTime = AnimationTimer.getRenderTime(
+                Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true));
+
+        // Tick et applique l'animation de reload
+        reloadAnimator.tick(currentTime);
+        boolean animating = reloadAnimator.isAnimating();
+        if (animating) {
+            poseStack.pushPose();
+            reloadAnimator.apply(poseStack, currentTime);
+        }
 
         renderBodyModel(poseStack, buffer, packedLight, packedOverlay, stack, inHand);
 
@@ -162,6 +184,10 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
             chargeLevel = MiningLaserItem.getChargeLevel(stack);
             renderChargingOverlay(poseStack, buffer, packedLight, 0);
             renderChargeBars(poseStack, buffer, packedLight, chargeLevel);
+        }
+
+        if (animating) {
+            poseStack.popPose();
         }
     }
 

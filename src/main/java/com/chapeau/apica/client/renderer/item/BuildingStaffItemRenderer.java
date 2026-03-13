@@ -21,6 +21,7 @@
 package com.chapeau.apica.client.renderer.item;
 
 import com.chapeau.apica.Apica;
+import com.chapeau.apica.client.animation.AnimationTimer;
 import com.chapeau.apica.client.renderer.shader.MagazineSweepShader;
 import com.chapeau.apica.common.item.tool.BuildingWandItem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -72,6 +73,13 @@ public class BuildingStaffItemRenderer extends BlockEntityWithoutLevelRenderer {
     // Echelle du mini-bloc dans le cristal (cristal ~3.5px, bloc = 16px, 3.5/16 * 0.8 marge)
     private static final float BLOCK_SCALE = 0.275f;
 
+    // Reload animation (shared)
+    private final MagazineReloadAnimator reloadAnimator = new MagazineReloadAnimator();
+
+    public MagazineReloadAnimator getReloadAnimator() {
+        return reloadAnimator;
+    }
+
     public BuildingStaffItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
               Minecraft.getInstance().getEntityModels());
@@ -84,12 +92,27 @@ public class BuildingStaffItemRenderer extends BlockEntityWithoutLevelRenderer {
 
         boolean inHand = isHandContext(displayContext);
 
+        float currentTime = AnimationTimer.getRenderTime(
+                Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true));
+
+        // Tick et applique l'animation de reload
+        reloadAnimator.tick(currentTime);
+        boolean animating = reloadAnimator.isAnimating();
+        if (animating) {
+            poseStack.pushPose();
+            reloadAnimator.apply(poseStack, currentTime);
+        }
+
         // Rendre le modele 3D du staff
         renderStaffModel(poseStack, buffer, packedLight, packedOverlay, stack, inHand);
 
         // Rendre le mini-bloc dans le cristal si on vise un bloc valide
         if (inHand) {
             renderCrystalBlock(poseStack, buffer, packedLight, packedOverlay);
+        }
+
+        if (animating) {
+            poseStack.popPose();
         }
     }
 

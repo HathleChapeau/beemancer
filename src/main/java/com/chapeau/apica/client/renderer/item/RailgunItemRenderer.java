@@ -148,6 +148,13 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
     private float currentFrame = 0;
     private int lastTick = -1;
 
+    // Reload animation (shared)
+    private final MagazineReloadAnimator reloadAnimator = new MagazineReloadAnimator();
+
+    public MagazineReloadAnimator getReloadAnimator() {
+        return reloadAnimator;
+    }
+
     public RailgunItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
               Minecraft.getInstance().getEntityModels());
@@ -159,6 +166,18 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
                              PoseStack poseStack, MultiBufferSource buffer,
                              int packedLight, int packedOverlay) {
         boolean inHand = RailgunRenderUtil.isInHand(displayContext);
+
+        float currentTime = AnimationTimer.getRenderTime(
+                Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true));
+
+        // Tick et applique l'animation de reload
+        reloadAnimator.tick(currentTime);
+        boolean animating = reloadAnimator.isAnimating();
+        if (animating) {
+            poseStack.pushPose();
+            reloadAnimator.apply(poseStack, currentTime);
+        }
+
         renderBodyModel(poseStack, buffer, packedLight, packedOverlay, stack, inHand);
 
         int tint = RailgunRenderUtil.getFluidTint(stack);
@@ -172,6 +191,10 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
             }
         } else {
             renderChargingOverlay(poseStack, buffer, packedLight, 0, tint);
+        }
+
+        if (animating) {
+            poseStack.popPose();
         }
     }
 

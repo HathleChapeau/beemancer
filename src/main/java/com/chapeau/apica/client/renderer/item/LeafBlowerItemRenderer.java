@@ -103,6 +103,13 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
     private float currentFrame = 0;
     private int lastTick = -1;
 
+    // Reload animation (shared)
+    private final MagazineReloadAnimator reloadAnimator = new MagazineReloadAnimator();
+
+    public MagazineReloadAnimator getReloadAnimator() {
+        return reloadAnimator;
+    }
+
     public LeafBlowerItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
               Minecraft.getInstance().getEntityModels());
@@ -117,6 +124,17 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
             || displayContext == ItemDisplayContext.THIRD_PERSON_LEFT_HAND
             || displayContext == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND;
 
+        float currentTime = AnimationTimer.getRenderTime(
+                Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true));
+
+        // Tick et applique l'animation de reload
+        reloadAnimator.tick(currentTime);
+        boolean animating = reloadAnimator.isAnimating();
+        if (animating) {
+            poseStack.pushPose();
+            reloadAnimator.apply(poseStack, currentTime);
+        }
+
         renderBodyModel(poseStack, buffer, packedLight, packedOverlay, stack, inHand);
 
         if (inHand) {
@@ -126,6 +144,10 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
         } else {
             renderChargingOverlay(poseStack, buffer, packedLight, 0);
             renderChargeBars(poseStack, buffer, packedLight, 0);
+        }
+
+        if (animating) {
+            poseStack.popPose();
         }
     }
 

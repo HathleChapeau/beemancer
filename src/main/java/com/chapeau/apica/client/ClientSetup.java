@@ -13,6 +13,7 @@ import com.chapeau.apica.client.gui.hud.DebugPanelRenderer;
 import com.chapeau.apica.client.gui.hud.HoverbikeDebugHud;
 import com.chapeau.apica.client.gui.hud.HoverbikeGaugeHud;
 import com.chapeau.apica.client.gui.hud.MagazineGaugeHud;
+import com.chapeau.apica.client.gui.hud.MagazineReloadHud;
 import com.chapeau.apica.common.item.magazine.MagazineFluidData;
 import com.chapeau.apica.client.model.ApicaBeeModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartVariants;
@@ -168,6 +169,7 @@ public class ClientSetup {
 
         // Magazine gauge HUD
         NeoForge.EVENT_BUS.register(MagazineGaugeHud.class);
+        NeoForge.EVENT_BUS.register(MagazineReloadHud.class);
 
         // Fix outline translucent pour blocs comme le Crystallizer
         NeoForge.EVENT_BUS.register(TranslucentOutlineRenderer.class);
