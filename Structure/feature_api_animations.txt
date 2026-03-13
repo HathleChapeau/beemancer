@@ -1,0 +1,121 @@
+################################################################################
+#                         FEATURE: API ANIMATIONS                              #
+################################################################################
+
+================================================================================
+DESCRIPTION
+================================================================================
+
+Systeme d'animation pour Api, la creature-bloc vivante. Api possede des parties
+articulees (corps, bras, jambes) qui peuvent bouger independamment grace a des
+modeles JSON separes rendus avec des transforms individuels.
+
+4 etats d'animation disponibles, cyclables par clic droit main vide.
+
+================================================================================
+ETATS D'ANIMATION
+================================================================================
+
+| Etat    | Description                              | Duree      |
+|---------|------------------------------------------|------------|
+| IDLE    | Balancement respiratoire doux            | 60t loop   |
+| JUMP    | 2 petits sauts avec squash/stretch       | 80t        |
+| HITSTOP | Effort tremblant puis epuisement         | 120t       |
+| SLEEP   | Position endormie statique               | infini     |
+
+IDLE:
+- Corps: oscillation pitch ±3°
+- Bras: roll oppose ±5° avec offset temporel
+- Jambes: pitch leger ±2°
+
+JUMP (2 sauts de 40 ticks):
+- Anticipation: flexion corps +8°
+- Saut: elevation Y, bras vers le haut
+- Atterrissage: squash + tremblement maladroit
+- 2eme saut: amplitude reduite (fatigue)
+
+HITSTOP:
+- Phase 1 (0-60t): effort intense, tremblement haute frequence
+- Phase 2 (60-80t): abandon, transition vers pose affaissee
+- Phase 3 (80-120t): epuisement, micro-mouvements respiration
+
+SLEEP:
+- Transition douce (20t) vers pose endormie
+- Corps penche, bras/jambes pendants
+
+================================================================================
+INTERACTIONS
+================================================================================
+
+- Clic droit main vide: Cycle vers l'animation suivante
+  IDLE -> JUMP -> HITSTOP -> SLEEP -> IDLE
+
+================================================================================
+ARCHITECTURE TECHNIQUE
+================================================================================
+
+Approche: Modeles JSON separes + transforms PoseStack
+
+Au lieu d'un modele Java articule, chaque partie est un BakedModel JSON
+independant. Le renderer applique les rotations d'animation via PoseStack
+avant de rendre chaque partie.
+
+Avantages:
+- Conserve les BakedModels (compatibilite, simplicity)
+- Pas besoin de LayerDefinition Java
+- Facile a modifier les modeles
+
+================================================================================
+FICHIERS CREES
+================================================================================
+
+Java:
+- common/block/api/ApiAnimationState.java (enum)
+
+Assets JSON:
+- models/block/machines/api_body.json
+- models/block/machines/api_arm_left.json
+- models/block/machines/api_arm_right.json
+- models/block/machines/api_leg_left.json
+- models/block/machines/api_leg_right.json
+
+================================================================================
+FICHIERS MODIFIES
+================================================================================
+
+Java:
+- common/block/api/ApiBlockEntity.java
+  +animState, +animStartTick, +getAnimState(), +cycleAnimState()
+  +NBT save/load pour animation state
+
+- common/block/api/ApiBlock.java
+  +useWithoutItem() pour cycle animation
+
+- client/renderer/block/ApiRenderer.java
+  Reecrit pour rendre 5 parties avec animations
+  +calculateIdle(), +calculateJump(), +calculateHitstop(), +calculateSleep()
+
+- client/ClientSetup.java
+  Enregistrement des 5 modeles parties au lieu de 1
+
+================================================================================
+DEPENDANCES
+================================================================================
+
+- common/block/api/ApiBlockEntity.java (stockage etat)
+- common/block/api/ApiBlock.java (interaction)
+- Aucune nouvelle dependance externe
+
+================================================================================
+NOTES TECHNIQUES
+================================================================================
+
+- Les modeles JSON sont centres a l'origine (pivot au centre)
+- Le renderer translate chaque partie vers sa position avant rotation
+- L'animation utilise le temps depuis animStartTick pour la progression
+- JUMP et HITSTOP retournent automatiquement a IDLE apres leur duree
+  (gere cote client dans le renderer, pas de sync serveur)
+- Pivot de rotation du corps: (8, 2.75, 8.5) en pixels bloc
+- Inclinaison de base: 45° sur X (comme le modele JSON original)
+
+################################################################################

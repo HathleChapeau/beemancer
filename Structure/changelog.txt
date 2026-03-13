@@ -3,6 +3,34 @@
 ################################################################################
 
 ================================================================================
+2026-03-13 - Api Animations System
+================================================================================
+
+Api Animation System:
+- ApiAnimationState.java (NEW): Enum IDLE, JUMP, HITSTOP, SLEEP
+- api_body.json, api_arm_left/right.json, api_leg_left/right.json (NEW):
+  Modeles JSON separes pour parties articulees
+
+ApiBlockEntity.java:
+- +animState, +animStartTick: stockage etat animation
+- +getAnimState(), +cycleAnimState(): accesseurs
+- NBT save/load pour persistence animation state
+
+ApiBlock.java:
+- +useWithoutItem(): clic droit main vide cycle les animations
+
+ApiRenderer.java (rewrite):
+- Rendu des 5 parties separees avec transforms individuels
+- +calculateIdle(): balancement respiratoire (60t loop)
+- +calculateJump(): 2 sauts squash/stretch (80t)
+- +calculateHitstop(): effort tremblant puis epuisement (120t)
+- +calculateSleep(): pose endormie statique
+- AnimationFrame class pour stocker rotations par partie
+
+ClientSetup.java:
+- Enregistrement des 5 modeles parties (BODY, ARM_LEFT/RIGHT, LEG_LEFT/RIGHT)
+
+================================================================================
 2026-03-12 - Magazine System Refactoring + Auto-Reload + Excavation Laser Buff
 ================================================================================
 

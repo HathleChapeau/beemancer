@@ -3,19 +3,6 @@
  * [ApiRenderer.java]
  * Description: Renderer pour Api avec parties articulees et animations
  * ============================================================
- *
- * DEPENDANCES:
- * ------------------------------------------------------------
- * | Dependance          | Raison                | Utilisation                    |
- * |---------------------|----------------------|--------------------------------|
- * | ApiBlockEntity      | Donnees de scale     | getVisualScale(), animState    |
- * | ApiAnimationState   | Enum animations      | IDLE, JUMP, HITSTOP, SLEEP     |
- * ------------------------------------------------------------
- *
- * UTILISE PAR:
- * - ClientSetup.java (enregistrement renderer)
- *
- * ============================================================
  */
 package com.chapeau.apica.client.renderer.block;
 
@@ -43,11 +30,10 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 
 /**
  * Render Api avec parties separees pour animation.
- * Chaque partie (body, bras, jambes) est rendue independamment avec ses propres rotations.
+ * Toutes les parties tournent autour du meme pivot (8, 2.75, 8.5) en pixels.
  */
 public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
 
-    // Modeles des parties
     public static final ModelResourceLocation BODY_LOC = ModelResourceLocation.standalone(
         ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "block/machines/api_body"));
     public static final ModelResourceLocation ARM_LEFT_LOC = ModelResourceLocation.standalone(
@@ -59,27 +45,13 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
     public static final ModelResourceLocation LEG_RIGHT_LOC = ModelResourceLocation.standalone(
         ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "block/machines/api_leg_right"));
 
-    // Pivot de rotation (en pixels, centre du bloc = 8,8,8)
-    private static final float PIVOT_X = 8f;
-    private static final float PIVOT_Y = 2.75f;
-    private static final float PIVOT_Z = 8.5f;
+    // Pivot de rotation partage (en pixels) - meme que le JSON original
+    private static final float PIVOT_X = 8f / 16f;
+    private static final float PIVOT_Y = 2.75f / 16f;
+    private static final float PIVOT_Z = 8.5f / 16f;
 
-    // Position des membres (en pixels, relatif au pivot)
-    private static final float ARM_LEFT_X = -8.5f;
-    private static final float ARM_RIGHT_X = 8.5f;
-    private static final float ARM_Y = 2.75f;
-    private static final float ARM_Z = -5f;
-
-    private static final float LEG_LEFT_X = -3.5f;
-    private static final float LEG_RIGHT_X = 3.5f;
-    private static final float LEG_Y = 2.75f;
-    private static final float LEG_Z = 5f;
-
-    // Constantes animation
-    private static final float BASE_PITCH = 45f; // Inclinaison de base (degres)
-    private static final float IDLE_CYCLE = 60f; // Ticks pour un cycle idle
-    private static final float JUMP_DURATION = 80f; // 2 sauts de 40 ticks
-    private static final float HITSTOP_DURATION = 120f;
+    private static final float BASE_PITCH = 45f;
+    private static final float IDLE_CYCLE = 60f;
 
     private final BlockRenderDispatcher blockRenderer;
     private final RandomSource random = RandomSource.create();
@@ -107,77 +79,79 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
         Direction facing = be.getBlockState().getValue(ApiBlock.FACING);
         float yRot = -facing.toYRot();
 
-        // Calcul du temps d'animation
-        long gameTime = be.getLevel() != null ? be.getLevel().getGameTime() : 0;
-        float time = gameTime + partialTick;
-        float animTime = time - be.getAnimStartTick();
+        // Temps d'animation avec interpolation smooth
+        float gameTime = be.getLevel() != null ? be.getLevel().getGameTime() + partialTick : partialTick;
+        float animTime = gameTime - be.getAnimStartTick();
 
-        // Calcul des rotations selon l'etat d'animation
+        // Calcul des rotations
         AnimationFrame frame = calculateAnimation(be.getAnimState(), animTime);
 
         VertexConsumer consumer = buffer.getBuffer(RenderType.cutout());
 
         // === BODY ===
-        poseStack.pushPose();
-        setupBaseTransform(poseStack, scale, yRot);
-        poseStack.mulPose(Axis.XP.rotationDegrees(BASE_PITCH + frame.bodyPitch));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(frame.bodyRoll));
-        poseStack.translate(0, frame.bodyY / 16f, 0);
-        renderModel(bodyModel, be, poseStack, consumer, packedLight, packedOverlay);
-        poseStack.popPose();
+        renderPart(bodyModel, be, poseStack, consumer, packedLight, packedOverlay,
+                   scale, yRot, BASE_PITCH + frame.bodyPitch, frame.bodyRoll, frame.bodyY);
 
-        // === ARM LEFT ===
-        poseStack.pushPose();
-        setupBaseTransform(poseStack, scale, yRot);
-        poseStack.translate(ARM_LEFT_X / 16f, ARM_Y / 16f, ARM_Z / 16f);
-        poseStack.mulPose(Axis.XP.rotationDegrees(BASE_PITCH + frame.armLeftPitch));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(frame.armLeftRoll));
-        renderModel(armLeftModel, be, poseStack, consumer, packedLight, packedOverlay);
-        poseStack.popPose();
+        // === LIMBS - meme rotation que body pour l'instant (simplifie) ===
+        // Les membres utilisent le meme pivot, donc ils bougent avec le corps
+        // Animation supplementaire = rotation additionnelle autour de leur propre centre
 
-        // === ARM RIGHT ===
-        poseStack.pushPose();
-        setupBaseTransform(poseStack, scale, yRot);
-        poseStack.translate(ARM_RIGHT_X / 16f, ARM_Y / 16f, ARM_Z / 16f);
-        poseStack.mulPose(Axis.XP.rotationDegrees(BASE_PITCH + frame.armRightPitch));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(frame.armRightRoll));
-        renderModel(armRightModel, be, poseStack, consumer, packedLight, packedOverlay);
-        poseStack.popPose();
+        renderPart(armLeftModel, be, poseStack, consumer, packedLight, packedOverlay,
+                   scale, yRot, BASE_PITCH + frame.bodyPitch + frame.armLeftPitch,
+                   frame.bodyRoll + frame.armLeftRoll, frame.bodyY);
 
-        // === LEG LEFT ===
-        poseStack.pushPose();
-        setupBaseTransform(poseStack, scale, yRot);
-        poseStack.translate(LEG_LEFT_X / 16f, LEG_Y / 16f, LEG_Z / 16f);
-        poseStack.mulPose(Axis.XP.rotationDegrees(BASE_PITCH + frame.legLeftPitch));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(frame.legLeftRoll));
-        renderModel(legLeftModel, be, poseStack, consumer, packedLight, packedOverlay);
-        poseStack.popPose();
+        renderPart(armRightModel, be, poseStack, consumer, packedLight, packedOverlay,
+                   scale, yRot, BASE_PITCH + frame.bodyPitch + frame.armRightPitch,
+                   frame.bodyRoll + frame.armRightRoll, frame.bodyY);
 
-        // === LEG RIGHT ===
-        poseStack.pushPose();
-        setupBaseTransform(poseStack, scale, yRot);
-        poseStack.translate(LEG_RIGHT_X / 16f, LEG_Y / 16f, LEG_Z / 16f);
-        poseStack.mulPose(Axis.XP.rotationDegrees(BASE_PITCH + frame.legRightPitch));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(frame.legRightRoll));
-        renderModel(legRightModel, be, poseStack, consumer, packedLight, packedOverlay);
-        poseStack.popPose();
+        renderPart(legLeftModel, be, poseStack, consumer, packedLight, packedOverlay,
+                   scale, yRot, BASE_PITCH + frame.bodyPitch + frame.legLeftPitch,
+                   frame.bodyRoll + frame.legLeftRoll, frame.bodyY);
+
+        renderPart(legRightModel, be, poseStack, consumer, packedLight, packedOverlay,
+                   scale, yRot, BASE_PITCH + frame.bodyPitch + frame.legRightPitch,
+                   frame.bodyRoll + frame.legRightRoll, frame.bodyY);
     }
 
-    private void setupBaseTransform(PoseStack poseStack, float scale, float yRot) {
+    private void renderPart(BakedModel model, ApiBlockEntity be, PoseStack poseStack,
+                            VertexConsumer consumer, int packedLight, int packedOverlay,
+                            float scale, float yRot, float pitch, float roll, float yOffset) {
+        poseStack.pushPose();
+
+        // 1. Translate au centre du bloc pour la rotation de facing
         poseStack.translate(0.5, 0, 0.5);
-        poseStack.mulPose(Axis.YP.rotationDegrees(yRot));
-        poseStack.scale(scale, scale, scale);
-        poseStack.translate(-0.5, PIVOT_Y / 16f, (PIVOT_Z - 8f) / 16f);
-    }
 
-    private void renderModel(BakedModel model, ApiBlockEntity be, PoseStack poseStack,
-                             VertexConsumer consumer, int packedLight, int packedOverlay) {
+        // 2. Rotation facing
+        poseStack.mulPose(Axis.YP.rotationDegrees(yRot));
+
+        // 3. Scale autour du centre
+        poseStack.scale(scale, scale, scale);
+
+        // 4. Retour a l'origine
+        poseStack.translate(-0.5, 0, -0.5);
+
+        // 5. Translate au pivot pour la rotation d'inclinaison
+        poseStack.translate(PIVOT_X, PIVOT_Y, PIVOT_Z);
+
+        // 6. Rotations d'animation
+        poseStack.mulPose(Axis.XP.rotationDegrees(pitch));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(roll));
+
+        // 7. Offset Y animation (saut)
+        poseStack.translate(0, yOffset / 16f, 0);
+
+        // 8. Retour du pivot
+        poseStack.translate(-PIVOT_X, -PIVOT_Y, -PIVOT_Z);
+
+        // Render
         blockRenderer.getModelRenderer().tesselateBlock(
             be.getLevel(), model, be.getBlockState(),
             be.getBlockPos(), poseStack, consumer, false,
             random, packedLight, packedOverlay,
             ModelData.EMPTY, RenderType.cutout()
         );
+
+        poseStack.popPose();
     }
 
     // ==================== ANIMATIONS ====================
@@ -208,36 +182,34 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
     private AnimationFrame calculateJump(float time) {
         AnimationFrame f = new AnimationFrame();
 
-        // 2 sauts de 40 ticks chacun
         float singleJump = 40f;
         int jumpNum = (int) (time / singleJump);
         float t = (time % singleJump) / singleJump;
         float fatigue = jumpNum >= 1 ? 0.75f : 1f;
 
+        if (time >= 80f) {
+            // Animation terminee, retour idle
+            return calculateIdle(time);
+        }
+
         if (t < 0.25f) {
-            // Anticipation
-            float p = t / 0.25f;
+            float p = easeInOut(t / 0.25f);
             f.bodyPitch = 8f * p * fatigue;
-            f.armLeftRoll = 0;
-            f.armRightRoll = 0;
         } else if (t < 0.5f) {
-            // Saut
-            float p = (t - 0.25f) / 0.25f;
+            float p = easeOut((t - 0.25f) / 0.25f);
             f.bodyPitch = -5f * fatigue;
             f.bodyY = Mth.sin(p * Mth.PI) * 4f * fatigue;
             f.armLeftRoll = -20f * p * fatigue;
             f.armRightRoll = 20f * p * fatigue;
         } else if (t < 0.75f) {
-            // Descente
-            float p = (t - 0.5f) / 0.25f;
+            float p = easeIn((t - 0.5f) / 0.25f);
             f.bodyPitch = Mth.lerp(p, -5f, 10f) * fatigue;
             f.bodyY = (1f - p) * 4f * fatigue;
             f.armLeftRoll = Mth.lerp(p, -20f, 0f) * fatigue;
             f.armRightRoll = Mth.lerp(p, 20f, 0f) * fatigue;
         } else {
-            // Atterrissage + tremblement
-            float p = (t - 0.75f) / 0.25f;
-            float shake = Mth.sin(p * 30f) * (1f - p) * 3f;
+            float p = easeOut((t - 0.75f) / 0.25f);
+            float shake = Mth.sin(time * 1.5f) * (1f - p) * 3f;
             f.bodyPitch = Mth.lerp(p, 10f, 0f) * fatigue + shake;
             f.armLeftRoll = shake;
             f.armRightRoll = -shake;
@@ -249,12 +221,15 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
     private AnimationFrame calculateHitstop(float time) {
         AnimationFrame f = new AnimationFrame();
 
+        if (time >= 120f) {
+            return calculateIdle(time);
+        }
+
         if (time < 60f) {
-            // Phase effort avec tremblement
             float p = Math.min(1f, time / 10f);
-            float shake = Mth.sin(time * 2.5f) * 2f;
+            float shake = Mth.sin(time * 0.5f) * 2f;
             f.bodyPitch = 15f * p + shake;
-            f.bodyRoll = Mth.cos(time * 3.1f) * 1.5f;
+            f.bodyRoll = Mth.cos(time * 0.6f) * 1.5f;
             f.armLeftPitch = 10f * p;
             f.armLeftRoll = -10f * p + shake;
             f.armRightPitch = 10f * p;
@@ -262,15 +237,13 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
             f.legLeftRoll = -5f * p;
             f.legRightRoll = 5f * p;
         } else if (time < 80f) {
-            // Abandon
-            float p = (time - 60f) / 20f;
+            float p = easeInOut((time - 60f) / 20f);
             f.bodyPitch = Mth.lerp(p, 15f, -5f);
             f.bodyRoll = Mth.lerp(p, 0f, 2f);
             f.armLeftRoll = Mth.lerp(p, -10f, 15f);
             f.armRightRoll = Mth.lerp(p, 10f, -15f);
         } else {
-            // Epuisement
-            float breathe = Mth.sin((time - 80f) * 0.15f) * 1f;
+            float breathe = Mth.sin((time - 80f) * 0.1f) * 1f;
             f.bodyPitch = -5f + breathe;
             f.bodyRoll = 2f;
             f.armLeftRoll = 15f + breathe * 0.5f;
@@ -282,7 +255,7 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
 
     private AnimationFrame calculateSleep(float time) {
         AnimationFrame f = new AnimationFrame();
-        float p = Math.min(1f, time / 20f); // Transition 20 ticks
+        float p = easeInOut(Math.min(1f, time / 20f));
 
         f.bodyPitch = 5f * p;
         f.bodyRoll = 1f * p;
@@ -294,7 +267,23 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
         return f;
     }
 
-    // ==================== HELPERS ====================
+    // Easing functions
+    private float easeIn(float t) {
+        return t * t;
+    }
+
+    private float easeOut(float t) {
+        return 1f - (1f - t) * (1f - t);
+    }
+
+    private float easeInOut(float t) {
+        if (t < 0.5f) {
+            return 2f * t * t;
+        } else {
+            float x = -2f * t + 2f;
+            return 1f - (x * x) / 2f;
+        }
+    }
 
     @Override
     public boolean shouldRenderOffScreen(ApiBlockEntity be) {
@@ -312,7 +301,6 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
         );
     }
 
-    /** Frame d'animation avec toutes les rotations. */
     private static class AnimationFrame {
         float bodyPitch = 0, bodyRoll = 0, bodyY = 0;
         float armLeftPitch = 0, armLeftRoll = 0;
