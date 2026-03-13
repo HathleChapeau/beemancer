@@ -36,16 +36,17 @@ public final class DefaultWingLayer {
                 CubeListBuilder.create(), PartPose.offset(0.0F, 19.0F, 0.0F));
 
         bone.addOrReplaceChild("right_wing",
-                CubeListBuilder.create().texOffs(2, 20)
-                        .addBox(-12.0F, 0.0F, 0.0F, 18.0F, 0.0F, 12.0F),
+                CubeListBuilder.create().texOffs(2, 18)
+                        .mirror()
+                        .addBox(-18.0F, -0.001F, 0.0F, 18.0F, 0.0F, 12.0F),
                 PartPose.offsetAndRotation(-1.5F, -4.0F, -3.0F, 0.0F, -0.2618F, 0.0F));
 
 
         bone.addOrReplaceChild("left_wing",
-                CubeListBuilder.create().texOffs(-12, 7)
-                        .addBox(0.0F, 0.0F, 0.0F, 18.0F, 0.0F, 12.0F),
+                CubeListBuilder.create().texOffs(2, 18)
+                        .addBox(0.0F, -0.001F, 0.0F, 18.0F, 0.0F, 12.0F),
                 PartPose.offsetAndRotation(1.5F, -4.0F, -3.0F, 0.0F, 0.2618F, 0.0F));
 
-        return LayerDefinition.create(mesh, 32, 32);
+        return LayerDefinition.create(mesh, 64, 32);
     }
 }
