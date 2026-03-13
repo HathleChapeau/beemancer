@@ -217,6 +217,9 @@ public class RailgunItem extends Item implements IMagazineHolder {
                     net.neoforged.neoforge.network.PacketDistributor.sendToServer(
                             new com.chapeau.apica.core.network.packets.MagazineReloadCompletePacket(mainHand));
                     setReloading(player, false);
+                    float time = com.chapeau.apica.client.animation.AnimationTimer.getRenderTime(
+                            net.minecraft.client.Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true));
+                    renderer.getReloadAnimator().triggerSweep(time);
                 });
             }
         }

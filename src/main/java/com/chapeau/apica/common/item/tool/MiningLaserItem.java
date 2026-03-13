@@ -89,6 +89,10 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
                     net.neoforged.neoforge.network.PacketDistributor.sendToServer(
                             new com.chapeau.apica.core.network.packets.MagazineReloadCompletePacket(mainHand));
                     setReloading(player, false);
+                    // Déclencher le sweep shader
+                    float time = com.chapeau.apica.client.animation.AnimationTimer.getRenderTime(
+                            net.minecraft.client.Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true));
+                    renderer.getReloadAnimator().triggerSweep(time);
                 });
             }
         }

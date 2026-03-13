@@ -47,6 +47,8 @@ public class MagazineReloadAnimator {
     private static final float TILT_ANGLE = -30f;    // degrés (négatif = vers l'avant)
     private static final Vec3 TILT_PIVOT = new Vec3(0.5, 0.5, 0.5);
 
+    private static final float SWEEP_DURATION = 20f; // 1 seconde de sweep shader
+
     /** Référence statique vers l'animateur actif (pour le HUD) */
     private static MagazineReloadAnimator activeAnimator = null;
 
@@ -56,6 +58,8 @@ public class MagazineReloadAnimator {
     }
 
     private Sequence reloadSequence;
+    private float sweepStartTime = -1f;
+    private float sweepEndTime = -1f;
 
     /**
      * Initialise et démarre l'animation de reload.
@@ -135,5 +139,26 @@ public class MagazineReloadAnimator {
     /** Durée totale en ticks */
     public static float getTotalDuration() {
         return TILT_DURATION + HOLD_DURATION + TILT_DURATION;
+    }
+
+    // =========================================================================
+    // Sweep shader (affiché temporairement après reload)
+    // =========================================================================
+
+    /** Démarre le sweep shader pour 1 seconde */
+    public void triggerSweep(float currentTime) {
+        sweepStartTime = currentTime;
+        sweepEndTime = currentTime + SWEEP_DURATION;
+    }
+
+    /** Retourne true si le sweep shader doit être affiché */
+    public boolean isSweepActive(float currentTime) {
+        return sweepStartTime >= 0 && currentTime >= sweepStartTime && currentTime < sweepEndTime;
+    }
+
+    /** Retourne la progression du sweep (0.0 à 1.0) */
+    public float getSweepProgress(float currentTime) {
+        if (!isSweepActive(currentTime)) return -1f;
+        return (currentTime - sweepStartTime) / SWEEP_DURATION;
     }
 }

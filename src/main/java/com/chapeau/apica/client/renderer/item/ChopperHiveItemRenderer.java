@@ -487,8 +487,10 @@ public class ChopperHiveItemRenderer extends BlockEntityWithoutLevelRenderer imp
         BakedModel model = Minecraft.getInstance().getModelManager().getModel(modelLoc);
         if (model == null) return;
 
-        // Use magazine sweep shader when in hand, vanilla RenderType otherwise
-        boolean useShader = inHand && MagazineSweepShader.isAvailable();
+        // Use magazine sweep shader only during sweep animation (after reload)
+        float currentTime = AnimationTimer.getRenderTime(
+                Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true));
+        boolean useShader = inHand && MagazineSweepShader.isAvailable() && reloadAnimator.isSweepActive(currentTime);
         RenderType renderType;
         if (useShader) {
             renderType = MagazineSweepShader.getRenderType(TextureAtlas.LOCATION_BLOCKS, stack);
