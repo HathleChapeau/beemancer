@@ -331,15 +331,15 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
     private AnimationFrame calculateHappy(float time) {
         AnimationFrame f = new AnimationFrame();
 
-        if (time >= 60f) {
+        if (time >= 40f) {
             return calculateIdle(time);
         }
 
-        // Phase effort seulement (copie de HITSTOP sans epuisement)
-        float p = Math.min(1f, time / 10f);
-        float shake = Mth.sin(time * 0.5f) * 2f;
+        // Phase effort seulement (copie de HITSTOP sans epuisement, 1.5x plus rapide)
+        float p = Math.min(1f, time / 6.67f);
+        float shake = Mth.sin(time * 0.75f) * 2f;
         f.bodyPitch = 15f * p + shake;
-        f.bodyRoll = Mth.cos(time * 0.6f) * 1.5f;
+        f.bodyRoll = Mth.cos(time * 0.9f) * 1.5f;
         f.armLeftPitch = 10f * p;
         f.armLeftRoll = -10f * p + shake;
         f.armRightPitch = 10f * p;
