@@ -196,7 +196,9 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
 
             // Aligner corps/tete pendant le chargement
             Minecraft mc = Minecraft.getInstance();
-            if ( mc.player != null && currentFrame <= 0) {
+            boolean isCharging = mc.player != null && mc.player.isUsingItem()
+                    && mc.player.getUseItem().getItem() instanceof RailgunItem;
+            if (isCharging) {
                 PlayerAlignmentHandler.setAlignmentEnabled(true);
             }
 
