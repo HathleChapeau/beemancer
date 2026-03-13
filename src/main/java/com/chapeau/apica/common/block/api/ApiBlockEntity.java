@@ -71,10 +71,18 @@ public class ApiBlockEntity extends BlockEntity {
     private static final double CLOSE_DISTANCE = 6.0;
     private static final double VERY_CLOSE_DISTANCE = 2.0;
 
+    // --- Animation System ---
+    private static final int PET_COOLDOWN_TICKS = 60; // 3 sec
+    private static final int SAD_FACE_FED_TICKS = 60; // 3 sec (apres avoir mange un dislike)
+    private static final int SAD_FACE_HELD_TICKS = 100; // 5 sec (joueur tient un dislike)
+    private static final int RANDOM_ANIM_INTERVAL_TICKS = 6000; // 5 min
+    private static final int HAPPY_ANIM_DURATION = 40; // duree animation happy
+    private static final int HITSTOP_ANIM_DURATION = 120; // duree animation hitstop
+
     // Tags pour items aimes/detestes par Api
-    private static final TagKey<Item> API_LIKE_TAG =
+    public static final TagKey<Item> API_LIKE_TAG =
         TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("apica", "api_like"));
-    private static final TagKey<Item> API_DISLIKE_TAG =
+    public static final TagKey<Item> API_DISLIKE_TAG =
         TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("apica", "api_dislike"));
 
     // --- State ---
@@ -94,6 +102,11 @@ public class ApiBlockEntity extends BlockEntity {
     private long nextBlinkTick = 0;
     private boolean isBlinking = false;
     private long blinkStartTick = 0;
+
+    // --- Animation System State ---
+    private long lastPetTick = -PET_COOLDOWN_TICKS;
+    private long lastRandomAnimTick = 0;
+    private long sadFaceEndTick = 0; // 0 = pas de sad face active
 
     public ApiBlockEntity(BlockPos pos, BlockState state) {
         super(ApicaBlockEntities.API.get(), pos, state);
@@ -148,10 +161,86 @@ public class ApiBlockEntity extends BlockEntity {
         syncToClient();
     }
 
-    public void cycleAnimState() {
-        ApiAnimationState[] states = ApiAnimationState.values();
-        int next = (animState.ordinal() + 1) % states.length;
-        setAnimState(states[next]);
+    // ==================== Animation System ====================
+
+    /**
+     * Verifie si l'animation actuelle est de type idle (IDLE ou SLEEP).
+     */
+    public boolean isIdleAnimation() {
+        return animState == ApiAnimationState.IDLE || animState == ApiAnimationState.SLEEP;
+    }
+
+    /**
+     * Verifie si une animation non-idle est en cours.
+     */
+    public boolean isPlayingAnimation() {
+        if (isIdleAnimation()) return false;
+        if (level == null) return false;
+
+        long elapsed = level.getGameTime() - animStartTick;
+        int duration = switch (animState) {
+            case HAPPY -> HAPPY_ANIM_DURATION;
+            case HITSTOP -> HITSTOP_ANIM_DURATION;
+            default -> 0;
+        };
+        return elapsed < duration;
+    }
+
+    /**
+     * Retourne l'idle appropriee selon l'heure (jour/nuit).
+     */
+    public ApiAnimationState getCurrentIdleState() {
+        if (level == null) return ApiAnimationState.IDLE;
+        long dayTime = level.getDayTime() % 24000;
+        // Nuit: 13000 - 23000
+        boolean isNight = dayTime >= 13000 && dayTime < 23000;
+        return isNight ? ApiAnimationState.SLEEP : ApiAnimationState.IDLE;
+    }
+
+    /**
+     * Tente de lancer une animation. Ignore si une animation non-idle est en cours.
+     * @return true si l'animation a ete lancee
+     */
+    public boolean tryPlayAnimation(ApiAnimationState state) {
+        if (isPlayingAnimation()) return false;
+        setAnimState(state);
+        return true;
+    }
+
+    /**
+     * PatPat Api (clic droit main vide). Lance HAPPY si cooldown ok.
+     * @return true si le patpat a ete accepte
+     */
+    public boolean patPat(long gameTime) {
+        if (gameTime - lastPetTick < PET_COOLDOWN_TICKS) return false;
+        if (isPlayingAnimation()) return false;
+
+        lastPetTick = gameTime;
+        setAnimState(ApiAnimationState.HAPPY);
+        return true;
+    }
+
+    /**
+     * Active le visage triste pour une duree donnee.
+     */
+    public void setSadFace(long gameTime, int durationTicks) {
+        sadFaceEndTick = gameTime + durationTicks;
+        syncToClient();
+    }
+
+    /**
+     * Verifie si le visage triste est actif.
+     */
+    public boolean isSadFaceActive() {
+        if (level == null) return false;
+        return level.getGameTime() < sadFaceEndTick;
+    }
+
+    /**
+     * Retourne au current idle (apres fin d'animation hitstop).
+     */
+    public void returnToCurrentIdle() {
+        setAnimState(getCurrentIdleState());
     }
 
     // ==================== Face System ====================
@@ -210,6 +299,11 @@ public class ApiBlockEntity extends BlockEntity {
         long gameTime = level.getGameTime();
         float animTime = gameTime - animStartTick;
 
+        // Sad face override (pour idle et sleep uniquement)
+        if (isSadFaceActive() && isIdleAnimation()) {
+            return "sad";
+        }
+
         return switch (animState) {
             case IDLE -> isBlinking ? getIdleFaceBlink() : getIdleFace();
             case HITSTOP -> {
@@ -223,7 +317,7 @@ public class ApiBlockEntity extends BlockEntity {
             case HAPPY -> "happy";
             case SLEEP -> {
                 // Alterne sleeping_1 et sleeping_2 toutes les 1 sec (20 ticks)
-                int cycle = (int) (animTime / 20) % 2;
+                int cycle = (int) (gameTime / 20) % 2;
                 yield cycle == 0 ? "sleeping_1" : "sleeping_2";
             }
         };
@@ -338,8 +432,17 @@ public class ApiBlockEntity extends BlockEntity {
     public static void serverTick(Level level, BlockPos pos, BlockState state, ApiBlockEntity be) {
         long gameTime = level.getGameTime();
 
-        // Blink logic (seulement en IDLE)
-        if (be.animState == ApiAnimationState.IDLE) {
+        // Animation completion check
+        be.tickAnimationCompletion(gameTime);
+
+        // Day/night idle switching
+        be.tickIdleSwitching();
+
+        // Random HITSTOP (jour seulement, toutes les 5 min, 50% chance)
+        be.tickRandomAnimation(gameTime);
+
+        // Blink logic (seulement pour animations idle)
+        if (be.isIdleAnimation()) {
             be.tickBlink(gameTime);
         } else {
             be.isBlinking = false;
@@ -362,6 +465,47 @@ public class ApiBlockEntity extends BlockEntity {
                     be.checkAdjacentCollisions(level, pos);
                 }
             }
+        }
+    }
+
+    private void tickAnimationCompletion(long gameTime) {
+        if (isIdleAnimation()) return;
+
+        long elapsed = gameTime - animStartTick;
+        int duration = switch (animState) {
+            case HAPPY -> HAPPY_ANIM_DURATION;
+            case HITSTOP -> HITSTOP_ANIM_DURATION;
+            default -> 0;
+        };
+
+        if (elapsed >= duration) {
+            returnToCurrentIdle();
+        }
+    }
+
+    private void tickIdleSwitching() {
+        if (!isIdleAnimation()) return;
+
+        ApiAnimationState targetIdle = getCurrentIdleState();
+        if (animState != targetIdle) {
+            setAnimState(targetIdle);
+        }
+    }
+
+    private void tickRandomAnimation(long gameTime) {
+        // Seulement de jour
+        if (level == null) return;
+        long dayTime = level.getDayTime() % 24000;
+        boolean isDay = dayTime < 13000 || dayTime >= 23000;
+        if (!isDay) return;
+
+        // Toutes les 5 min
+        if (gameTime - lastRandomAnimTick < RANDOM_ANIM_INTERVAL_TICKS) return;
+        lastRandomAnimTick = gameTime;
+
+        // 50% chance
+        if (level.random.nextFloat() < 0.5f) {
+            tryPlayAnimation(ApiAnimationState.HITSTOP);
         }
     }
 
@@ -502,6 +646,9 @@ public class ApiBlockEntity extends BlockEntity {
         tag.putLong("NextBlinkTick", nextBlinkTick);
         tag.putBoolean("IsBlinking", isBlinking);
         tag.putLong("BlinkStartTick", blinkStartTick);
+        tag.putLong("LastPetTick", lastPetTick);
+        tag.putLong("LastRandomAnimTick", lastRandomAnimTick);
+        tag.putLong("SadFaceEndTick", sadFaceEndTick);
     }
 
     @Override
@@ -529,6 +676,9 @@ public class ApiBlockEntity extends BlockEntity {
         nextBlinkTick = tag.getLong("NextBlinkTick");
         isBlinking = tag.getBoolean("IsBlinking");
         blinkStartTick = tag.getLong("BlinkStartTick");
+        lastPetTick = tag.getLong("LastPetTick");
+        lastRandomAnimTick = tag.getLong("LastRandomAnimTick");
+        sadFaceEndTick = tag.getLong("SadFaceEndTick");
     }
 
     @Override

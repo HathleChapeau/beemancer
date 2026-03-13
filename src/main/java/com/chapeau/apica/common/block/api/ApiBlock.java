@@ -206,10 +206,13 @@ public class ApiBlock extends BaseEntityBlock {
             return ItemInteractionResult.CONSUME;
         }
 
-        // Items aimes (tag api_like) → feed (+1 level)
+        // Items aimes (tag api_like) → feed (+1 level) + animation HAPPY
         if (stack.is(API_LIKE_TAG)) {
             if (!level.isClientSide()) {
                 apiBE.feed(gameTime);
+
+                // Lancer animation HAPPY
+                apiBE.tryPlayAnimation(ApiAnimationState.HAPPY);
 
                 // Consommer l'item et rendre un glass bottle si crafting remainder
                 if (!player.getAbilities().instabuild) {
@@ -234,10 +237,13 @@ public class ApiBlock extends BaseEntityBlock {
             return ItemInteractionResult.SUCCESS;
         }
 
-        // Items detestes (tag api_dislike) → shrink (-1 level)
+        // Items detestes (tag api_dislike) → shrink (-1 level) + sad face 3 sec
         if (stack.is(API_DISLIKE_TAG) && apiBE.getApiLevel() > 0) {
             if (!level.isClientSide()) {
                 apiBE.shrink(gameTime);
+
+                // Sad face pour 3 secondes
+                apiBE.setSadFace(gameTime, 60);
 
                 // Consommer le comb
                 if (!player.getAbilities().instabuild) {
@@ -256,6 +262,14 @@ public class ApiBlock extends BaseEntityBlock {
             return ItemInteractionResult.SUCCESS;
         }
 
+        // Joueur tient un item deteste sans le donner → sad face 5 sec
+        if (stack.is(API_DISLIKE_TAG)) {
+            if (!level.isClientSide()) {
+                apiBE.setSadFace(gameTime, 100);
+            }
+            return ItemInteractionResult.CONSUME;
+        }
+
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
@@ -264,7 +278,13 @@ public class ApiBlock extends BaseEntityBlock {
                                                Player player, BlockHitResult hitResult) {
         if (level.getBlockEntity(pos) instanceof ApiBlockEntity apiBE) {
             if (!level.isClientSide()) {
-                apiBE.cycleAnimState();
+                long gameTime = level.getGameTime();
+                // PatPat: lance HAPPY sans particules, avec cooldown 3 sec
+                if (apiBE.patPat(gameTime)) {
+                    // Son seulement si patpat accepte
+                    SoundType honeycombSound = Blocks.HONEYCOMB_BLOCK.defaultBlockState().getSoundType();
+                    level.playSound(null, pos, honeycombSound.getPlaceSound(), SoundSource.BLOCKS, 0.8f, 1.2f);
+                }
             }
             return InteractionResult.SUCCESS;
         }
