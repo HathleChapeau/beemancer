@@ -90,6 +90,8 @@ public class BuildingStaffItemRenderer extends BlockEntityWithoutLevelRenderer {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
               Minecraft.getInstance().getEntityModels());
         instance = this;
+
+        //reloadAnimator.HOLD_DURATION = 0f;
     }
 
     @Override

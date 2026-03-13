@@ -42,12 +42,12 @@ import net.neoforged.api.distmarker.OnlyIn;
 @OnlyIn(Dist.CLIENT)
 public class MagazineReloadAnimator {
 
-    private static final float TILT_DURATION = 8f;   // ticks pour descendre/remonter
-    private static final float HOLD_DURATION = 24f;  // ticks en position basse
-    private static final float TILT_ANGLE = -30f;    // degrés (négatif = vers l'avant)
-    private static final Vec3 TILT_PIVOT = new Vec3(0.5, 0.5, 0.5);
+    public float TILT_DURATION = 8f;   // ticks pour descendre/remonter
+    public float HOLD_DURATION = 24f;  // ticks en position basse
+    public float TILT_ANGLE = -30f;    // degrés (négatif = vers l'avant)
+    public Vec3 TILT_PIVOT = new Vec3(0.5, 0.5, 0.5);
 
-    private static final float SWEEP_DURATION = 30f; // 1.5 secondes de sweep shader
+    public final float SWEEP_DURATION = 30f; // 1.5 secondes de sweep shader
 
     /** Référence statique vers l'animateur actif (pour le HUD) */
     private static MagazineReloadAnimator activeAnimator = null;
@@ -88,7 +88,6 @@ public class MagazineReloadAnimator {
                 .build();
 
         // Wrapper du callback pour clear l'animateur actif
-        MagazineReloadAnimator self = this;
         Runnable wrappedComplete = () -> {
             activeAnimator = null;
             if (onComplete != null) onComplete.run();
@@ -138,7 +137,8 @@ public class MagazineReloadAnimator {
 
     /** Durée totale en ticks */
     public static float getTotalDuration() {
-        return TILT_DURATION + HOLD_DURATION + TILT_DURATION;
+        if(activeAnimator == null) return 0;
+        return activeAnimator.TILT_DURATION + activeAnimator.HOLD_DURATION + activeAnimator.TILT_DURATION;
     }
 
     // =========================================================================
