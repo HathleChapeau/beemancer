@@ -272,6 +272,16 @@ public class ApiBlock extends BaseEntityBlock {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
                                                Player player, BlockHitResult hitResult) {
         if (level.getBlockEntity(pos) instanceof ApiBlockEntity apiBE) {
+            ItemStack heldItem = player.getMainHandItem();
+
+            // Si le joueur tient un item deteste, sad face et pas de patpat
+            if (heldItem.is(API_DISLIKE_TAG)) {
+                if (!level.isClientSide()) {
+                    apiBE.setSadFace(level.getGameTime(), 100);
+                }
+                return InteractionResult.PASS;
+            }
+
             if (!level.isClientSide()) {
                 long gameTime = level.getGameTime();
                 // PatPat: lance HAPPY sans particules, avec cooldown 3 sec

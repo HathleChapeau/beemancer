@@ -485,10 +485,15 @@ public class ApiBlockEntity extends BlockEntity {
 
     private void tickIdleSwitching() {
         if (!isIdleAnimation()) return;
+        if (level == null) return;
 
         ApiAnimationState targetIdle = getCurrentIdleState();
         if (animState != targetIdle) {
             setAnimState(targetIdle);
+            // Si on passe en IDLE de jour, reset le cooldown hitstop (pas de hitstop immédiat)
+            if (targetIdle == ApiAnimationState.IDLE) {
+                lastRandomAnimTick = level.getGameTime();
+            }
         }
     }
 
