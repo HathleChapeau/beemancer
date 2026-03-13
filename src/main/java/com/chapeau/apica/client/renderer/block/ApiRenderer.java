@@ -176,18 +176,20 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
         poseStack.scale(scale, scale, scale);
         poseStack.translate(-0.5, 0, -0.5);
 
-        // 2. Pivot du membre pour rotation locale
-        poseStack.translate(limbPivotX, limbPivotY, limbPivotZ);
-
-        // 3. Rotations: body d'abord, puis limb en plus
-        poseStack.mulPose(Axis.XP.rotationDegrees(bodyPitch + limbPitch));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(bodyRoll + limbRoll));
-
-        // 4. Offset Y body
+        // 2. BODY rotation au pivot principal (le membre suit le corps)
+        poseStack.translate(PIVOT_X, PIVOT_Y, PIVOT_Z);
+        poseStack.mulPose(Axis.XP.rotationDegrees(bodyPitch));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(bodyRoll));
         poseStack.translate(0, bodyY / 16f, 0);
+        poseStack.translate(-PIVOT_X, -PIVOT_Y, -PIVOT_Z);
 
-        // 5. Retour du pivot
-        poseStack.translate(-limbPivotX, -limbPivotY, -limbPivotZ);
+        // 3. LIMB rotation additionnelle au pivot du membre (articulation)
+        if (limbPitch != 0 || limbRoll != 0) {
+            poseStack.translate(limbPivotX, limbPivotY, limbPivotZ);
+            poseStack.mulPose(Axis.XP.rotationDegrees(limbPitch));
+            poseStack.mulPose(Axis.ZP.rotationDegrees(limbRoll));
+            poseStack.translate(-limbPivotX, -limbPivotY, -limbPivotZ);
+        }
 
         // Render
         blockRenderer.getModelRenderer().tesselateBlock(
