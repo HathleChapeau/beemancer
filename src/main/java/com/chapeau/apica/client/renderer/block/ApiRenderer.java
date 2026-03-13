@@ -209,6 +209,7 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
             case IDLE -> calculateIdle(time);
             case JUMP -> calculateJump(time);
             case HITSTOP -> calculateHitstop(time);
+            case HAPPY -> calculateHappy(time);
             case SLEEP -> calculateSleep(time);
         };
     }
@@ -297,6 +298,28 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
             f.armLeftRoll = 15f + breathe * 0.5f;
             f.armRightRoll = -15f - breathe * 0.3f;
         }
+
+        return f;
+    }
+
+    private AnimationFrame calculateHappy(float time) {
+        AnimationFrame f = new AnimationFrame();
+
+        if (time >= 60f) {
+            return calculateIdle(time);
+        }
+
+        // Phase effort seulement (copie de HITSTOP sans epuisement)
+        float p = Math.min(1f, time / 10f);
+        float shake = Mth.sin(time * 0.5f) * 2f;
+        f.bodyPitch = 15f * p + shake;
+        f.bodyRoll = Mth.cos(time * 0.6f) * 1.5f;
+        f.armLeftPitch = 10f * p;
+        f.armLeftRoll = -10f * p + shake;
+        f.armRightPitch = 10f * p;
+        f.armRightRoll = 10f * p - shake;
+        f.legLeftRoll = -5f * p;
+        f.legRightRoll = 5f * p;
 
         return f;
     }

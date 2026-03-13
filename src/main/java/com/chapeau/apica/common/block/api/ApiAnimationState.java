@@ -19,6 +19,9 @@ public enum ApiAnimationState {
     /** Effort pour se soulever puis epuisement. Joue une fois puis retourne a IDLE. */
     HITSTOP,
 
+    /** Content, se balance energiquement. Joue une fois puis retourne a IDLE. */
+    HAPPY,
+
     /** Dort, immobile. Reste jusqu'a changement manuel. */
     SLEEP
 }
