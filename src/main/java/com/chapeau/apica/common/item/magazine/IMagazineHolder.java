@@ -60,10 +60,9 @@ public interface IMagazineHolder {
     // Actions
     // =========================================================================
 
-    /** Effectue le reload. Appeler côté server uniquement. */
+    /** Effectue le reload (swap magazine). */
     default void doReload(Player player, ItemStack holder) {
         MagazineReloadHelper.tryReload(player, holder);
-        setReloading(player, true);
     }
 
     /** Reset le reload state. Appeler quand mouse UP. */

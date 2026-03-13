@@ -49,7 +49,9 @@ public record MagazineReloadPacket(boolean mainHand) implements CustomPacketPayl
             if (!(stack.getItem() instanceof IMagazineHolder holder)) return;
 
             if (holder.canReload(player, stack)) {
-                holder.doReload(player, stack);
+                holder.setReloading(player, true);
+                net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(
+                        player, new MagazineReloadStartPacket(packet.mainHand()));
             }
         });
     }

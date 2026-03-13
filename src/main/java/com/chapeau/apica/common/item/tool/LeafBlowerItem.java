@@ -183,12 +183,15 @@ public class LeafBlowerItem extends Item implements IMagazineHolder {
 
     @Override
     public void startReloadAnimation(Player player, ItemStack holder, float currentTime) {
+        setReloading(player, true);
         if (player.level().isClientSide()) {
             com.chapeau.apica.client.renderer.item.LeafBlowerItemRenderer renderer =
                     com.chapeau.apica.client.renderer.item.LeafBlowerItemRenderer.getInstance();
             if (renderer != null) {
                 renderer.getReloadAnimator().startReloadAnimation(currentTime, () -> {
-                    doReload(player, holder);
+                    boolean mainHand = player.getMainHandItem() == holder;
+                    net.neoforged.neoforge.network.PacketDistributor.sendToServer(
+                            new com.chapeau.apica.core.network.packets.MagazineReloadCompletePacket(mainHand));
                     setReloading(player, false);
                 });
             }
