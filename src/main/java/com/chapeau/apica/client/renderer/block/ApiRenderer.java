@@ -45,10 +45,27 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
     public static final ModelResourceLocation LEG_RIGHT_LOC = ModelResourceLocation.standalone(
         ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "block/machines/api_leg_right"));
 
-    // Pivot de rotation partage (en pixels) - meme que le JSON original
+    // Pivot principal (centre de rotation du body) - en blocs
     private static final float PIVOT_X = 8f / 16f;
     private static final float PIVOT_Y = 2.75f / 16f;
     private static final float PIVOT_Z = 8.5f / 16f;
+
+    // Pivots des membres (jonctions avec le body) - en blocs
+    private static final float ARM_LEFT_PIVOT_X = 1f / 16f;
+    private static final float ARM_LEFT_PIVOT_Y = 5.5f / 16f;
+    private static final float ARM_LEFT_PIVOT_Z = 3.5f / 16f;
+
+    private static final float ARM_RIGHT_PIVOT_X = 15f / 16f;
+    private static final float ARM_RIGHT_PIVOT_Y = 5.5f / 16f;
+    private static final float ARM_RIGHT_PIVOT_Z = 3.5f / 16f;
+
+    private static final float LEG_LEFT_PIVOT_X = 4.5f / 16f;
+    private static final float LEG_LEFT_PIVOT_Y = 5.5f / 16f;
+    private static final float LEG_LEFT_PIVOT_Z = 12f / 16f;
+
+    private static final float LEG_RIGHT_PIVOT_X = 11.5f / 16f;
+    private static final float LEG_RIGHT_PIVOT_Y = 5.5f / 16f;
+    private static final float LEG_RIGHT_PIVOT_Z = 12f / 16f;
 
     private static final float BASE_PITCH = 45f;
     private static final float IDLE_CYCLE = 60f;
@@ -88,60 +105,89 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
 
         VertexConsumer consumer = buffer.getBuffer(RenderType.cutout());
 
+        float bodyPitch = BASE_PITCH + frame.bodyPitch;
+        float bodyRoll = frame.bodyRoll;
+
         // === BODY ===
-        renderPart(bodyModel, be, poseStack, consumer, packedLight, packedOverlay,
-                   scale, yRot, BASE_PITCH + frame.bodyPitch, frame.bodyRoll, frame.bodyY);
+        renderBody(bodyModel, be, poseStack, consumer, packedLight, packedOverlay,
+                   scale, yRot, bodyPitch, bodyRoll, frame.bodyY);
 
-        // === LIMBS - meme rotation que body pour l'instant (simplifie) ===
-        // Les membres utilisent le meme pivot, donc ils bougent avec le corps
-        // Animation supplementaire = rotation additionnelle autour de leur propre centre
+        // === LIMBS - rotation autour de leur propre pivot (jonction avec body) ===
+        renderLimb(armLeftModel, be, poseStack, consumer, packedLight, packedOverlay,
+                   scale, yRot, bodyPitch, bodyRoll, frame.bodyY,
+                   ARM_LEFT_PIVOT_X, ARM_LEFT_PIVOT_Y, ARM_LEFT_PIVOT_Z,
+                   frame.armLeftPitch, frame.armLeftRoll);
 
-        renderPart(armLeftModel, be, poseStack, consumer, packedLight, packedOverlay,
-                   scale, yRot, BASE_PITCH + frame.bodyPitch + frame.armLeftPitch,
-                   frame.bodyRoll + frame.armLeftRoll, frame.bodyY);
+        renderLimb(armRightModel, be, poseStack, consumer, packedLight, packedOverlay,
+                   scale, yRot, bodyPitch, bodyRoll, frame.bodyY,
+                   ARM_RIGHT_PIVOT_X, ARM_RIGHT_PIVOT_Y, ARM_RIGHT_PIVOT_Z,
+                   frame.armRightPitch, frame.armRightRoll);
 
-        renderPart(armRightModel, be, poseStack, consumer, packedLight, packedOverlay,
-                   scale, yRot, BASE_PITCH + frame.bodyPitch + frame.armRightPitch,
-                   frame.bodyRoll + frame.armRightRoll, frame.bodyY);
+        renderLimb(legLeftModel, be, poseStack, consumer, packedLight, packedOverlay,
+                   scale, yRot, bodyPitch, bodyRoll, frame.bodyY,
+                   LEG_LEFT_PIVOT_X, LEG_LEFT_PIVOT_Y, LEG_LEFT_PIVOT_Z,
+                   frame.legLeftPitch, frame.legLeftRoll);
 
-        renderPart(legLeftModel, be, poseStack, consumer, packedLight, packedOverlay,
-                   scale, yRot, BASE_PITCH + frame.bodyPitch + frame.legLeftPitch,
-                   frame.bodyRoll + frame.legLeftRoll, frame.bodyY);
-
-        renderPart(legRightModel, be, poseStack, consumer, packedLight, packedOverlay,
-                   scale, yRot, BASE_PITCH + frame.bodyPitch + frame.legRightPitch,
-                   frame.bodyRoll + frame.legRightRoll, frame.bodyY);
+        renderLimb(legRightModel, be, poseStack, consumer, packedLight, packedOverlay,
+                   scale, yRot, bodyPitch, bodyRoll, frame.bodyY,
+                   LEG_RIGHT_PIVOT_X, LEG_RIGHT_PIVOT_Y, LEG_RIGHT_PIVOT_Z,
+                   frame.legRightPitch, frame.legRightRoll);
     }
 
-    private void renderPart(BakedModel model, ApiBlockEntity be, PoseStack poseStack,
+    private void renderBody(BakedModel model, ApiBlockEntity be, PoseStack poseStack,
                             VertexConsumer consumer, int packedLight, int packedOverlay,
                             float scale, float yRot, float pitch, float roll, float yOffset) {
         poseStack.pushPose();
 
-        // 1. Translate au centre du bloc pour la rotation de facing
+        // 1. Centre du bloc pour facing
         poseStack.translate(0.5, 0, 0.5);
-
-        // 2. Rotation facing
         poseStack.mulPose(Axis.YP.rotationDegrees(yRot));
-
-        // 3. Scale autour du centre
         poseStack.scale(scale, scale, scale);
-
-        // 4. Retour a l'origine
         poseStack.translate(-0.5, 0, -0.5);
 
-        // 5. Translate au pivot pour la rotation d'inclinaison
+        // 2. Pivot principal pour rotation body
         poseStack.translate(PIVOT_X, PIVOT_Y, PIVOT_Z);
-
-        // 6. Rotations d'animation
         poseStack.mulPose(Axis.XP.rotationDegrees(pitch));
         poseStack.mulPose(Axis.ZP.rotationDegrees(roll));
-
-        // 7. Offset Y animation (saut)
         poseStack.translate(0, yOffset / 16f, 0);
-
-        // 8. Retour du pivot
         poseStack.translate(-PIVOT_X, -PIVOT_Y, -PIVOT_Z);
+
+        // Render
+        blockRenderer.getModelRenderer().tesselateBlock(
+            be.getLevel(), model, be.getBlockState(),
+            be.getBlockPos(), poseStack, consumer, false,
+            random, packedLight, packedOverlay,
+            ModelData.EMPTY, RenderType.cutout()
+        );
+
+        poseStack.popPose();
+    }
+
+    private void renderLimb(BakedModel model, ApiBlockEntity be, PoseStack poseStack,
+                            VertexConsumer consumer, int packedLight, int packedOverlay,
+                            float scale, float yRot, float bodyPitch, float bodyRoll, float bodyY,
+                            float limbPivotX, float limbPivotY, float limbPivotZ,
+                            float limbPitch, float limbRoll) {
+        poseStack.pushPose();
+
+        // 1. Centre du bloc pour facing
+        poseStack.translate(0.5, 0, 0.5);
+        poseStack.mulPose(Axis.YP.rotationDegrees(yRot));
+        poseStack.scale(scale, scale, scale);
+        poseStack.translate(-0.5, 0, -0.5);
+
+        // 2. Pivot du membre pour rotation locale
+        poseStack.translate(limbPivotX, limbPivotY, limbPivotZ);
+
+        // 3. Rotations: body d'abord, puis limb en plus
+        poseStack.mulPose(Axis.XP.rotationDegrees(bodyPitch + limbPitch));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(bodyRoll + limbRoll));
+
+        // 4. Offset Y body
+        poseStack.translate(0, bodyY / 16f, 0);
+
+        // 5. Retour du pivot
+        poseStack.translate(-limbPivotX, -limbPivotY, -limbPivotZ);
 
         // Render
         blockRenderer.getModelRenderer().tesselateBlock(
