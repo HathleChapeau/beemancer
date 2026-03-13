@@ -24,9 +24,8 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.SoundType;
 import net.minecraft.tags.TagKey;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -200,74 +199,70 @@ public class ApiBlock extends BaseEntityBlock {
         }
 
         long gameTime = level.getGameTime();
+        boolean onFoodCooldown = apiBE.isOnCooldown(gameTime);
 
-        // Cooldown check
-        if (apiBE.isOnCooldown(gameTime)) {
-            return ItemInteractionResult.CONSUME;
-        }
-
-        // Items aimes (tag api_like) → feed (+1 level) + animation HAPPY
+        // Items aimes (tag api_like)
         if (stack.is(API_LIKE_TAG)) {
-            if (!level.isClientSide()) {
-                apiBE.feed(gameTime);
+            if (!onFoodCooldown) {
+                // Feed + HAPPY + particules
+                if (!level.isClientSide()) {
+                    apiBE.feed(gameTime);
+                    apiBE.tryPlayAnimation(ApiAnimationState.HAPPY);
 
-                // Lancer animation HAPPY
-                apiBE.tryPlayAnimation(ApiAnimationState.HAPPY);
-
-                // Consommer l'item et rendre un glass bottle si crafting remainder
-                if (!player.getAbilities().instabuild) {
-                    ItemStack remainder = stack.getCraftingRemainingItem();
-                    stack.shrink(1);
-                    if (!remainder.isEmpty()) {
-                        if (!player.getInventory().add(remainder)) {
-                            player.drop(remainder, false);
+                    if (!player.getAbilities().instabuild) {
+                        ItemStack remainder = stack.getCraftingRemainingItem();
+                        stack.shrink(1);
+                        if (!remainder.isEmpty()) {
+                            if (!player.getInventory().add(remainder)) {
+                                player.drop(remainder, false);
+                            }
                         }
                     }
-                }
 
-                // Particules coeurs
-                Vec3 center = Vec3.atCenterOf(pos);
-                if (level instanceof ServerLevel serverLevel) {
-                    ParticleHelper.burst(serverLevel, center, ParticleHelper.EffectType.HEAL, 8);
-                }
+                    Vec3 center = Vec3.atCenterOf(pos);
+                    if (level instanceof ServerLevel serverLevel) {
+                        ParticleHelper.burst(serverLevel, center, ParticleHelper.EffectType.HEAL, 8);
+                    }
 
-                SoundType honeycombSound = Blocks.HONEYCOMB_BLOCK.defaultBlockState().getSoundType();
-                level.playSound(null, pos, honeycombSound.getPlaceSound(), SoundSource.BLOCKS, 1.0f, 1.0f);
+                    level.playSound(null, pos, SoundEvents.FOX_BITE, SoundSource.BLOCKS, 1.0f, 1.0f);
+                }
+            } else {
+                // On food cooldown → patpat a la place (sans consommer l'item)
+                if (!level.isClientSide()) {
+                    if (apiBE.patPat(gameTime)) {
+                        level.playSound(null, pos, SoundEvents.FOX_SNIFF, SoundSource.BLOCKS, 1.0f, 1.0f);
+                    }
+                }
             }
             return ItemInteractionResult.SUCCESS;
         }
 
-        // Items detestes (tag api_dislike) → shrink (-1 level) + sad face 3 sec
-        if (stack.is(API_DISLIKE_TAG) && apiBE.getApiLevel() > 0) {
-            if (!level.isClientSide()) {
-                apiBE.shrink(gameTime);
-
-                // Sad face pour 3 secondes
-                apiBE.setSadFace(gameTime, 60);
-
-                // Consommer le comb
-                if (!player.getAbilities().instabuild) {
-                    stack.shrink(1);
-                }
-
-                // Particules échec
-                Vec3 center = Vec3.atCenterOf(pos);
-                if (level instanceof ServerLevel serverLevel) {
-                    ParticleHelper.burst(serverLevel, center, ParticleHelper.EffectType.FAILURE, 6);
-                }
-
-                SoundType honeycombSound = Blocks.HONEYCOMB_BLOCK.defaultBlockState().getSoundType();
-                level.playSound(null, pos, honeycombSound.getPlaceSound(), SoundSource.BLOCKS, 1.0f, 0.7f);
-            }
-            return ItemInteractionResult.SUCCESS;
-        }
-
-        // Joueur tient un item deteste sans le donner → sad face 5 sec
+        // Items detestes (tag api_dislike)
         if (stack.is(API_DISLIKE_TAG)) {
-            if (!level.isClientSide()) {
-                apiBE.setSadFace(gameTime, 100);
+            if (!onFoodCooldown && apiBE.getApiLevel() > 0) {
+                // Shrink + sad face + particules
+                if (!level.isClientSide()) {
+                    apiBE.shrink(gameTime);
+                    apiBE.setSadFace(gameTime, 60);
+
+                    if (!player.getAbilities().instabuild) {
+                        stack.shrink(1);
+                    }
+
+                    Vec3 center = Vec3.atCenterOf(pos);
+                    if (level instanceof ServerLevel serverLevel) {
+                        ParticleHelper.burst(serverLevel, center, ParticleHelper.EffectType.FAILURE, 6);
+                    }
+
+                    level.playSound(null, pos, SoundEvents.FOX_BITE, SoundSource.BLOCKS, 1.0f, 0.8f);
+                }
+            } else {
+                // On cooldown ou level 0 → juste sad face 5 sec (pas de patpat avec item deteste)
+                if (!level.isClientSide()) {
+                    apiBE.setSadFace(gameTime, 100);
+                }
             }
-            return ItemInteractionResult.CONSUME;
+            return ItemInteractionResult.SUCCESS;
         }
 
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
@@ -281,9 +276,7 @@ public class ApiBlock extends BaseEntityBlock {
                 long gameTime = level.getGameTime();
                 // PatPat: lance HAPPY sans particules, avec cooldown 3 sec
                 if (apiBE.patPat(gameTime)) {
-                    // Son seulement si patpat accepte
-                    SoundType honeycombSound = Blocks.HONEYCOMB_BLOCK.defaultBlockState().getSoundType();
-                    level.playSound(null, pos, honeycombSound.getPlaceSound(), SoundSource.BLOCKS, 0.8f, 1.2f);
+                    level.playSound(null, pos, SoundEvents.FOX_SNIFF, SoundSource.BLOCKS, 1.0f, 1.0f);
                 }
             }
             return InteractionResult.SUCCESS;
