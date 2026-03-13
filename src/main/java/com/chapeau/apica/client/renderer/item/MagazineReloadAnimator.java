@@ -47,7 +47,7 @@ public class MagazineReloadAnimator {
     private static final float TILT_ANGLE = -30f;    // degrés (négatif = vers l'avant)
     private static final Vec3 TILT_PIVOT = new Vec3(0.5, 0.5, 0.5);
 
-    private static final float SWEEP_DURATION = 20f; // 1 seconde de sweep shader
+    private static final float SWEEP_DURATION = 30f; // 1.5 secondes de sweep shader
 
     /** Référence statique vers l'animateur actif (pour le HUD) */
     private static MagazineReloadAnimator activeAnimator = null;

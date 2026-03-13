@@ -29,19 +29,26 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -60,6 +67,22 @@ public class ApiBlockEntity extends BlockEntity {
     public static final int GROWTH_TOTAL_TICKS = GROWTH_DELAY_TICKS + GROWTH_DURATION_TICKS;
     public static final float MAX_HARDNESS = 3.0f;
 
+    // --- Face System ---
+    private static final int BLINK_DURATION_TICKS = 6; // 0.3 sec
+    private static final int BLINK_MIN_DELAY_TICKS = 60; // 3 sec
+    private static final int BLINK_MAX_DELAY_TICKS = 140; // 7 sec
+    private static final double CLOSE_DISTANCE = 6.0;
+    private static final double VERY_CLOSE_DISTANCE = 2.0;
+
+    // Items Api aime manger
+    private static final Set<Item> LIKED_ITEMS = Set.of(
+        Items.HONEY_BOTTLE, Items.HONEYCOMB, Items.SUGAR, Items.SWEET_BERRIES, Items.GLOW_BERRIES
+    );
+    // Items Api n'aime pas
+    private static final Set<Item> DISLIKED_ITEMS = Set.of(
+        Items.ROTTEN_FLESH, Items.SPIDER_EYE, Items.FERMENTED_SPIDER_EYE, Items.POISONOUS_POTATO
+    );
+
     // --- State ---
     private int apiLevel = 0;
     private long lastFeedTick = -COOLDOWN_TICKS;
@@ -72,6 +95,11 @@ public class ApiBlockEntity extends BlockEntity {
     private Component customName = null;
     private ApiAnimationState animState = ApiAnimationState.IDLE;
     private long animStartTick = 0;
+
+    // --- Blink State ---
+    private long nextBlinkTick = 0;
+    private boolean isBlinking = false;
+    private long blinkStartTick = 0;
 
     public ApiBlockEntity(BlockPos pos, BlockState state) {
         super(ApicaBlockEntities.API.get(), pos, state);
@@ -130,6 +158,115 @@ public class ApiBlockEntity extends BlockEntity {
         ApiAnimationState[] states = ApiAnimationState.values();
         int next = (animState.ordinal() + 1) % states.length;
         setAnimState(states[next]);
+    }
+
+    // ==================== Face System ====================
+
+    public boolean isBlinking() {
+        return isBlinking;
+    }
+
+    /**
+     * Retourne la texture de face pour l'etat IDLE (normal).
+     */
+    public String getIdleFace() {
+        if (level == null) return "idle";
+
+        Player nearestPlayer = findNearestPlayer();
+        if (nearestPlayer == null) return "idle";
+
+        double distance = nearestPlayer.distanceToSqr(Vec3.atCenterOf(worldPosition));
+        ItemStack heldItem = nearestPlayer.getMainHandItem();
+
+        // Verifier cooldown happy termine
+        boolean happyCooldownDone = !isOnCooldown(level.getGameTime());
+
+        if (happyCooldownDone && isLikedItem(heldItem)) {
+            if (distance < VERY_CLOSE_DISTANCE * VERY_CLOSE_DISTANCE) {
+                return "idle_very_hungry";
+            } else if (distance < CLOSE_DISTANCE * CLOSE_DISTANCE) {
+                return "idle_hungry";
+            }
+        }
+
+        if (isDislikedItem(heldItem)) {
+            if (distance < VERY_CLOSE_DISTANCE * VERY_CLOSE_DISTANCE) {
+                return "idle_very_suspicious";
+            } else if (distance < CLOSE_DISTANCE * CLOSE_DISTANCE) {
+                return "idle_suspicious";
+            }
+        }
+
+        return "idle";
+    }
+
+    /**
+     * Retourne la texture de face pour l'etat IDLE (blink).
+     */
+    public String getIdleFaceBlink() {
+        return getIdleFace() + "_blink";
+    }
+
+    /**
+     * Retourne la texture de face actuelle selon l'etat d'animation.
+     */
+    public String getCurrentFace() {
+        if (level == null) return "idle";
+
+        long gameTime = level.getGameTime();
+        float animTime = gameTime - animStartTick;
+
+        return switch (animState) {
+            case IDLE -> isBlinking ? getIdleFaceBlink() : getIdleFace();
+            case HITSTOP -> {
+                // Effort jusqu'a 60 ticks, puis exhausted
+                if (animTime < 60f) {
+                    yield "effort";
+                } else {
+                    yield "exhausted";
+                }
+            }
+            case HAPPY -> "happy";
+            case SLEEP -> {
+                // Alterne sleeping_1 et sleeping_2 toutes les 1 sec (20 ticks)
+                int cycle = (int) (animTime / 20) % 2;
+                yield cycle == 0 ? "sleeping_1" : "sleeping_2";
+            }
+        };
+    }
+
+    /**
+     * Verifie si l'item est aime par Api.
+     */
+    private boolean isLikedItem(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        return LIKED_ITEMS.contains(stack.getItem());
+    }
+
+    /**
+     * Verifie si l'item est deteste par Api.
+     */
+    private boolean isDislikedItem(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        return DISLIKED_ITEMS.contains(stack.getItem());
+    }
+
+    /**
+     * Trouve le joueur le plus proche.
+     */
+    @Nullable
+    private Player findNearestPlayer() {
+        if (level == null) return null;
+        Vec3 center = Vec3.atCenterOf(worldPosition);
+        return level.getNearestPlayer(center.x, center.y, center.z, CLOSE_DISTANCE + 1, false);
+    }
+
+    /**
+     * Schedule le prochain blink avec un delai aleatoire.
+     */
+    private void scheduleNextBlink(long gameTime) {
+        int delay = BLINK_MIN_DELAY_TICKS + level.random.nextInt(BLINK_MAX_DELAY_TICKS - BLINK_MIN_DELAY_TICKS);
+        nextBlinkTick = gameTime + delay;
     }
 
     /**
@@ -205,24 +342,51 @@ public class ApiBlockEntity extends BlockEntity {
     // ==================== Server Tick ====================
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ApiBlockEntity be) {
-        if (be.animationComplete) return;
+        long gameTime = level.getGameTime();
 
-        long elapsed = level.getGameTime() - be.lastFeedTick;
+        // Blink logic (seulement en IDLE)
+        if (be.animState == ApiAnimationState.IDLE) {
+            be.tickBlink(gameTime);
+        } else {
+            be.isBlinking = false;
+        }
 
-        // Animation terminée
-        if (elapsed >= GROWTH_TOTAL_TICKS) {
-            be.animationComplete = true;
-            be.growing = false;
-            be.shrinking = false;
-            be.setChanged();
-            be.syncToClient();
+        // Growth animation
+        if (!be.animationComplete) {
+            long elapsed = gameTime - be.lastFeedTick;
 
-            // Recalculer la collision shape via block update
-            level.sendBlockUpdated(pos, state, state, Block.UPDATE_ALL);
+            if (elapsed >= GROWTH_TOTAL_TICKS) {
+                be.animationComplete = true;
+                be.growing = false;
+                be.shrinking = false;
+                be.setChanged();
+                be.syncToClient();
 
-            // Vérifier les collisions avec les blocs adjacents
-            if (be.apiLevel > 0) {
-                be.checkAdjacentCollisions(level, pos);
+                level.sendBlockUpdated(pos, state, state, Block.UPDATE_ALL);
+
+                if (be.apiLevel > 0) {
+                    be.checkAdjacentCollisions(level, pos);
+                }
+            }
+        }
+    }
+
+    private void tickBlink(long gameTime) {
+        if (isBlinking) {
+            // Fin du blink?
+            if (gameTime >= blinkStartTick + BLINK_DURATION_TICKS) {
+                isBlinking = false;
+                scheduleNextBlink(gameTime);
+                syncToClient();
+            }
+        } else {
+            // Temps de blinker?
+            if (nextBlinkTick == 0) {
+                scheduleNextBlink(gameTime);
+            } else if (gameTime >= nextBlinkTick) {
+                isBlinking = true;
+                blinkStartTick = gameTime;
+                syncToClient();
             }
         }
     }
@@ -341,6 +505,9 @@ public class ApiBlockEntity extends BlockEntity {
         }
         tag.putString("AnimState", animState.name());
         tag.putLong("AnimStartTick", animStartTick);
+        tag.putLong("NextBlinkTick", nextBlinkTick);
+        tag.putBoolean("IsBlinking", isBlinking);
+        tag.putLong("BlinkStartTick", blinkStartTick);
     }
 
     @Override
@@ -365,6 +532,9 @@ public class ApiBlockEntity extends BlockEntity {
             }
         }
         animStartTick = tag.getLong("AnimStartTick");
+        nextBlinkTick = tag.getLong("NextBlinkTick");
+        isBlinking = tag.getBoolean("IsBlinking");
+        blinkStartTick = tag.getLong("BlinkStartTick");
     }
 
     @Override

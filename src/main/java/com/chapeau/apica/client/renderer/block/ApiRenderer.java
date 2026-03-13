@@ -19,6 +19,8 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Direction;
@@ -112,6 +114,10 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
         renderBody(bodyModel, be, poseStack, consumer, packedLight, packedOverlay,
                    scale, yRot, bodyPitch, bodyRoll, frame.bodyY);
 
+        // === FACE ===
+        renderFace(be, poseStack, buffer, packedLight, packedOverlay,
+                   scale, yRot, bodyPitch, bodyRoll, frame.bodyY);
+
         // === LIMBS - rotation autour de leur propre pivot (jonction avec body) ===
         renderLimb(armLeftModel, be, poseStack, consumer, packedLight, packedOverlay,
                    scale, yRot, bodyPitch, bodyRoll, frame.bodyY,
@@ -202,12 +208,71 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
         poseStack.popPose();
     }
 
+    // ==================== FACE RENDERING ====================
+
+    private void renderFace(ApiBlockEntity be, PoseStack poseStack, MultiBufferSource buffer,
+                            int packedLight, int packedOverlay,
+                            float scale, float yRot, float pitch, float roll, float yOffset) {
+        String faceName = be.getCurrentFace();
+        ResourceLocation textureLoc = ResourceLocation.fromNamespaceAndPath(
+            Apica.MOD_ID, "block/api/api_face_" + faceName);
+
+        TextureAtlasSprite sprite = Minecraft.getInstance()
+            .getTextureAtlas(TextureAtlas.LOCATION_BLOCKS)
+            .apply(textureLoc);
+
+        VertexConsumer consumer = buffer.getBuffer(RenderType.cutout());
+
+        poseStack.pushPose();
+
+        // Memes transforms que le body
+        poseStack.translate(0.5, 0, 0.5);
+        poseStack.mulPose(Axis.YP.rotationDegrees(yRot));
+        poseStack.scale(scale, scale, scale);
+        poseStack.translate(-0.5, 0, -0.5);
+
+        poseStack.translate(PIVOT_X, PIVOT_Y, PIVOT_Z);
+        poseStack.mulPose(Axis.XP.rotationDegrees(pitch));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(roll));
+        poseStack.translate(0, yOffset / 16f, 0);
+        poseStack.translate(-PIVOT_X, -PIVOT_Y, -PIVOT_Z);
+
+        // Render face quad (position du JSON: from [0, 6.51, 2] to [16, 6.51, 18])
+        PoseStack.Pose pose = poseStack.last();
+
+        float minX = 0f / 16f;
+        float maxX = 16f / 16f;
+        float y = 6.52f / 16f; // Legèrement au-dessus pour éviter z-fighting
+        float minZ = 2f / 16f;
+        float maxZ = 18f / 16f;
+
+        float u0 = sprite.getU0();
+        float u1 = sprite.getU1();
+        float v0 = sprite.getV0();
+        float v1 = sprite.getV1();
+
+        // Quad face-up (normale vers +Y)
+        consumer.addVertex(pose, minX, y, minZ).setColor(255, 255, 255, 255)
+            .setUv(u0, v0).setOverlay(packedOverlay).setLight(packedLight)
+            .setNormal(pose, 0, 1, 0);
+        consumer.addVertex(pose, minX, y, maxZ).setColor(255, 255, 255, 255)
+            .setUv(u0, v1).setOverlay(packedOverlay).setLight(packedLight)
+            .setNormal(pose, 0, 1, 0);
+        consumer.addVertex(pose, maxX, y, maxZ).setColor(255, 255, 255, 255)
+            .setUv(u1, v1).setOverlay(packedOverlay).setLight(packedLight)
+            .setNormal(pose, 0, 1, 0);
+        consumer.addVertex(pose, maxX, y, minZ).setColor(255, 255, 255, 255)
+            .setUv(u1, v0).setOverlay(packedOverlay).setLight(packedLight)
+            .setNormal(pose, 0, 1, 0);
+
+        poseStack.popPose();
+    }
+
     // ==================== ANIMATIONS ====================
 
     private AnimationFrame calculateAnimation(ApiAnimationState state, float time) {
         return switch (state) {
             case IDLE -> calculateIdle(time);
-            case JUMP -> calculateJump(time);
             case HITSTOP -> calculateHitstop(time);
             case HAPPY -> calculateHappy(time);
             case SLEEP -> calculateSleep(time);
@@ -225,45 +290,6 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
         f.armRightRoll = -waveOffset * 5f;
         f.legLeftPitch = wave * 2f;
         f.legRightPitch = -wave * 1.5f;
-        return f;
-    }
-
-    private AnimationFrame calculateJump(float time) {
-        AnimationFrame f = new AnimationFrame();
-
-        float singleJump = 40f;
-        int jumpNum = (int) (time / singleJump);
-        float t = (time % singleJump) / singleJump;
-        float fatigue = jumpNum >= 1 ? 0.75f : 1f;
-
-        if (time >= 80f) {
-            // Animation terminee, retour idle
-            return calculateIdle(time);
-        }
-
-        if (t < 0.25f) {
-            float p = easeInOut(t / 0.25f);
-            f.bodyPitch = 8f * p * fatigue;
-        } else if (t < 0.5f) {
-            float p = easeOut((t - 0.25f) / 0.25f);
-            f.bodyPitch = -5f * fatigue;
-            f.bodyY = Mth.sin(p * Mth.PI) * 4f * fatigue;
-            f.armLeftRoll = -20f * p * fatigue;
-            f.armRightRoll = 20f * p * fatigue;
-        } else if (t < 0.75f) {
-            float p = easeIn((t - 0.5f) / 0.25f);
-            f.bodyPitch = Mth.lerp(p, -5f, 10f) * fatigue;
-            f.bodyY = (1f - p) * 4f * fatigue;
-            f.armLeftRoll = Mth.lerp(p, -20f, 0f) * fatigue;
-            f.armRightRoll = Mth.lerp(p, 20f, 0f) * fatigue;
-        } else {
-            float p = easeOut((t - 0.75f) / 0.25f);
-            float shake = Mth.sin(time * 1.5f) * (1f - p) * 3f;
-            f.bodyPitch = Mth.lerp(p, 10f, 0f) * fatigue + shake;
-            f.armLeftRoll = shake;
-            f.armRightRoll = -shake;
-        }
-
         return f;
     }
 

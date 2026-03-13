@@ -1,18 +1,9 @@
 {
   "texture_size": [32, 32],
   "textures": {
-    "all": "apica:block/machines/api",
-    "face": "apica:block/api/api_face"
+    "all": "apica:block/machines/api"
   },
   "elements": [
-    {
-      "name": "Face",
-      "from": [0, 6.51, 2],
-      "to": [16, 6.51, 18],
-      "faces": {
-        "up": {"uv": [0, 0, 16, 16], "texture": "#face"}
-      }
-    },
     {
       "name": "Comby Layer 1a",
       "from": [1, 3.5, 0],
