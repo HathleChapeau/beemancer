@@ -30,9 +30,19 @@
   },
   "textures": {
     "all": "apica:block/machines/api",
-    "particle": "apica:block/machines/api"
+    "particle": "apica:block/machines/api",
+    "face": "apica:block/api/api_face"
   },
   "elements": [
+    {
+      "name": "Face",
+      "from": [4, 2, -2.01],
+      "to": [12, 7, -2.01],
+      "rotation": {"angle": 45, "axis": "x", "origin": [8, 2.75, 8.5]},
+      "faces": {
+        "north": {"uv": [0, 0, 16, 10], "texture": "#face"}
+      }
+    },
     {
       "name": "Arm Right",
       "from": [15, 5.5, 3],
