@@ -24,6 +24,7 @@ package com.chapeau.apica.client.renderer.item;
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.animation.AnimationTimer;
 import com.chapeau.apica.client.renderer.LightningArcRenderer;
+import com.chapeau.apica.client.renderer.PlayerAlignmentHandler;
 import com.chapeau.apica.client.renderer.shader.MagazineSweepShader;
 import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.tool.MiningLaserItem;
@@ -187,6 +188,14 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
             renderChargeBars(poseStack, buffer, packedLight, chargeLevel);
             renderRingEffects(poseStack, buffer, packedLight, chargeLevel);
             renderLightningArcs(poseStack, buffer, stack);
+
+            // Aligner corps/tete pendant le chargement
+            Minecraft mc = Minecraft.getInstance();
+            boolean isCharging = mc.player != null && mc.player.isUsingItem()
+                    && mc.player.getUseItem().getItem() instanceof MiningLaserItem;
+            if (isCharging) {
+                PlayerAlignmentHandler.setAlignmentEnabled(true);
+            }
         } else {
             chargeLevel = MiningLaserItem.getChargeLevel(stack);
             renderChargingOverlay(poseStack, buffer, packedLight, 0);
