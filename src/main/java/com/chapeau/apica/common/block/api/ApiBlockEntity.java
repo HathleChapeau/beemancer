@@ -25,30 +25,27 @@ import com.chapeau.apica.core.util.ParticleHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -74,14 +71,11 @@ public class ApiBlockEntity extends BlockEntity {
     private static final double CLOSE_DISTANCE = 6.0;
     private static final double VERY_CLOSE_DISTANCE = 2.0;
 
-    // Items Api aime manger
-    private static final Set<Item> LIKED_ITEMS = Set.of(
-        Items.HONEY_BOTTLE, Items.HONEYCOMB, Items.SUGAR, Items.SWEET_BERRIES, Items.GLOW_BERRIES
-    );
-    // Items Api n'aime pas
-    private static final Set<Item> DISLIKED_ITEMS = Set.of(
-        Items.ROTTEN_FLESH, Items.SPIDER_EYE, Items.FERMENTED_SPIDER_EYE, Items.POISONOUS_POTATO
-    );
+    // Tags pour items aimes/detestes par Api
+    private static final TagKey<Item> API_LIKE_TAG =
+        TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("apica", "api_like"));
+    private static final TagKey<Item> API_DISLIKE_TAG =
+        TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("apica", "api_dislike"));
 
     // --- State ---
     private int apiLevel = 0;
@@ -236,19 +230,19 @@ public class ApiBlockEntity extends BlockEntity {
     }
 
     /**
-     * Verifie si l'item est aime par Api.
+     * Verifie si l'item est aime par Api (tag apica:api_like).
      */
     private boolean isLikedItem(ItemStack stack) {
         if (stack.isEmpty()) return false;
-        return LIKED_ITEMS.contains(stack.getItem());
+        return stack.is(API_LIKE_TAG);
     }
 
     /**
-     * Verifie si l'item est deteste par Api.
+     * Verifie si l'item est deteste par Api (tag apica:api_dislike).
      */
     private boolean isDislikedItem(ItemStack stack) {
         if (stack.isEmpty()) return false;
-        return DISLIKED_ITEMS.contains(stack.getItem());
+        return stack.is(API_DISLIKE_TAG);
     }
 
     /**

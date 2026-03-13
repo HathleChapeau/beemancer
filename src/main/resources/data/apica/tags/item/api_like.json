@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:honey_bottle",
+    "apica:royal_jelly_bottle",
+    "apica:nectar_bottle"
+  ]
+}

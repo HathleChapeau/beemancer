@@ -243,8 +243,8 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
         float minX = 0f / 16f;
         float maxX = 16f / 16f;
         float y = 6.52f / 16f; // Legèrement au-dessus pour éviter z-fighting
-        float minZ = 2f / 16f;
-        float maxZ = 18f / 16f;
+        float minZ = -2f / 16f;
+        float maxZ = 14f / 16f;
 
         float u0 = sprite.getU0();
         float u1 = sprite.getU1();

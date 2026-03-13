@@ -70,8 +70,10 @@ public class ApiBlock extends BaseEntityBlock {
     public static final MapCodec<ApiBlock> CODEC = simpleCodec(ApiBlock::new);
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
-    private static final TagKey<net.minecraft.world.item.Item> COMBS_TAG =
-        TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("apica", "combs"));
+    private static final TagKey<net.minecraft.world.item.Item> API_LIKE_TAG =
+        TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("apica", "api_like"));
+    private static final TagKey<net.minecraft.world.item.Item> API_DISLIKE_TAG =
+        TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("apica", "api_dislike"));
 
     // Shape de base: ~10x9x10 centré (scale 0.8 du modèle tilté 45°)
     private static final VoxelShape BASE_SHAPE = Block.box(3, 0, 3, 13, 9, 13);
@@ -204,17 +206,19 @@ public class ApiBlock extends BaseEntityBlock {
             return ItemInteractionResult.CONSUME;
         }
 
-        // Honey Bottle → feed (+1 level)
-        if (stack.is(Items.HONEY_BOTTLE)) {
+        // Items aimes (tag api_like) → feed (+1 level)
+        if (stack.is(API_LIKE_TAG)) {
             if (!level.isClientSide()) {
                 apiBE.feed(gameTime);
 
-                // Consommer la bouteille et rendre un glass bottle
+                // Consommer l'item et rendre un glass bottle si crafting remainder
                 if (!player.getAbilities().instabuild) {
+                    ItemStack remainder = stack.getCraftingRemainingItem();
                     stack.shrink(1);
-                    ItemStack glassBottle = new ItemStack(Items.GLASS_BOTTLE);
-                    if (!player.getInventory().add(glassBottle)) {
-                        player.drop(glassBottle, false);
+                    if (!remainder.isEmpty()) {
+                        if (!player.getInventory().add(remainder)) {
+                            player.drop(remainder, false);
+                        }
                     }
                 }
 
@@ -230,8 +234,8 @@ public class ApiBlock extends BaseEntityBlock {
             return ItemInteractionResult.SUCCESS;
         }
 
-        // Comb → shrink (-1 level)
-        if (stack.is(COMBS_TAG) && apiBE.getApiLevel() > 0) {
+        // Items detestes (tag api_dislike) → shrink (-1 level)
+        if (stack.is(API_DISLIKE_TAG) && apiBE.getApiLevel() > 0) {
             if (!level.isClientSide()) {
                 apiBE.shrink(gameTime);
 
