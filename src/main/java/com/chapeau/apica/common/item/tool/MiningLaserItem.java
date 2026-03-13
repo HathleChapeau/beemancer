@@ -42,6 +42,7 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
     private static final int COST_LEVEL3 = 30;
 
     private static final String TAG_CHARGE_LEVEL = "ChargeLevel";
+    private static final String TAG_PREV_CHARGE_LEVEL = "PrevChargeLevel";
     private static final String TAG_LAST_CLICK_TICK = "LastClickTick";
 
     public MiningLaserItem(Properties properties) {
@@ -70,11 +71,19 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
     }
 
     @Override
+    public void doReload(Player player, ItemStack holder){
+        IMagazineHolder.super.doReload(player, holder);
+        int i = getPrevChargeLevel(holder);
+        setChargeLevel(holder, i <= 0 ? 1 : i);
+    }
+
+    @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
         // Client: mouseDown -> envoie packet au serveur
         if (level.isClientSide()) {
+            Apica.LOGGER.info("charge {}", getChargeLevel(stack));
             if (MagazineInputHelper.isMouseDown()) {
                 net.neoforged.neoforge.network.PacketDistributor.sendToServer(
                     new com.chapeau.apica.core.network.packets.MagazineReloadPacket(hand == InteractionHand.MAIN_HAND)
@@ -186,12 +195,24 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
         if (customData == null) return 0;
         return customData.copyTag().getInt(TAG_CHARGE_LEVEL);
     }
+    public static int getPrevChargeLevel(ItemStack stack) {
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        if (customData == null) return 0;
+        return customData.copyTag().getInt(TAG_PREV_CHARGE_LEVEL);
+    }
 
     public static void setChargeLevel(ItemStack stack, int level) {
         CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
         CompoundTag tag = customData != null ? customData.copyTag() : new CompoundTag();
         tag.putInt(TAG_CHARGE_LEVEL, level);
         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+
+        //if(true)return;
+        if(level == 0) return;
+        CustomData customData2 = stack.get(DataComponents.CUSTOM_DATA);
+        CompoundTag tag2 = customData2 != null ? customData2.copyTag() : new CompoundTag();
+        tag2.putInt(TAG_PREV_CHARGE_LEVEL, level);
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag2));
     }
 
     private static long getLastClickTick(ItemStack stack) {
