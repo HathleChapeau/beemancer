@@ -61,6 +61,12 @@ import static com.chapeau.apica.client.renderer.BuildingWandPreviewRenderer.coun
 @OnlyIn(Dist.CLIENT)
 public class BuildingStaffItemRenderer extends BlockEntityWithoutLevelRenderer {
 
+    private static BuildingStaffItemRenderer instance;
+
+    public static BuildingStaffItemRenderer getInstance() {
+        return instance;
+    }
+
     public static final ModelResourceLocation STAFF_MODEL_LOC =
         ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
             Apica.MOD_ID, "item/building_staff_3d"));
@@ -83,6 +89,7 @@ public class BuildingStaffItemRenderer extends BlockEntityWithoutLevelRenderer {
     public BuildingStaffItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
               Minecraft.getInstance().getEntityModels());
+        instance = this;
     }
 
     @Override

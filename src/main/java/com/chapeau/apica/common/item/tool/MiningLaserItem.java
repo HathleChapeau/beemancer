@@ -78,6 +78,20 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
     }
 
     @Override
+    public void startReloadAnimation(Player player, ItemStack holder, float currentTime) {
+        if (player.level().isClientSide()) {
+            com.chapeau.apica.client.renderer.item.MiningLaserItemRenderer renderer =
+                    com.chapeau.apica.client.renderer.item.MiningLaserItemRenderer.getInstance();
+            if (renderer != null) {
+                renderer.getReloadAnimator().startReloadAnimation(currentTime, () -> {
+                    doReload(player, holder);
+                    setReloading(player, false);
+                });
+            }
+        }
+    }
+
+    @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 

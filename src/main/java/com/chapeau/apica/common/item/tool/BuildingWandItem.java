@@ -279,4 +279,17 @@ public class BuildingWandItem extends Item implements IMagazineHolder {
         return InteractionResultHolder.fail(stack);
     }
 
+    @Override
+    public void startReloadAnimation(Player player, ItemStack holder, float currentTime) {
+        if (player.level().isClientSide()) {
+            com.chapeau.apica.client.renderer.item.BuildingStaffItemRenderer renderer =
+                    com.chapeau.apica.client.renderer.item.BuildingStaffItemRenderer.getInstance();
+            if (renderer != null) {
+                renderer.getReloadAnimator().startReloadAnimation(currentTime, () -> {
+                    doReload(player, holder);
+                    setReloading(player, false);
+                });
+            }
+        }
+    }
 }

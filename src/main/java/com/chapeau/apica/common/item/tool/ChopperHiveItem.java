@@ -144,6 +144,20 @@ public class ChopperHiveItem extends Item implements IMagazineHolder {
         return slotChanged;
     }
 
+    @Override
+    public void startReloadAnimation(Player player, ItemStack holder, float currentTime) {
+        if (player.level().isClientSide()) {
+            com.chapeau.apica.client.renderer.item.ChopperHiveItemRenderer renderer =
+                    com.chapeau.apica.client.renderer.item.ChopperHiveItemRenderer.getInstance();
+            if (renderer != null) {
+                renderer.getReloadAnimator().startReloadAnimation(currentTime, () -> {
+                    doReload(player, holder);
+                    setReloading(player, false);
+                });
+            }
+        }
+    }
+
     public static List<BlockPos> findConnectedLogs(Level level, BlockPos startPos) {
         List<BlockPos> result = new ArrayList<>();
         BlockState startState = level.getBlockState(startPos);

@@ -68,6 +68,12 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 @OnlyIn(Dist.CLIENT)
 public class ChopperHiveItemRenderer extends BlockEntityWithoutLevelRenderer implements IAnimatable {
 
+    private static ChopperHiveItemRenderer instance;
+
+    public static ChopperHiveItemRenderer getInstance() {
+        return instance;
+    }
+
     /** Modeles standalone pour les 3 parties. */
     public static final ModelResourceLocation BOTTOM_MODEL_LOC =
         ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
@@ -181,6 +187,7 @@ public class ChopperHiveItemRenderer extends BlockEntityWithoutLevelRenderer imp
     public ChopperHiveItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
               Minecraft.getInstance().getEntityModels());
+        instance = this;
         initAnimations();
     }
 

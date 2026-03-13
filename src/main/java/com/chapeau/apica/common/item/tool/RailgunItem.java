@@ -204,4 +204,18 @@ public class RailgunItem extends Item implements IMagazineHolder {
     public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
         return slotChanged;
     }
+
+    @Override
+    public void startReloadAnimation(Player player, ItemStack holder, float currentTime) {
+        if (player.level().isClientSide()) {
+            com.chapeau.apica.client.renderer.item.RailgunItemRenderer renderer =
+                    com.chapeau.apica.client.renderer.item.RailgunItemRenderer.getInstance();
+            if (renderer != null) {
+                renderer.getReloadAnimator().startReloadAnimation(currentTime, () -> {
+                    doReload(player, holder);
+                    setReloading(player, false);
+                });
+            }
+        }
+    }
 }

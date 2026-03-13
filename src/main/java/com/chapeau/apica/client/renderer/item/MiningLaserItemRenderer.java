@@ -59,6 +59,12 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 @OnlyIn(Dist.CLIENT)
 public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
 
+    private static MiningLaserItemRenderer instance;
+
+    public static MiningLaserItemRenderer getInstance() {
+        return instance;
+    }
+
     /** Modèle baked du body */
     public static final ModelResourceLocation BODY_MODEL_LOC =
             ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
@@ -140,6 +146,7 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     public MiningLaserItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
                 Minecraft.getInstance().getEntityModels());
+        instance = this;
     }
 
     // =========================================================================

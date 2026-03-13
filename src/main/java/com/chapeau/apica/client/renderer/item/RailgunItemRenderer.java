@@ -59,6 +59,12 @@ import net.minecraft.client.Camera;
 @OnlyIn(Dist.CLIENT)
 public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
 
+    private static RailgunItemRenderer instance;
+
+    public static RailgunItemRenderer getInstance() {
+        return instance;
+    }
+
     public static final ModelResourceLocation BODY_MODEL_LOC =
         ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
             Apica.MOD_ID, "item/railgun_body"));
@@ -158,6 +164,7 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
     public RailgunItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
               Minecraft.getInstance().getEntityModels());
+        instance = this;
     }
 
     @Override

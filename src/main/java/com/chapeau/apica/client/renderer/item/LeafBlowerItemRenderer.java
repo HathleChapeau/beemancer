@@ -57,6 +57,12 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 @OnlyIn(Dist.CLIENT)
 public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
 
+    private static LeafBlowerItemRenderer instance;
+
+    public static LeafBlowerItemRenderer getInstance() {
+        return instance;
+    }
+
     /** Modele bake du body (elements 1-6, 10, 11) */
     public static final ModelResourceLocation BODY_MODEL_LOC =
         ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
@@ -113,6 +119,7 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
     public LeafBlowerItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
               Minecraft.getInstance().getEntityModels());
+        instance = this;
     }
 
     @Override

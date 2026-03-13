@@ -71,6 +71,15 @@ public interface IMagazineHolder {
         setReloading(player, false);
     }
 
+    /**
+     * Démarre l'animation de reload côté client.
+     * Chaque item doit implémenter cette méthode pour accéder à son renderer.
+     * @param player le joueur
+     * @param holder l'ItemStack du holder
+     * @param currentTime temps actuel (AnimationTimer.getRenderTime)
+     */
+    void startReloadAnimation(Player player, ItemStack holder, float currentTime);
+
     // =========================================================================
     // Magazine acceptance
     // =========================================================================

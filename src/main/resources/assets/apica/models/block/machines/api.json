@@ -36,11 +36,11 @@
   "elements": [
     {
       "name": "Face",
-      "from": [4, 2, -2.01],
-      "to": [12, 7, -2.01],
+      "from": [1, 6.51, 0],
+      "to": [15, 6.51, 10],
       "rotation": {"angle": 45, "axis": "x", "origin": [8, 2.75, 8.5]},
       "faces": {
-        "north": {"uv": [0, 0, 16, 10], "texture": "#face"}
+        "up": {"uv": [0, 0, 16, 16], "texture": "#face"}
       }
     },
     {
