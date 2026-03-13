@@ -25,10 +25,10 @@ import com.chapeau.apica.core.network.packets.ResonatorFinishPacket;
 import com.chapeau.apica.core.network.packets.ResonatorTraitMatchPacket;
 import com.chapeau.apica.core.network.packets.ResonatorUpdatePacket;
 import com.chapeau.apica.core.network.packets.StorageTasksSyncPacket;
-import com.chapeau.apica.core.network.packets.DubstepRadioEditPacket;
-import com.chapeau.apica.core.network.packets.DubstepRadioTrackPacket;
-import com.chapeau.apica.core.network.packets.DubstepRadioTransportPacket;
-import com.chapeau.apica.core.network.packets.DubstepRadioSyncPacket;
+import com.chapeau.apica.core.network.packets.WaveMixerEditPacket;
+import com.chapeau.apica.core.network.packets.WaveMixerTrackPacket;
+import com.chapeau.apica.core.network.packets.WaveMixerTransportPacket;
+import com.chapeau.apica.core.network.packets.WaveMixerSyncPacket;
 import com.chapeau.apica.core.network.packets.MagazineEquipPacket;
 import com.chapeau.apica.core.network.packets.MagazineReloadPacket;
 import com.chapeau.apica.core.network.packets.MagazineReloadStartPacket;
@@ -128,23 +128,23 @@ public class ApicaNetwork {
                 ItemFilterActionPacket::handle
         );
 
-        // Dubstep Radio C2S
+        // Wave Mixer C2S
         registrar.playToServer(
-                DubstepRadioEditPacket.TYPE,
-                DubstepRadioEditPacket.STREAM_CODEC,
-                DubstepRadioEditPacket::handle
+                WaveMixerEditPacket.TYPE,
+                WaveMixerEditPacket.STREAM_CODEC,
+                WaveMixerEditPacket::handle
         );
 
         registrar.playToServer(
-                DubstepRadioTrackPacket.TYPE,
-                DubstepRadioTrackPacket.STREAM_CODEC,
-                DubstepRadioTrackPacket::handle
+                WaveMixerTrackPacket.TYPE,
+                WaveMixerTrackPacket.STREAM_CODEC,
+                WaveMixerTrackPacket::handle
         );
 
         registrar.playToServer(
-                DubstepRadioTransportPacket.TYPE,
-                DubstepRadioTransportPacket.STREAM_CODEC,
-                DubstepRadioTransportPacket::handle
+                WaveMixerTransportPacket.TYPE,
+                WaveMixerTransportPacket.STREAM_CODEC,
+                WaveMixerTransportPacket::handle
         );
 
         // Magazine C2S
@@ -231,11 +231,11 @@ public class ApicaNetwork {
                 AccessorySyncPacket::handle
         );
 
-        // Dubstep Radio S2C
+        // Wave Mixer S2C
         registrar.playToClient(
-                DubstepRadioSyncPacket.TYPE,
-                DubstepRadioSyncPacket.STREAM_CODEC,
-                DubstepRadioSyncPacket::handle
+                WaveMixerSyncPacket.TYPE,
+                WaveMixerSyncPacket.STREAM_CODEC,
+                WaveMixerSyncPacket::handle
         );
 
     }

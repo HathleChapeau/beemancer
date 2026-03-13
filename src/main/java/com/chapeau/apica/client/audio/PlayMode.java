@@ -14,7 +14,7 @@
  * UTILISE PAR:
  * - SequencePlaybackEngine.java (mode de lecture actif)
  * - TransportBarWidget.java (affichage/toggle du mode)
- * - DubstepRadioScreen.java (stockage du mode courant)
+ * - WaveMixerScreen.java (stockage du mode courant)
  *
  * ============================================================
  */

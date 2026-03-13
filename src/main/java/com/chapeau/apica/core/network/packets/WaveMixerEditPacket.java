@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * [DubstepRadioEditPacket.java]
+ * [WaveMixerEditPacket.java]
  * Description: Packet C2S pour activer/desactiver un pitch dans la grille du sequenceur
  * ============================================================
  *
@@ -8,12 +8,12 @@
  * ------------------------------------------------------------
  * | Dependance               | Raison                | Utilisation                    |
  * |--------------------------|----------------------|--------------------------------|
- * | DubstepRadioBlockEntity  | BE cible             | Application du changement      |
+ * | WaveMixerBlockEntity  | BE cible             | Application du changement      |
  * | TrackData                | Donnees track        | setPitchActive                 |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - DubstepRadioScreen (envoi des edits)
+ * - WaveMixerScreen (envoi des edits)
  * - ApicaNetwork (enregistrement)
  *
  * ============================================================
@@ -21,9 +21,9 @@
 package com.chapeau.apica.core.network.packets;
 
 import com.chapeau.apica.Apica;
-import com.chapeau.apica.common.block.radio.DubstepRadioBlockEntity;
+import com.chapeau.apica.common.block.radio.WaveMixerBlockEntity;
 import com.chapeau.apica.common.data.TrackData;
-import com.chapeau.apica.common.menu.DubstepRadioMenu;
+import com.chapeau.apica.common.menu.WaveMixerMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -32,17 +32,17 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record DubstepRadioEditPacket(BlockPos pos, int trackIndex, int stepIndex,
+public record WaveMixerEditPacket(BlockPos pos, int trackIndex, int stepIndex,
                                      int pitch, boolean activate)
         implements CustomPacketPayload {
 
-    public static final Type<DubstepRadioEditPacket> TYPE = new Type<>(
-            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "dubstep_radio_edit"));
+    public static final Type<WaveMixerEditPacket> TYPE = new Type<>(
+            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "wave_mixer_edit"));
 
-    public static final StreamCodec<FriendlyByteBuf, DubstepRadioEditPacket> STREAM_CODEC =
-            StreamCodec.of(DubstepRadioEditPacket::write, DubstepRadioEditPacket::read);
+    public static final StreamCodec<FriendlyByteBuf, WaveMixerEditPacket> STREAM_CODEC =
+            StreamCodec.of(WaveMixerEditPacket::write, WaveMixerEditPacket::read);
 
-    private static void write(FriendlyByteBuf buf, DubstepRadioEditPacket packet) {
+    private static void write(FriendlyByteBuf buf, WaveMixerEditPacket packet) {
         buf.writeBlockPos(packet.pos());
         buf.writeByte(packet.trackIndex());
         buf.writeByte(packet.stepIndex());
@@ -50,8 +50,8 @@ public record DubstepRadioEditPacket(BlockPos pos, int trackIndex, int stepIndex
         buf.writeBoolean(packet.activate());
     }
 
-    private static DubstepRadioEditPacket read(FriendlyByteBuf buf) {
-        return new DubstepRadioEditPacket(
+    private static WaveMixerEditPacket read(FriendlyByteBuf buf) {
+        return new WaveMixerEditPacket(
                 buf.readBlockPos(), buf.readByte(), buf.readByte(),
                 buf.readByte(), buf.readBoolean());
     }
@@ -61,13 +61,13 @@ public record DubstepRadioEditPacket(BlockPos pos, int trackIndex, int stepIndex
         return TYPE;
     }
 
-    public static void handle(DubstepRadioEditPacket packet, IPayloadContext context) {
+    public static void handle(WaveMixerEditPacket packet, IPayloadContext context) {
         context.enqueueWork(() -> {
             if (!(context.player() instanceof ServerPlayer player)) return;
-            if (!(player.containerMenu instanceof DubstepRadioMenu)) return;
+            if (!(player.containerMenu instanceof WaveMixerMenu)) return;
             if (player.blockPosition().distSqr(packet.pos()) > 64 * 64) return;
 
-            if (player.level().getBlockEntity(packet.pos()) instanceof DubstepRadioBlockEntity be) {
+            if (player.level().getBlockEntity(packet.pos()) instanceof WaveMixerBlockEntity be) {
                 TrackData track = be.getSequenceData().getTrack(packet.trackIndex());
                 if (track != null) {
                     track.setPitchActive(packet.stepIndex(), packet.pitch(), packet.activate());

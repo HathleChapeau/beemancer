@@ -14,7 +14,7 @@
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - DubstepRadioScreen (appel update() chaque frame dans render())
+ * - WaveMixerScreen (appel update() chaque frame dans render())
  *
  * ============================================================
  */

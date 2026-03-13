@@ -227,8 +227,8 @@ public class ClientSetup {
         // Item Filter
         event.register(ApicaMenus.ITEM_FILTER.get(), com.chapeau.apica.client.gui.screen.ItemFilterScreen::new);
 
-        // Dubstep Radio
-        event.register(ApicaMenus.DUBSTEP_RADIO.get(), com.chapeau.apica.client.gui.screen.DubstepRadioScreen::new);
+        // Wave Mixer
+        event.register(ApicaMenus.WAVE_MIXER.get(), com.chapeau.apica.client.gui.screen.WaveMixerScreen::new);
 
         // Backpack
         event.register(ApicaMenus.BACKPACK.get(), com.chapeau.apica.client.gui.screen.BackpackScreen::new);

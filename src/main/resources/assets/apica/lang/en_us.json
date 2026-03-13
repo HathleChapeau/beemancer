@@ -683,7 +683,7 @@
   "block.apica.api": "Api",
   "block.apica.resonator": "Resonator",
   "block.apica.bee_creator": "Bee Creator",
-  "block.apica.dubstep_radio": "Wave Mixer",
+  "block.apica.wave_mixer": "Wave Mixer",
   "message.apica.bee_statue.species_changed": "Species changed to %s (%d/%d)",
   "message.apica.bee_statue.bee_given": "You received a %s!",
   "codex.apica.bees.hive.title": "Hive",

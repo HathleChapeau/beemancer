@@ -14,7 +14,7 @@
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - DubstepRadioScreen (widget enfant, mode principal)
+ * - WaveMixerScreen (widget enfant, mode principal)
  *
  * ============================================================
  */

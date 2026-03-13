@@ -32,7 +32,7 @@ import com.chapeau.apica.common.blockentity.artifacts.UncraftingTableBlockEntity
 import com.chapeau.apica.common.blockentity.altar.AltarHeartBlockEntity;
 import com.chapeau.apica.common.blockentity.altar.HoneyPedestalBlockEntity;
 import com.chapeau.apica.common.blockentity.altar.HoneyReservoirBlockEntity;
-import com.chapeau.apica.common.block.radio.DubstepRadioBlockEntity;
+import com.chapeau.apica.common.block.radio.WaveMixerBlockEntity;
 import com.chapeau.apica.common.block.resonator.ResonatorBlockEntity;
 import com.chapeau.apica.common.block.api.ApiBlockEntity;
 import com.chapeau.apica.common.block.statue.BeeStatueBlockEntity;
@@ -422,12 +422,12 @@ public class ApicaBlockEntities {
                             ApicaBlocks.RESONATOR.get()
                     ).build(null));
 
-    // --- DUBSTEP RADIO ---
-    public static final Supplier<BlockEntityType<DubstepRadioBlockEntity>> DUBSTEP_RADIO =
-            BLOCK_ENTITIES.register("dubstep_radio",
+    // --- WAVE MIXER ---
+    public static final Supplier<BlockEntityType<WaveMixerBlockEntity>> WAVE_MIXER =
+            BLOCK_ENTITIES.register("wave_mixer",
                     () -> BlockEntityType.Builder.of(
-                            DubstepRadioBlockEntity::new,
-                            ApicaBlocks.DUBSTEP_RADIO.get()
+                            WaveMixerBlockEntity::new,
+                            ApicaBlocks.WAVE_MIXER.get()
                     ).build(null));
 
     // --- BEE STATUE ---

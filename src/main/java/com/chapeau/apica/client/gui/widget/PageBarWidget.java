@@ -13,7 +13,7 @@
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - DubstepRadioScreen (widget enfant, mode editeur, zone basse)
+ * - WaveMixerScreen (widget enfant, mode editeur, zone basse)
  *
  * ============================================================
  */

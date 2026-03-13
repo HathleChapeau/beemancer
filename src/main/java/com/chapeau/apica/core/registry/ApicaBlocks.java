@@ -62,7 +62,7 @@ import com.chapeau.apica.common.block.storage.StorageBarrelBlock;
 import com.chapeau.apica.common.block.storage.StorageControllerBlock;
 import com.chapeau.apica.common.block.storage.TrashCanBlock;
 import com.chapeau.apica.common.block.portal.ApicaPortalBlock;
-import com.chapeau.apica.common.block.radio.DubstepRadioBlock;
+import com.chapeau.apica.common.block.radio.WaveMixerBlock;
 import com.chapeau.apica.common.block.resonator.ResonatorBlock;
 import com.chapeau.apica.common.block.storage.StorageHiveBlock;
 import com.chapeau.apica.common.block.storage.StorageRelayBlock;
@@ -704,9 +704,9 @@ public class ApicaBlocks {
                     .sound(SoundType.METAL)
                     .noOcclusion()));
 
-    // --- DUBSTEP RADIO ---
-    public static final DeferredBlock<DubstepRadioBlock> DUBSTEP_RADIO = registerTimed("dubstep_radio",
-            () -> new DubstepRadioBlock(BlockBehaviour.Properties.of()
+    // --- WAVE MIXER ---
+    public static final DeferredBlock<WaveMixerBlock> WAVE_MIXER = registerTimed("wave_mixer",
+            () -> new WaveMixerBlock(BlockBehaviour.Properties.of()
                     .strength(2.0f)
                     .sound(SoundType.METAL)
                     .noOcclusion()));

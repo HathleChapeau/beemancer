@@ -1,7 +1,7 @@
 /**
  * ============================================================
- * [DubstepRadioBlockEntity.java]
- * Description: BlockEntity du Dubstep Radio — stocke la sequence, gere le transport et les particules
+ * [WaveMixerBlockEntity.java]
+ * Description: BlockEntity du Wave Mixer — stocke la sequence, gere le transport et les particules
  * ============================================================
  *
  * DEPENDANCES:
@@ -9,24 +9,24 @@
  * | Dependance               | Raison                | Utilisation                    |
  * |--------------------------|----------------------|--------------------------------|
  * | SequenceData             | Donnees musicales    | Stockage/serialisation         |
- * | DubstepRadioMenu         | Menu GUI             | createMenu()                   |
+ * | WaveMixerMenu         | Menu GUI             | createMenu()                   |
  * | ApicaBlockEntities       | Type enregistre      | Construction                   |
  * | ContainerData            | Sync S->C            | BPM, pageCount, transport      |
  * | ParticleHelper           | Particules au beat   | Effets visuels pendant play    |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - DubstepRadioBlock (newBlockEntity, openMenu, ticker)
- * - DubstepRadioMenu (server constructor)
- * - DubstepRadioEditPacket (modifications cellules)
- * - DubstepRadioTransportPacket (play/stop)
+ * - WaveMixerBlock (newBlockEntity, openMenu, ticker)
+ * - WaveMixerMenu (server constructor)
+ * - WaveMixerEditPacket (modifications cellules)
+ * - WaveMixerTransportPacket (play/stop)
  *
  * ============================================================
  */
 package com.chapeau.apica.common.block.radio;
 
 import com.chapeau.apica.common.data.SequenceData;
-import com.chapeau.apica.common.menu.DubstepRadioMenu;
+import com.chapeau.apica.common.menu.WaveMixerMenu;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.chapeau.apica.core.util.ParticleHelper;
 import net.minecraft.core.BlockPos;
@@ -49,7 +49,7 @@ import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 
-public class DubstepRadioBlockEntity extends BlockEntity implements MenuProvider {
+public class WaveMixerBlockEntity extends BlockEntity implements MenuProvider {
 
     private final SequenceData sequenceData = new SequenceData();
     private boolean playing = false;
@@ -83,13 +83,13 @@ public class DubstepRadioBlockEntity extends BlockEntity implements MenuProvider
         }
     };
 
-    public DubstepRadioBlockEntity(BlockPos pos, BlockState state) {
-        super(ApicaBlockEntities.DUBSTEP_RADIO.get(), pos, state);
+    public WaveMixerBlockEntity(BlockPos pos, BlockState state) {
+        super(ApicaBlockEntities.WAVE_MIXER.get(), pos, state);
     }
 
     // === Server Tick ===
 
-    public static void serverTick(Level level, BlockPos pos, BlockState state, DubstepRadioBlockEntity be) {
+    public static void serverTick(Level level, BlockPos pos, BlockState state, WaveMixerBlockEntity be) {
         if (!be.playing) return;
 
         float ticksPerStep = 1200.0f / be.sequenceData.getBpm() / 4.0f;
@@ -145,13 +145,13 @@ public class DubstepRadioBlockEntity extends BlockEntity implements MenuProvider
 
     @Override
     public Component getDisplayName() {
-        return Component.translatable("block.apica.dubstep_radio");
+        return Component.translatable("block.apica.wave_mixer");
     }
 
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
-        return new DubstepRadioMenu(containerId, playerInventory, containerData, worldPosition);
+        return new WaveMixerMenu(containerId, playerInventory, containerData, worldPosition);
     }
 
     // === NBT ===

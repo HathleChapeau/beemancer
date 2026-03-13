@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "apica:block/machines/wave_mixer" },
+    "facing=south": { "model": "apica:block/machines/wave_mixer", "y": 180 },
+    "facing=west":  { "model": "apica:block/machines/wave_mixer", "y": 270 },
+    "facing=east":  { "model": "apica:block/machines/wave_mixer", "y": 90 }
+  }
+}

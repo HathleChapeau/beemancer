@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * [DubstepRadioTransportPacket.java]
+ * [WaveMixerTransportPacket.java]
  * Description: Packet C2S pour play/stop, changement BPM, et gestion des pages
  * ============================================================
  *
@@ -8,13 +8,13 @@
  * ------------------------------------------------------------
  * | Dependance               | Raison                | Utilisation                    |
  * |--------------------------|----------------------|--------------------------------|
- * | DubstepRadioBlockEntity  | BE cible             | Transport control              |
+ * | WaveMixerBlockEntity  | BE cible             | Transport control              |
  * | SequencePlaybackEngine   | Moteur client        | Demarrage/arret playback       |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - DubstepRadioScreen / TransportBarWidget (envoi C2S)
- * - DubstepRadioBlockEntity (broadcast S2C)
+ * - WaveMixerScreen / TransportBarWidget (envoi C2S)
+ * - WaveMixerBlockEntity (broadcast S2C)
  * - ApicaNetwork (enregistrement bidirectionnel)
  *
  * ============================================================
@@ -22,8 +22,8 @@
 package com.chapeau.apica.core.network.packets;
 
 import com.chapeau.apica.Apica;
-import com.chapeau.apica.common.block.radio.DubstepRadioBlockEntity;
-import com.chapeau.apica.common.menu.DubstepRadioMenu;
+import com.chapeau.apica.common.block.radio.WaveMixerBlockEntity;
+import com.chapeau.apica.common.menu.WaveMixerMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -32,7 +32,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record DubstepRadioTransportPacket(BlockPos pos, int action, int bpm, int swing)
+public record WaveMixerTransportPacket(BlockPos pos, int action, int bpm, int swing)
         implements CustomPacketPayload {
 
     public static final int PLAY = 0;
@@ -41,21 +41,21 @@ public record DubstepRadioTransportPacket(BlockPos pos, int action, int bpm, int
     public static final int ADD_PAGE = 4;
     public static final int REMOVE_PAGE = 5;
 
-    public static final Type<DubstepRadioTransportPacket> TYPE = new Type<>(
-            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "dubstep_radio_transport"));
+    public static final Type<WaveMixerTransportPacket> TYPE = new Type<>(
+            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "wave_mixer_transport"));
 
-    public static final StreamCodec<FriendlyByteBuf, DubstepRadioTransportPacket> STREAM_CODEC =
-            StreamCodec.of(DubstepRadioTransportPacket::write, DubstepRadioTransportPacket::read);
+    public static final StreamCodec<FriendlyByteBuf, WaveMixerTransportPacket> STREAM_CODEC =
+            StreamCodec.of(WaveMixerTransportPacket::write, WaveMixerTransportPacket::read);
 
-    private static void write(FriendlyByteBuf buf, DubstepRadioTransportPacket packet) {
+    private static void write(FriendlyByteBuf buf, WaveMixerTransportPacket packet) {
         buf.writeBlockPos(packet.pos());
         buf.writeByte(packet.action());
         buf.writeShort(packet.bpm());
         buf.writeByte(packet.swing());
     }
 
-    private static DubstepRadioTransportPacket read(FriendlyByteBuf buf) {
-        return new DubstepRadioTransportPacket(buf.readBlockPos(), buf.readByte(), buf.readUnsignedShort(), buf.readByte());
+    private static WaveMixerTransportPacket read(FriendlyByteBuf buf) {
+        return new WaveMixerTransportPacket(buf.readBlockPos(), buf.readByte(), buf.readUnsignedShort(), buf.readByte());
     }
 
     @Override
@@ -63,13 +63,13 @@ public record DubstepRadioTransportPacket(BlockPos pos, int action, int bpm, int
         return TYPE;
     }
 
-    public static void handle(DubstepRadioTransportPacket packet, IPayloadContext context) {
+    public static void handle(WaveMixerTransportPacket packet, IPayloadContext context) {
         context.enqueueWork(() -> {
             if (!(context.player() instanceof ServerPlayer player)) return;
-            if (!(player.containerMenu instanceof DubstepRadioMenu)) return;
+            if (!(player.containerMenu instanceof WaveMixerMenu)) return;
             if (player.blockPosition().distSqr(packet.pos()) > 64 * 64) return;
 
-            if (player.level().getBlockEntity(packet.pos()) instanceof DubstepRadioBlockEntity be) {
+            if (player.level().getBlockEntity(packet.pos()) instanceof WaveMixerBlockEntity be) {
                 switch (packet.action()) {
                     case PLAY -> be.play();
                     case STOP -> be.stop();

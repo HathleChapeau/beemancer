@@ -2,7 +2,7 @@
   "parent": "minecraft:block/block",
   "textures": {
     "base": "apica:block/ironed_wood_r",
-    "top": "apica:block/machines/dubstep_radio_top_r",
+    "top": "apica:block/machines/wave_mixer_top_r",
     "iron": "apica:block/iron",
     "ironr": "apica:block/ironr",
     "side": "apica:block/wood"

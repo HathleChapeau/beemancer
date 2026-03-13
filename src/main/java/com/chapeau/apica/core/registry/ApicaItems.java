@@ -480,9 +480,9 @@ public class ApicaItems {
     public static final DeferredItem<BlockItem> RESONATOR = ITEMS.register("resonator",
             () -> new BlockItem(ApicaBlocks.RESONATOR.get(), new Item.Properties()));
 
-    // --- DUBSTEP RADIO ---
-    public static final DeferredItem<BlockItem> DUBSTEP_RADIO = ITEMS.register("dubstep_radio",
-            () -> new BlockItem(ApicaBlocks.DUBSTEP_RADIO.get(), new Item.Properties()));
+    // --- WAVE MIXER ---
+    public static final DeferredItem<BlockItem> WAVE_MIXER = ITEMS.register("wave_mixer",
+            () -> new BlockItem(ApicaBlocks.WAVE_MIXER.get(), new Item.Properties()));
 
     // --- CODEX ---
     public static final DeferredItem<CodexItem> CODEX = ITEMS.register("codex",

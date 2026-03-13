@@ -14,10 +14,10 @@
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - DubstepRadioBlockEntity.java (stockage persistent)
- * - DubstepRadioScreen.java (copie locale client)
+ * - WaveMixerBlockEntity.java (stockage persistent)
+ * - WaveMixerScreen.java (copie locale client)
  * - SequencePlaybackEngine.java (lecture des notes)
- * - DubstepRadioSyncPacket.java (transmission reseau)
+ * - WaveMixerSyncPacket.java (transmission reseau)
  *
  * ============================================================
  */

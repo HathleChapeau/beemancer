@@ -1,14 +1,14 @@
 /**
  * ============================================================
- * [DubstepRadioBlock.java]
- * Description: Bloc Dubstep Radio — table de mix DAW ouvrant un sequenceur musical
+ * [WaveMixerBlock.java]
+ * Description: Bloc Wave Mixer — table de mix DAW ouvrant un sequenceur musical
  * ============================================================
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
  * | Dependance               | Raison                | Utilisation                    |
  * |--------------------------|----------------------|--------------------------------|
- * | DubstepRadioBlockEntity  | BlockEntity associe  | Stockage sequence, menu        |
+ * | WaveMixerBlockEntity  | BlockEntity associe  | Stockage sequence, menu        |
  * | BaseEntityBlock          | Support BlockEntity  | newBlockEntity()               |
  * | ApicaBlockEntities       | Type enregistre      | getTicker()                    |
  * ------------------------------------------------------------
@@ -21,7 +21,7 @@
  */
 package com.chapeau.apica.common.block.radio;
 
-import com.chapeau.apica.core.network.packets.DubstepRadioSyncPacket;
+import com.chapeau.apica.core.network.packets.WaveMixerSyncPacket;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
@@ -53,9 +53,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 
-public class DubstepRadioBlock extends BaseEntityBlock {
+public class WaveMixerBlock extends BaseEntityBlock {
 
-    public static final MapCodec<DubstepRadioBlock> CODEC = simpleCodec(DubstepRadioBlock::new);
+    public static final MapCodec<WaveMixerBlock> CODEC = simpleCodec(WaveMixerBlock::new);
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     /** Wave Mixer : base etagee + colonne + tete inclinee. */
@@ -66,7 +66,7 @@ public class DubstepRadioBlock extends BaseEntityBlock {
             Block.box(0, 12, 0, 16, 17, 16)
     );
 
-    public DubstepRadioBlock(Properties properties) {
+    public WaveMixerBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any()
                 .setValue(FACING, Direction.NORTH));
@@ -102,15 +102,15 @@ public class DubstepRadioBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new DubstepRadioBlockEntity(pos, state);
+        return new WaveMixerBlockEntity(pos, state);
     }
 
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         if (level.isClientSide()) return null;
-        return createTickerHelper(type, ApicaBlockEntities.DUBSTEP_RADIO.get(),
-                DubstepRadioBlockEntity::serverTick);
+        return createTickerHelper(type, ApicaBlockEntities.WAVE_MIXER.get(),
+                WaveMixerBlockEntity::serverTick);
     }
 
     @Override
@@ -118,10 +118,10 @@ public class DubstepRadioBlock extends BaseEntityBlock {
                                                 Player player, BlockHitResult hitResult) {
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             BlockEntity be = level.getBlockEntity(pos);
-            if (be instanceof DubstepRadioBlockEntity radio) {
+            if (be instanceof WaveMixerBlockEntity radio) {
                 serverPlayer.openMenu(radio, buf -> buf.writeBlockPos(pos));
                 PacketDistributor.sendToPlayer(serverPlayer,
-                        new DubstepRadioSyncPacket(pos, radio.getSequenceData().save()));
+                        new WaveMixerSyncPacket(pos, radio.getSequenceData().save()));
             }
         }
         return InteractionResult.sidedSuccess(level.isClientSide());
@@ -130,7 +130,7 @@ public class DubstepRadioBlock extends BaseEntityBlock {
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof DubstepRadioBlockEntity radio) || !radio.isPlaying()) return;
+        if (!(be instanceof WaveMixerBlockEntity radio) || !radio.isPlaying()) return;
         double x = pos.getX() + 0.5;
         double y = pos.getY() + 0.9;
         double z = pos.getZ() + 0.5;

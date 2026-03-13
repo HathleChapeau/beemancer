@@ -9,12 +9,12 @@
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | PlayMode            | Mode de lecture      | Affichage/toggle du mode       |
- * | DubstepRadioScreen  | Ecran parent         | Callbacks pour actions         |
+ * | WaveMixerScreen  | Ecran parent         | Callbacks pour actions         |
  * | GuiGraphics         | Rendu vectoriel      | fill(), drawString()           |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - DubstepRadioScreen (widget enfant, zone haute)
+ * - WaveMixerScreen (widget enfant, zone haute)
  *
  * ============================================================
  */

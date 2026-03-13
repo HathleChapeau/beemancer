@@ -188,10 +188,10 @@ Systeme modulaire de reservoir fluide pour items (7 fichiers crees, 8 modifies):
 - Lang: +item.apica.magazine, +tooltip.apica.magazine.empty
 
 ================================================================================
-2026-03-04 - Dubstep Radio (DAW Block)
+2026-03-04 - Wave Mixer (DAW Block)
 ================================================================================
 
-Nouveau bloc Dubstep Radio — station de composition musicale in-game (DAW):
+Nouveau bloc Wave Mixer — station de composition musicale in-game (DAW):
 - 16 fichiers Java crees: data layer (NoteCell, DubstepInstrument, TrackData, SequenceData),
   bloc/BE/menu, 4 packets reseau, moteur audio client, ecran DAW + 3 widgets
 - Moteur audio SequencePlaybackEngine: timing frame-rate independant du tick serveur
@@ -201,7 +201,7 @@ Nouveau bloc Dubstep Radio — station de composition musicale in-game (DAW):
 - 4 packets enregistres dans ApicaNetwork (3 C2S + 1 S2C)
 - Screen enregistre dans ClientSetup, icon Codex dans CodexNodeWidget
 - Assets: blockstate, block model DJ deck, item model, lang en_us + fr_fr
-- Codex lore mis a jour pour le node dubstep_radio
+- Codex lore mis a jour pour le node wave_mixer
 
 ================================================================================
 2026-03-03 - Apica Dimension (Phase 1)

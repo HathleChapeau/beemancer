@@ -1,14 +1,14 @@
 /**
  * ============================================================
- * [DubstepRadioScreen.java]
- * Description: Ecran principal du DAW Dubstep Radio — deux modes : liste instruments / piano-roll
+ * [WaveMixerScreen.java]
+ * Description: Ecran principal du DAW Wave Mixer — deux modes : liste instruments / piano-roll
  * ============================================================
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
  * | Dependance               | Raison                | Utilisation                    |
  * |--------------------------|----------------------|--------------------------------|
- * | DubstepRadioMenu         | Menu associe         | ContainerData sync auto        |
+ * | WaveMixerMenu         | Menu associe         | ContainerData sync auto        |
  * | SequenceData             | Donnees locales      | Copie client de la sequence    |
  * | SequencePlaybackEngine   | Moteur audio         | Play/stop/update chaque frame  |
  * | PlayMode                 | Mode de lecture      | Play/Loop/Page variants        |
@@ -16,8 +16,8 @@
  * | InstrumentColumnWidget   | Liste instruments    | M/S/X/Edit, add track          |
  * | TrackEditorWidget        | Piano-roll           | Edition notes par track        |
  * | PageBarWidget            | Navigation pages     | +/del pages, prev/next         |
- * | DubstepRadioSyncPacket   | Sync S2C             | Reception donnees completes    |
- * | DubstepRadio*Packet      | Actions C2S          | Envoi modifications au serveur |
+ * | WaveMixerSyncPacket   | Sync S2C             | Reception donnees completes    |
+ * | WaveMixer*Packet      | Actions C2S          | Envoi modifications au serveur |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -36,11 +36,11 @@ import com.chapeau.apica.client.gui.widget.TransportBarWidget;
 import com.chapeau.apica.common.data.DubstepInstrument;
 import com.chapeau.apica.common.data.SequenceData;
 import com.chapeau.apica.common.data.TrackData;
-import com.chapeau.apica.common.menu.DubstepRadioMenu;
-import com.chapeau.apica.core.network.packets.DubstepRadioEditPacket;
-import com.chapeau.apica.core.network.packets.DubstepRadioSyncPacket;
-import com.chapeau.apica.core.network.packets.DubstepRadioTrackPacket;
-import com.chapeau.apica.core.network.packets.DubstepRadioTransportPacket;
+import com.chapeau.apica.common.menu.WaveMixerMenu;
+import com.chapeau.apica.core.network.packets.WaveMixerEditPacket;
+import com.chapeau.apica.core.network.packets.WaveMixerSyncPacket;
+import com.chapeau.apica.core.network.packets.WaveMixerTrackPacket;
+import com.chapeau.apica.core.network.packets.WaveMixerTransportPacket;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.BlockPos;
@@ -56,8 +56,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * En mode editeur, les pages sont navigables via PageBarWidget.
  * Les 4 modes de lecture (Play/PlayPage/Loop/PageLoop) sont selectionnes via TransportBarWidget.
  */
-public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu>
-        implements DubstepRadioSyncPacket.DubstepRadioSyncReceiver {
+public class WaveMixerScreen extends AbstractContainerScreen<WaveMixerMenu>
+        implements WaveMixerSyncPacket.WaveMixerSyncReceiver {
 
     private static final int GUI_W = 220;
     private static final int MAIN_H = 150;
@@ -78,7 +78,7 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
     private TrackEditorWidget trackEditor;
     private PageBarWidget pageBar;
 
-    public DubstepRadioScreen(DubstepRadioMenu menu, Inventory inv, Component title) {
+    public WaveMixerScreen(WaveMixerMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
         this.imageWidth = GUI_W;
         this.imageHeight = MAIN_H;
@@ -103,17 +103,17 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
 
         TransportBarWidget.Listener transportListener = new TransportBarWidget.Listener() {
             @Override
-            public void onPlay() { sendTransport(DubstepRadioTransportPacket.PLAY); }
+            public void onPlay() { sendTransport(WaveMixerTransportPacket.PLAY); }
             @Override
             public void onStop() {
-                sendTransport(DubstepRadioTransportPacket.STOP);
+                sendTransport(WaveMixerTransportPacket.STOP);
                 SequencePlaybackEngine.stop();
             }
             @Override
             public void onBpmChange(int delta) {
                 int newBpm = Math.max(40, Math.min(300, localData.getBpm() + delta));
                 localData.setBpm(newBpm);
-                sendTransportValue(DubstepRadioTransportPacket.SET_BPM, newBpm);
+                sendTransportValue(WaveMixerTransportPacket.SET_BPM, newBpm);
             }
             @Override
             public void onModeChange(PlayMode newMode) {
@@ -136,7 +136,7 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
             @Override
             public void onAddTrack(DubstepInstrument instrument) {
                 localData.addTrack(instrument);
-                sendTrackAction(localData.getTrackCount() - 1, DubstepRadioTrackPacket.ADD,
+                sendTrackAction(localData.getTrackCount() - 1, WaveMixerTrackPacket.ADD,
                         instrument.ordinal());
             }
             @Override
@@ -144,14 +144,14 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
                 if (editingTrack == trackIndex) editingTrack = -1;
                 else if (editingTrack > trackIndex) editingTrack--;
                 localData.removeTrack(trackIndex);
-                sendTrackAction(trackIndex, DubstepRadioTrackPacket.REMOVE, 0);
+                sendTrackAction(trackIndex, WaveMixerTrackPacket.REMOVE, 0);
             }
             @Override
             public void onToggleMute(int trackIndex) {
                 TrackData track = localData.getTrack(trackIndex);
                 if (track != null) {
                     track.setMuted(!track.isMuted());
-                    sendTrackAction(trackIndex, DubstepRadioTrackPacket.MUTE,
+                    sendTrackAction(trackIndex, WaveMixerTrackPacket.MUTE,
                             track.isMuted() ? 1 : 0);
                 }
             }
@@ -160,7 +160,7 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
                 TrackData track = localData.getTrack(trackIndex);
                 if (track != null) {
                     track.setSolo(!track.isSolo());
-                    sendTrackAction(trackIndex, DubstepRadioTrackPacket.SOLO,
+                    sendTrackAction(trackIndex, WaveMixerTrackPacket.SOLO,
                             track.isSolo() ? 1 : 0);
                 }
             }
@@ -182,7 +182,7 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
                 TrackData track = localData.getTrack(editingTrack);
                 if (track == null) return;
                 track.setPitchActive(stepIndex, pitch, activate);
-                PacketDistributor.sendToServer(new DubstepRadioEditPacket(
+                PacketDistributor.sendToServer(new WaveMixerEditPacket(
                         menu.getBlockPos(), editingTrack, stepIndex, pitch, activate));
             }
             @Override
@@ -205,13 +205,13 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
             @Override
             public void onAddPage() {
                 localData.addPage();
-                sendTransportValue(DubstepRadioTransportPacket.ADD_PAGE, 0);
+                sendTransportValue(WaveMixerTransportPacket.ADD_PAGE, 0);
             }
             @Override
             public void onDeletePage(int pageIndex) {
                 localData.removePage(pageIndex);
                 currentPage = Math.min(currentPage, localData.getPageCount() - 1);
-                sendTransportValue(DubstepRadioTransportPacket.REMOVE_PAGE, pageIndex);
+                sendTransportValue(WaveMixerTransportPacket.REMOVE_PAGE, pageIndex);
             }
         });
     }
@@ -230,7 +230,7 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
 
         // Auto-stop check: non-looping mode reached end
         if (SequencePlaybackEngine.shouldAutoStop()) {
-            sendTransport(DubstepRadioTransportPacket.STOP);
+            sendTransport(WaveMixerTransportPacket.STOP);
             SequencePlaybackEngine.stop();
             autoStopPending = true;
         }
@@ -347,10 +347,10 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == 32) {
             if (menu.isPlaying()) {
-                sendTransport(DubstepRadioTransportPacket.STOP);
+                sendTransport(WaveMixerTransportPacket.STOP);
                 SequencePlaybackEngine.stop();
             } else {
-                sendTransport(DubstepRadioTransportPacket.PLAY);
+                sendTransport(WaveMixerTransportPacket.PLAY);
             }
             return true;
         }
@@ -366,17 +366,17 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
     // === Packet helpers ===
 
     private void sendTransport(int action) {
-        PacketDistributor.sendToServer(new DubstepRadioTransportPacket(
+        PacketDistributor.sendToServer(new WaveMixerTransportPacket(
                 menu.getBlockPos(), action, 0, 0));
     }
 
     private void sendTransportValue(int action, int value) {
-        PacketDistributor.sendToServer(new DubstepRadioTransportPacket(
+        PacketDistributor.sendToServer(new WaveMixerTransportPacket(
                 menu.getBlockPos(), action, value, 0));
     }
 
     private void sendTrackAction(int trackIndex, int action, int value) {
-        PacketDistributor.sendToServer(new DubstepRadioTrackPacket(
+        PacketDistributor.sendToServer(new WaveMixerTrackPacket(
                 menu.getBlockPos(), trackIndex, action, value));
     }
 }

@@ -1,7 +1,7 @@
 /**
  * ============================================================
- * [DubstepRadioMenu.java]
- * Description: Menu du Dubstep Radio — sync ContainerData (BPM, pageCount, transport, volume)
+ * [WaveMixerMenu.java]
+ * Description: Menu du Wave Mixer — sync ContainerData (BPM, pageCount, transport, volume)
  * ============================================================
  *
  * DEPENDANCES:
@@ -9,13 +9,13 @@
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | ApicaMenu           | Base menu            | Infrastructure slots           |
- * | ApicaMenus          | Type registre        | DUBSTEP_RADIO menu type        |
+ * | ApicaMenus          | Type registre        | WAVE_MIXER menu type        |
  * | ContainerData       | Sync data            | 3 valeurs (BPM, pages, playing)|
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - DubstepRadioBlockEntity (createMenu)
- * - DubstepRadioScreen (GUI)
+ * - WaveMixerBlockEntity (createMenu)
+ * - WaveMixerScreen (GUI)
  * - ApicaMenus (enregistrement)
  *
  * ============================================================
@@ -35,7 +35,7 @@ import net.minecraft.world.item.ItemStack;
  * Menu sans inventaire joueur pour le DAW.
  * Synchronise BPM, pageCount et transport via ContainerData.
  */
-public class DubstepRadioMenu extends ApicaMenu {
+public class WaveMixerMenu extends ApicaMenu {
 
     private static final int DATA_COUNT = 3;
 
@@ -43,13 +43,13 @@ public class DubstepRadioMenu extends ApicaMenu {
     private final BlockPos blockPos;
 
     /** Client constructor (from network). */
-    public DubstepRadioMenu(int containerId, Inventory playerInventory, FriendlyByteBuf buf) {
+    public WaveMixerMenu(int containerId, Inventory playerInventory, FriendlyByteBuf buf) {
         this(containerId, playerInventory, new SimpleContainerData(DATA_COUNT), buf.readBlockPos());
     }
 
     /** Server constructor (from BlockEntity via openMenu buf callback). */
-    public DubstepRadioMenu(int containerId, Inventory playerInventory, ContainerData data, BlockPos pos) {
-        super(ApicaMenus.DUBSTEP_RADIO.get(), containerId);
+    public WaveMixerMenu(int containerId, Inventory playerInventory, ContainerData data, BlockPos pos) {
+        super(ApicaMenus.WAVE_MIXER.get(), containerId);
         this.data = data;
         this.blockPos = pos;
         addDataSlots(data);

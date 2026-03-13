@@ -274,7 +274,7 @@ public class BeeNodeWidget extends AbstractWidget {
             frame = challenge ? CHALLENGE_FRAME_OBTAINED
                     : harmonized ? GOAL_FRAME_OBTAINED
                     : TASK_FRAME_OBTAINED;
-            r = 0.95f; g = 0.77f; b = 0.06f;   // Or (#F1C40F)
+            r = 1.0f; g = 1.0f; b = 1.0f;       // Pas de teinte
         } else if (canUnlock) {
             frame = challenge ? CHALLENGE_FRAME_UNOBTAINED
                     : harmonized ? GOAL_FRAME_UNOBTAINED

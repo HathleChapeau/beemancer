@@ -201,7 +201,7 @@
 --- DIMENSION ---
 | apica_portal             | BlockItem            | Apica Dimension |
 
---- DUBSTEP RADIO ---
-| dubstep_radio            | BlockItem            | Dubstep Radio     |
+--- WAVE MIXER ---
+| wave_mixer            | BlockItem            | Wave Mixer     |
 
 ################################################################################

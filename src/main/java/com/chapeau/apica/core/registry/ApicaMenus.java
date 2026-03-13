@@ -14,7 +14,7 @@ import com.chapeau.apica.common.menu.ItemFilterMenu;
 import com.chapeau.apica.common.menu.LiquidTrashCanMenu;
 import com.chapeau.apica.common.menu.TrashCanMenu;
 import com.chapeau.apica.common.menu.MagicHiveMenu;
-import com.chapeau.apica.common.menu.DubstepRadioMenu;
+import com.chapeau.apica.common.menu.WaveMixerMenu;
 import com.chapeau.apica.common.menu.ResonatorMenu;
 import com.chapeau.apica.common.menu.alchemy.AlembicMenu;
 import com.chapeau.apica.common.menu.alchemy.CreativeTankMenu;
@@ -114,10 +114,10 @@ public class ApicaMenus {
             MENUS.register("resonator",
                     () -> IMenuTypeExtension.create(ResonatorMenu::new));
 
-    // --- DUBSTEP RADIO ---
-    public static final Supplier<MenuType<DubstepRadioMenu>> DUBSTEP_RADIO =
-            MENUS.register("dubstep_radio",
-                    () -> IMenuTypeExtension.create(DubstepRadioMenu::new));
+    // --- WAVE MIXER ---
+    public static final Supplier<MenuType<WaveMixerMenu>> WAVE_MIXER =
+            MENUS.register("wave_mixer",
+                    () -> IMenuTypeExtension.create(WaveMixerMenu::new));
 
     // --- TRASH CANS ---
     public static final Supplier<MenuType<TrashCanMenu>> TRASH_CAN =

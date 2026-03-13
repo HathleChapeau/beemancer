@@ -1,5 +1,5 @@
 {
-  "parent": "apica:block/machines/dubstep_radio",
+  "parent": "apica:block/machines/wave_mixer",
   "display": {
     "gui": {
       "rotation": [30, 225, 0],

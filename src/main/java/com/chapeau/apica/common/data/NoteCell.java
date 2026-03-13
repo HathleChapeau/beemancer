@@ -14,7 +14,7 @@
  * UTILISE PAR:
  * - TrackData.java (tableau de cellules par track)
  * - SequenceGridWidget.java (affichage et edition)
- * - DubstepRadioEditPacket.java (transmission reseau)
+ * - WaveMixerEditPacket.java (transmission reseau)
  *
  * ============================================================
  */
