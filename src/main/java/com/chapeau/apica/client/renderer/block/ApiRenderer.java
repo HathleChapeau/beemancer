@@ -251,7 +251,8 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
         float v0 = sprite.getV0();
         float v1 = sprite.getV1();
 
-        // Quad face-up (normale vers +Y)
+        // Quad face-up (normale vers +Y en espace local, transformee par la pose)
+        // La normale (0,1,0) est transformee par la matrice normale de la pose
         consumer.addVertex(pose, minX, y, minZ).setColor(255, 255, 255, 255)
             .setUv(u0, v0).setOverlay(packedOverlay).setLight(packedLight)
             .setNormal(pose, 0, 1, 0);
@@ -264,6 +265,20 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
         consumer.addVertex(pose, maxX, y, minZ).setColor(255, 255, 255, 255)
             .setUv(u1, v0).setOverlay(packedOverlay).setLight(packedLight)
             .setNormal(pose, 0, 1, 0);
+
+        // Quad face-down (verso, normale vers -Y) pour eviter culling quand vu de dessous
+        consumer.addVertex(pose, maxX, y, minZ).setColor(255, 255, 255, 255)
+            .setUv(u1, v0).setOverlay(packedOverlay).setLight(packedLight)
+            .setNormal(pose, 0, -1, 0);
+        consumer.addVertex(pose, maxX, y, maxZ).setColor(255, 255, 255, 255)
+            .setUv(u1, v1).setOverlay(packedOverlay).setLight(packedLight)
+            .setNormal(pose, 0, -1, 0);
+        consumer.addVertex(pose, minX, y, maxZ).setColor(255, 255, 255, 255)
+            .setUv(u0, v1).setOverlay(packedOverlay).setLight(packedLight)
+            .setNormal(pose, 0, -1, 0);
+        consumer.addVertex(pose, minX, y, minZ).setColor(255, 255, 255, 255)
+            .setUv(u0, v0).setOverlay(packedOverlay).setLight(packedLight)
+            .setNormal(pose, 0, -1, 0);
 
         poseStack.popPose();
     }
