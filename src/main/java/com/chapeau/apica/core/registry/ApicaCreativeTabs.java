@@ -110,6 +110,7 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.CODEX.get());
         output.accept(ApicaItems.SCOOP.get());
         output.accept(ApicaItems.RESONATOR.get());
+        output.accept(ApicaItems.WAVE_MIXER.get());
         output.accept(ApicaItems.LEAF_BLOWER.get());
         output.accept(ApicaItems.MINING_LASER.get());
         output.accept(ApicaItems.RAILGUN.get());
