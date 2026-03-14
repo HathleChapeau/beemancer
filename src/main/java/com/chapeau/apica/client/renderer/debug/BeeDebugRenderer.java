@@ -81,6 +81,12 @@ public class BeeDebugRenderer {
     private static final float WP_B = 1.0f;
     private static final float WP_A = 0.9f;
 
+    // Couleurs - chemin vanilla FlyingPathNavigation (rouge)
+    private static final float VANILLA_R = 1.0f;
+    private static final float VANILLA_G = 0.0f;
+    private static final float VANILLA_B = 0.0f;
+    private static final float VANILLA_A = 0.9f;
+
     // Couleurs - texte nest (vert)
     private static final int NEST_TEXT_COLOR = 0xFF55FF55;
     private static final int NEST_TEXT_BG = 0x88000000;
@@ -132,6 +138,19 @@ public class BeeDebugRenderer {
                     DebugRenderHelper.drawLine(poseStack, bufferSource, prevPos, wpPos,
                             PATH_R, PATH_G, PATH_B, PATH_A);
                     renderWaypointMarker(poseStack, bufferSource, wpPos);
+                    prevPos = wpPos;
+                }
+            }
+
+            // Dessiner le chemin vanilla FlyingPathNavigation (rouge)
+            List<BlockPos> vanillaPath = bee.getDebugVanillaPath();
+            if (!vanillaPath.isEmpty()) {
+                Vec3 prevPos = beePos;
+                for (BlockPos waypoint : vanillaPath) {
+                    Vec3 wpPos = Vec3.atCenterOf(waypoint);
+                    DebugRenderHelper.drawLine(poseStack, bufferSource, prevPos, wpPos,
+                            VANILLA_R, VANILLA_G, VANILLA_B, VANILLA_A);
+                    renderVanillaWaypointMarker(poseStack, bufferSource, wpPos);
                     prevPos = wpPos;
                 }
             }
@@ -223,6 +242,24 @@ public class BeeDebugRenderer {
         DebugRenderHelper.drawLine(consumer, matrix, x - s, y, z, x + s, y, z, WP_R, WP_G, WP_B, WP_A);
         DebugRenderHelper.drawLine(consumer, matrix, x, y - s, z, x, y + s, z, WP_R, WP_G, WP_B, WP_A);
         DebugRenderHelper.drawLine(consumer, matrix, x, y, z - s, x, y, z + s, WP_R, WP_G, WP_B, WP_A);
+    }
+
+    /**
+     * Dessine un petit marqueur de waypoint vanilla (croix 3D rouge).
+     */
+    private static void renderVanillaWaypointMarker(PoseStack poseStack, MultiBufferSource bufferSource, Vec3 pos) {
+        VertexConsumer consumer = bufferSource.getBuffer(RenderType.lines());
+        Matrix4f matrix = poseStack.last().pose();
+
+        float x = (float) pos.x;
+        float y = (float) pos.y;
+        float z = (float) pos.z;
+        float s = 0.1f;
+
+        // Croix 3D (3 lignes) - plus petite que Theta*
+        DebugRenderHelper.drawLine(consumer, matrix, x - s, y, z, x + s, y, z, VANILLA_R, VANILLA_G, VANILLA_B, VANILLA_A);
+        DebugRenderHelper.drawLine(consumer, matrix, x, y - s, z, x, y + s, z, VANILLA_R, VANILLA_G, VANILLA_B, VANILLA_A);
+        DebugRenderHelper.drawLine(consumer, matrix, x, y, z - s, x, y, z + s, VANILLA_R, VANILLA_G, VANILLA_B, VANILLA_A);
     }
 
     /**

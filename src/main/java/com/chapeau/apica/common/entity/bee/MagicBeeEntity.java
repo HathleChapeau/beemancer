@@ -52,7 +52,10 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import com.chapeau.apica.common.entity.bee.pathfinding.NoOpNavigation;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -86,6 +89,10 @@ public class MagicBeeEntity extends Bee {
 
     // Debug path (synchronisé pour affichage client - chemin Theta* complet)
     private static final EntityDataAccessor<CompoundTag> DATA_DEBUG_PATH = SynchedEntityData.defineId(
+            MagicBeeEntity.class, EntityDataSerializers.COMPOUND_TAG);
+
+    // Debug vanilla path (chemin FlyingPathNavigation pour comparaison)
+    private static final EntityDataAccessor<CompoundTag> DATA_DEBUG_VANILLA_PATH = SynchedEntityData.defineId(
             MagicBeeEntity.class, EntityDataSerializers.COMPOUND_TAG);
 
     // --- Gene Data ---
@@ -192,6 +199,7 @@ public class MagicBeeEntity extends Bee {
         builder.define(DATA_RETURNING, false);
         builder.define(DATA_DEBUG_DESTINATION, BlockPos.ZERO);
         builder.define(DATA_DEBUG_PATH, new CompoundTag());
+        builder.define(DATA_DEBUG_VANILLA_PATH, new CompoundTag());
     }
 
     @Override
@@ -545,9 +553,17 @@ public class MagicBeeEntity extends Bee {
     /**
      * Définit la destination de debug (synchronisée au client).
      * Appelé par les goals pour indiquer où l'abeille se dirige.
+     * Calcule aussi le chemin vanilla pour comparaison debug.
      */
     public void setDebugDestination(@Nullable BlockPos pos) {
         entityData.set(DATA_DEBUG_DESTINATION, pos != null ? pos : BlockPos.ZERO);
+
+        // Calculer le chemin vanilla pour debug
+        if (pos != null && !level().isClientSide()) {
+            computeAndSetVanillaDebugPath(pos);
+        } else if (pos == null) {
+            setDebugVanillaPath(null);
+        }
     }
 
     /**
@@ -606,6 +622,67 @@ public class MagicBeeEntity extends Bee {
             return path;
         }
         return List.of();
+    }
+
+    // --- Debug Vanilla Path (FlyingPathNavigation pour comparaison) ---
+
+    /**
+     * Définit le chemin vanilla de debug (synchronisé au client).
+     */
+    public void setDebugVanillaPath(@Nullable List<BlockPos> path) {
+        CompoundTag tag = new CompoundTag();
+        if (path != null && !path.isEmpty()) {
+            long[] longs = new long[path.size()];
+            for (int i = 0; i < path.size(); i++) {
+                longs[i] = path.get(i).asLong();
+            }
+            tag.put("Path", new LongArrayTag(longs));
+        }
+        entityData.set(DATA_DEBUG_VANILLA_PATH, tag);
+    }
+
+    /**
+     * Récupère le chemin vanilla de debug.
+     */
+    public List<BlockPos> getDebugVanillaPath() {
+        CompoundTag tag = entityData.get(DATA_DEBUG_VANILLA_PATH);
+        if (tag.contains("Path")) {
+            long[] longs = tag.getLongArray("Path");
+            List<BlockPos> path = new ArrayList<>(longs.length);
+            for (long l : longs) {
+                path.add(BlockPos.of(l));
+            }
+            return path;
+        }
+        return List.of();
+    }
+
+    // --- Lazy Vanilla Navigation (pour calcul de debug path) ---
+    private FlyingPathNavigation debugVanillaNavigation = null;
+
+    /**
+     * Calcule et stocke le chemin vanilla vers une destination.
+     * Utilise FlyingPathNavigation pour comparaison avec Theta*.
+     */
+    public void computeAndSetVanillaDebugPath(BlockPos destination) {
+        if (level().isClientSide()) return;
+
+        // Lazy init du FlyingPathNavigation
+        if (debugVanillaNavigation == null) {
+            debugVanillaNavigation = new FlyingPathNavigation(this, level());
+        }
+
+        Path path = debugVanillaNavigation.createPath(destination, 0);
+        if (path != null && path.getNodeCount() > 0) {
+            List<BlockPos> positions = new ArrayList<>();
+            for (int i = 0; i < path.getNodeCount(); i++) {
+                Node node = path.getNode(i);
+                positions.add(new BlockPos(node.x, node.y, node.z));
+            }
+            setDebugVanillaPath(positions);
+        } else {
+            setDebugVanillaPath(null);
+        }
     }
 
     // --- NBT ---
