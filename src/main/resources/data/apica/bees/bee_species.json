@@ -5064,7 +5064,7 @@
         "antenna": "#0D0018",
         "stinger": "#AA00FF",
         "eye": "#FFCC00",
-        "pupil": "#FF2200"
+        "pupil": "#FFAAFF"
       },
       "waveform": {
         "frequency": 15,

@@ -107,7 +107,7 @@ public final class SaddlePartRenderer {
             state.lastArcTick = currentTick;
         }
 
-        float r = 0.4f, g = 0.9f, b = 1.0f;
+        float r = 0.98f, g = 0.75f, b = 0.16f;
         for (LightningArcRenderer.LightningArc arc : state.arcs) {
             if (arc != null) {
                 LightningArcRenderer.renderArc(poseStack, bufferSource, arc,
