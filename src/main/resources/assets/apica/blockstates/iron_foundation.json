@@ -2,7 +2,7 @@
   "variants": {
     "multiblock=none": { "model": "apica:block/multibloc/iron_foundation" },
     "multiblock=altar": { "model": "apica:block/invisible" },
-    "multiblock=extractor": { "model": "apica:block/invisible" },
+    "multiblock=extractor": { "model": "apica:block/multibloc/iron_foundation" },
     "multiblock=infuser": { "model": "apica:block/invisible" },
     "multiblock=centrifuge": { "model": "apica:block/invisible" },
     "formed_rotation=0,multiblock=storage": { "model": "apica:block/multibloc/storage/iron_foundation_storage" },

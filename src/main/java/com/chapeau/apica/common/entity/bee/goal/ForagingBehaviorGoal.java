@@ -66,9 +66,9 @@ import java.util.Random;
  */
 public class ForagingBehaviorGoal extends Goal {
 
-    private static final double REACH_DISTANCE = 1.5;
-    private static final double REACH_DISTANCE_VERTICAL = 0.8;
-    private static final double FLIGHT_ALTITUDE = 1.0;
+    private static final double REACH_DISTANCE = 0.5;
+    private static final double REACH_DISTANCE_VERTICAL = 0.6;
+    private static final double FLIGHT_ALTITUDE = 0.8;
     private static final double HOVER_HEIGHT = 0.4;
     private static final double APPROACH_OFFSET = 0.2;
     private static final double FALL_SPEED = 0.02;

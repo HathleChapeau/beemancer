@@ -138,8 +138,8 @@ public class MagicBeeEntity extends Bee {
     @Override
     protected PathNavigation createNavigation(Level level) {
         // NoOp: les goals utilisent setDeltaMovement() + Theta* custom,
-        // FlyingPathNavigation est du code mort qui gaspille des ticks.
-        return new NoOpNavigation(this, level);
+        //return new NoOpNavigation(this, level);
+        return new FlyingPathNavigation(this, level);
     }
 
     @Override
