@@ -223,14 +223,6 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
 
         VertexConsumer consumer = buffer.getBuffer(RenderType.cutout());
 
-        // Recalcule le light a la position reelle de la face (au-dessus du bloc)
-        // pour eviter l'AO du bloc de base
-        int faceLight = packedLight;
-        if (be.getLevel() != null) {
-            faceLight = net.minecraft.client.renderer.LevelRenderer.getLightColor(
-                be.getLevel(), be.getBlockPos().above());
-        }
-
         poseStack.pushPose();
 
         // Memes transforms que le body
@@ -259,38 +251,19 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
         float v0 = sprite.getV0();
         float v1 = sprite.getV1();
 
-        // Normales pre-calculees a 45° (BASE_PITCH)
-        // cos(45°) = sin(45°) = 0.7071f
-        float ny = 0.7071f;
-        float nz = -0.7071f;
-
-        // Quad face-up (normale inclinee a 45°)
+        // Quad face-up (normale vers +Y)
         consumer.addVertex(pose, minX, y, minZ).setColor(255, 255, 255, 255)
-            .setUv(u0, v0).setOverlay(packedOverlay).setLight(faceLight)
-            .setNormal(0, ny, nz);
+            .setUv(u0, v0).setOverlay(packedOverlay).setLight(packedLight)
+            .setNormal(pose, 0, 1, 0);
         consumer.addVertex(pose, minX, y, maxZ).setColor(255, 255, 255, 255)
-            .setUv(u0, v1).setOverlay(packedOverlay).setLight(faceLight)
-            .setNormal(0, ny, nz);
+            .setUv(u0, v1).setOverlay(packedOverlay).setLight(packedLight)
+            .setNormal(pose, 0, 1, 0);
         consumer.addVertex(pose, maxX, y, maxZ).setColor(255, 255, 255, 255)
-            .setUv(u1, v1).setOverlay(packedOverlay).setLight(faceLight)
-            .setNormal(0, ny, nz);
+            .setUv(u1, v1).setOverlay(packedOverlay).setLight(packedLight)
+            .setNormal(pose, 0, 1, 0);
         consumer.addVertex(pose, maxX, y, minZ).setColor(255, 255, 255, 255)
-            .setUv(u1, v0).setOverlay(packedOverlay).setLight(faceLight)
-            .setNormal(0, ny, nz);
-
-        // Quad face-down (verso, normale inversee)
-        consumer.addVertex(pose, maxX, y, minZ).setColor(255, 255, 255, 255)
-            .setUv(u1, v0).setOverlay(packedOverlay).setLight(faceLight)
-            .setNormal(0, -ny, -nz);
-        consumer.addVertex(pose, maxX, y, maxZ).setColor(255, 255, 255, 255)
-            .setUv(u1, v1).setOverlay(packedOverlay).setLight(faceLight)
-            .setNormal(0, -ny, -nz);
-        consumer.addVertex(pose, minX, y, maxZ).setColor(255, 255, 255, 255)
-            .setUv(u0, v1).setOverlay(packedOverlay).setLight(faceLight)
-            .setNormal(0, -ny, -nz);
-        consumer.addVertex(pose, minX, y, minZ).setColor(255, 255, 255, 255)
-            .setUv(u0, v0).setOverlay(packedOverlay).setLight(faceLight)
-            .setNormal(0, -ny, -nz);
+            .setUv(u1, v0).setOverlay(packedOverlay).setLight(packedLight)
+            .setNormal(pose, 0, 1, 0);
 
         poseStack.popPose();
     }
