@@ -31,6 +31,9 @@ import com.chapeau.apica.common.entity.bee.BeeActivityState;
 import com.chapeau.apica.common.entity.bee.pathfinding.BeeFlightHelper;
 import com.chapeau.apica.common.entity.bee.pathfinding.BeePathfinding;
 import com.chapeau.apica.common.entity.bee.MagicBeeEntity;
+import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
+import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.level.pathfinder.Node;
 import com.chapeau.apica.content.gene.flower.FlowerGene;
 import com.chapeau.apica.core.behavior.BeeBehaviorConfig;
 import com.chapeau.apica.core.behavior.BeeBehaviorType;
@@ -76,6 +79,11 @@ public class ForagingBehaviorGoal extends Goal {
     private final MagicBeeEntity bee;
     private final BeeAIStateMachine stateMachine;
     private BeePathfinding pathfinding;
+
+    // Vanilla pathfinding (FlyingPathNavigation)
+    private FlyingPathNavigation vanillaNavigation;
+    private Path currentVanillaPath;
+    private int vanillaPathIndex = 0;
 
     // Grace period: pas de throttle pendant les N premiers ticks apres start()
     private int ticksSinceStart = 0;
@@ -123,6 +131,13 @@ public class ForagingBehaviorGoal extends Goal {
             pathfinding = new BeePathfinding(bee.level());
         }
         pathfinding.clearPath();
+
+        // Init vanilla navigation
+        if (vanillaNavigation == null) {
+            vanillaNavigation = new FlyingPathNavigation(bee, bee.level());
+        }
+        currentVanillaPath = null;
+        vanillaPathIndex = 0;
 
         ticksSinceStart = 0;
         stateMachine.setState(BeeActivityState.SEEKING_FLOWER);
@@ -338,18 +353,45 @@ public class ForagingBehaviorGoal extends Goal {
         // Ajouter une altitude de vol à la destination pour voler au-dessus
         BlockPos flightDestination = destination.above((int) FLIGHT_ALTITUDE);
 
-        // Calculer ou récupérer le chemin avec Theta*
-        pathfinding.findPath(bee.blockPosition(), flightDestination);
+        // --- THETA* (commenté) ---
+        // pathfinding.findPath(bee.blockPosition(), flightDestination);
+        // List<BlockPos> path = pathfinding.getCurrentPath();
+        // bee.setDebugPath(path);
+        // pathfinding.showPathParticles(bee.position());
+        // BlockPos nextWaypoint = pathfinding.getNextWaypoint(bee.position(), REACH_DISTANCE);
 
-        // Sync du chemin pour le debug renderer (client)
-        List<BlockPos> path = pathfinding.getCurrentPath();
-        bee.setDebugPath(path);
+        // --- VANILLA FLYING PATHFINDING ---
+        // Recalculer le chemin si nécessaire
+        if (currentVanillaPath == null || currentVanillaPath.isDone() ||
+            !flightDestination.equals(currentVanillaPath.getTarget())) {
+            currentVanillaPath = vanillaNavigation.createPath(flightDestination, 0);
+            vanillaPathIndex = 0;
+        }
 
-        // Afficher le chemin avec des particules (debug)
-        pathfinding.showPathParticles(bee.position());
+        BlockPos nextWaypoint = null;
 
-        // Obtenir le prochain waypoint
-        BlockPos nextWaypoint = pathfinding.getNextWaypoint(bee.position(), REACH_DISTANCE);
+        if (currentVanillaPath != null && !currentVanillaPath.isDone()) {
+            // Sync du chemin pour le debug renderer (utilise le path blanc/Theta debug)
+            List<BlockPos> pathPositions = new java.util.ArrayList<>();
+            for (int i = vanillaPathIndex; i < currentVanillaPath.getNodeCount(); i++) {
+                Node node = currentVanillaPath.getNode(i);
+                pathPositions.add(new BlockPos(node.x, node.y, node.z));
+            }
+            bee.setDebugPath(pathPositions);
+
+            // Avancer dans le chemin si on a atteint le waypoint actuel
+            while (vanillaPathIndex < currentVanillaPath.getNodeCount()) {
+                Node node = currentVanillaPath.getNode(vanillaPathIndex);
+                BlockPos nodePos = new BlockPos(node.x, node.y, node.z);
+                double dist = bee.position().distanceTo(Vec3.atCenterOf(nodePos));
+                if (dist <= REACH_DISTANCE) {
+                    vanillaPathIndex++;
+                } else {
+                    nextWaypoint = nodePos;
+                    break;
+                }
+            }
+        }
 
         if (nextWaypoint == null) {
             // Chemin terminé ou pas de chemin, aller directement vers la destination

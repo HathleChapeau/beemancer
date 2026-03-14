@@ -28,7 +28,10 @@ import com.chapeau.apica.common.entity.bee.MagicBeeEntity;
 import com.chapeau.apica.core.behavior.BeeBehaviorConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -58,6 +61,11 @@ public class WildBeePatrolGoal extends Goal {
 
     private final MagicBeeEntity bee;
     private BeePathfinding pathfinding;
+
+    // Vanilla pathfinding (FlyingPathNavigation)
+    private FlyingPathNavigation vanillaNavigation;
+    private Path currentVanillaPath;
+    private int vanillaPathIndex = 0;
 
     private PatrolState state = PatrolState.MOVING_TO_WAYPOINT;
     private final List<BlockPos> waypoints = new ArrayList<>();
@@ -95,6 +103,14 @@ public class WildBeePatrolGoal extends Goal {
             pathfinding = new BeePathfinding(bee.level());
         }
         pathfinding.clearPath();
+
+        // Init vanilla navigation
+        if (vanillaNavigation == null) {
+            vanillaNavigation = new FlyingPathNavigation(bee, bee.level());
+        }
+        currentVanillaPath = null;
+        vanillaPathIndex = 0;
+
         waypoints.clear();
         currentWaypointIndex = 0;
         ticksSinceStart = 0;
@@ -320,9 +336,36 @@ public class WildBeePatrolGoal extends Goal {
      */
     private void navigateWithPathfinding(BlockPos destination) {
         BlockPos flightDest = destination.above(1);
-        pathfinding.findPath(bee.blockPosition(), flightDest);
 
-        BlockPos nextWaypoint = pathfinding.getNextWaypoint(bee.position(), REACH_DISTANCE);
+        // --- THETA* (commenté) ---
+        // pathfinding.findPath(bee.blockPosition(), flightDest);
+        // BlockPos nextWaypoint = pathfinding.getNextWaypoint(bee.position(), REACH_DISTANCE);
+
+        // --- VANILLA FLYING PATHFINDING ---
+        // Recalculer le chemin si nécessaire
+        if (currentVanillaPath == null || currentVanillaPath.isDone() ||
+            !flightDest.equals(currentVanillaPath.getTarget())) {
+            currentVanillaPath = vanillaNavigation.createPath(flightDest, 0);
+            vanillaPathIndex = 0;
+        }
+
+        BlockPos nextWaypoint = null;
+
+        if (currentVanillaPath != null && !currentVanillaPath.isDone()) {
+            // Avancer dans le chemin si on a atteint le waypoint actuel
+            while (vanillaPathIndex < currentVanillaPath.getNodeCount()) {
+                Node node = currentVanillaPath.getNode(vanillaPathIndex);
+                BlockPos nodePos = new BlockPos(node.x, node.y, node.z);
+                double dist = bee.position().distanceTo(Vec3.atCenterOf(nodePos));
+                if (dist <= REACH_DISTANCE) {
+                    vanillaPathIndex++;
+                } else {
+                    nextWaypoint = nodePos;
+                    break;
+                }
+            }
+        }
+
         if (nextWaypoint == null) {
             nextWaypoint = flightDest;
         }
