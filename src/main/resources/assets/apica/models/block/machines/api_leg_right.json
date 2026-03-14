@@ -6,6 +6,7 @@
   "elements": [
     {
       "name": "Leg Right",
+      "shade": false,
       "from": [11, 5.5, 12],
       "to": [12, 5.5, 15],
       "faces": {
