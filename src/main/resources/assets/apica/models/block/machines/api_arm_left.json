@@ -1,5 +1,4 @@
 {
-  "ambientocclusion": false,
   "texture_size": [32, 32],
   "textures": {
     "all": "apica:block/machines/api"
