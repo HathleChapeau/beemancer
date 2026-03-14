@@ -25,7 +25,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 
 /**
- * Barre de navigation des pages : [<] [page/total] [>] [+] [Delete]
+ * Barre de navigation des pages : [] [page/total] [] [+] [Delete]
  * Affichee en bas de l'editeur. Le numero de page est 1-indexed pour l'utilisateur.
  */
 public class PageBarWidget {

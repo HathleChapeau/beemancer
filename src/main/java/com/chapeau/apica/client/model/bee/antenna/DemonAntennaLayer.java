@@ -46,26 +46,26 @@ public final class DemonAntennaLayer {
         PartDefinition leftAntenna = bone.addOrReplaceChild("left_antenna",
                 CubeListBuilder.create(), PartPose.ZERO);
         PartDefinition leftBase = leftAntenna.addOrReplaceChild("base",
-                CubeListBuilder.create().texOffs(0, 0)
-                        .addBox(-1.0F, -3.0F, -1.0F, 2.0F, 3.0F, 2.0F),
+                CubeListBuilder.create().texOffs(1, 0)
+                        .addBox(-0.9F, -3.0F, -0.9F, 1.8F, 3.0F, 1.8F),
                 PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0, 0, -DEG15));
         leftBase.addOrReplaceChild("tip",
-                CubeListBuilder.create().texOffs(0, 5)
-                        .addBox(-0.5F, -2.0F, -0.5F, 1.0F, 2.0F, 1.0F),
+                CubeListBuilder.create().texOffs(1, 8)
+                        .addBox(-0.5F, -2.0F, -0.5F, 1.0F, 2.5F, 1.0F),
                 PartPose.offsetAndRotation(0.0F, -3.0F, 0.0F, -DEG15, 0, 0));
 
         // Right horn: mirrored Z rotation
         PartDefinition rightAntenna = bone.addOrReplaceChild("right_antenna",
                 CubeListBuilder.create(), PartPose.ZERO);
         PartDefinition rightBase = rightAntenna.addOrReplaceChild("base",
-                CubeListBuilder.create().texOffs(0, 0)
-                        .addBox(-1.0F, -3.0F, -1.0F, 2.0F, 3.0F, 2.0F),
+                CubeListBuilder.create().texOffs(1, 0)
+                        .addBox(-0.9F, -3.0F, -0.9F, 1.8F, 3.0F, 1.8F),
                 PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0, 0, DEG15));
         rightBase.addOrReplaceChild("tip",
-                CubeListBuilder.create().texOffs(0, 5)
-                        .addBox(-0.5F, -2.0F, -0.5F, 1.0F, 2.0F, 1.0F),
+                CubeListBuilder.create().texOffs(1, 8)
+                        .addBox(-0.5F, -2.0F, -0.5F, 1.0F, 2.5F, 1.0F),
                 PartPose.offsetAndRotation(0.0F, -3.0F, 0.0F, -DEG15, 0, 0));
 
-        return LayerDefinition.create(mesh, 32, 32);
+        return LayerDefinition.create(mesh, 16, 16);
     }
 }

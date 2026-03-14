@@ -58,16 +58,16 @@ public class ControlPartModelB extends HoverbikePartModel {
         root.addOrReplaceChild("cube_front",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-0.5F, -1.0F, -0.575F, 1.0F, 2.0F, 1.15F),
-                PartPose.offset(0F, 0F, -1.575F));
+                        .addBox(-0.5F, -1.1F, -0.560F, 1.0F, 2.2F, 1F),
+                PartPose.offset(0F, 0F, -1.450F));
 
         // Cube arriere: flip du cube avant
         root.addOrReplaceChild("cube_back",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
                         .mirror()
-                        .addBox(-0.5F, -1.0F, -0.575F, 1.0F, 2.0F, 1.15F),
-                PartPose.offset(0F, 0F, 1.575F));
+                        .addBox(-0.5F, -1.1F, -0.560F, 1.0F, 2.2F, 1F),
+                PartPose.offset(0F, 0F, 1.560F));
 
         // Connecteur: 1x2x2 (pont entre les deux cubes)
         root.addOrReplaceChild("connector",

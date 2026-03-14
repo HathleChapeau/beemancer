@@ -42,9 +42,9 @@ public final class SaddlePartRenderer {
     private SaddlePartRenderer() {}
 
     // Lightning constants
-    private static final int ARC_REFRESH_TICKS = 4;
+    private static final int ARC_REFRESH_TICKS = 5;
     private static final int ARC_NODES = 2;
-    private static final float ARC_AMPLITUDE = 0.064f;
+    private static final float ARC_AMPLITUDE = 0.055f;
     private static final float ARC_HALF_WIDTH = 0.010f;
 
     /** Etat lightning pour une entite. */

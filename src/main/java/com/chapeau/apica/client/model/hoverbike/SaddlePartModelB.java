@@ -49,8 +49,8 @@ public class SaddlePartModelB extends HoverbikePartModel {
             ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/hoverbee/hoverbee_connector_placeholder.png");
 
     /** Position des electrodes pour le lightning (coordonnees locales) */
-    public static final Vec3 LEFT_ELECTRODE = new Vec3(-1.575, -0.5, 3.5);
-    public static final Vec3 RIGHT_ELECTRODE = new Vec3(1.575, -0.5, 3.5);
+    public static final Vec3 LEFT_ELECTRODE = new Vec3(-2.5F, -0.5F, 2.75F);
+    public static final Vec3 RIGHT_ELECTRODE = new Vec3(2.5F, -0.5F, 2.75F);
 
     private final ModelPart connector;
 
@@ -68,34 +68,31 @@ public class SaddlePartModelB extends HoverbikePartModel {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        // Assise: 6x1x5, centree a l'origine
         root.addOrReplaceChild("seat",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-3.0F, -0.5F, -2.5F, 6.0F, 1.0F, 5.0F),
+                        .addBox(-3.0F, -0.0F, -2.5F, 6.0F, 0.5F, 5.0F),
                 PartPose.ZERO);
 
-        // Dossier: 5x1x1, derriere le siege et legèrement plus haut
         root.addOrReplaceChild("backrest",
                 CubeListBuilder.create()
-                        .texOffs(0, 6)
-                        .addBox(-2.5F, -0.5F, -0.5F, 5.0F, 1.0F, 1.0F),
+                        .texOffs(1, 6)
+                        .addBox(-2.5F, -0.0F, -0.5F, 5.0F, 0.5F, 0.5F),
                 PartPose.offset(0.0F, -0.5F, 1.75F));
 
-        // Electrode gauche: 1x2x2.15
-        root.addOrReplaceChild("cube_left",
+        root.addOrReplaceChild("electrode_left",
                 CubeListBuilder.create()
                         .texOffs(0, 8)
-                        .addBox(-0.5F, -1.0F, -1.075F, 1.0F, 2.0F, 2.15F),
-                PartPose.offset(-1.575F, -0.5F, 3.5F));
+                        .addBox(-1F, -1.0F, -1F, 2.0F, 2.0F, 2F),
+                PartPose.offset(-2.5F, -0.5F, 2.75F));
 
-        // Electrode droite: flip horizontal
-        root.addOrReplaceChild("cube_right",
+
+        root.addOrReplaceChild("electrode_right",
                 CubeListBuilder.create()
                         .texOffs(0, 8)
                         .mirror()
-                        .addBox(-0.5F, -1.0F, -1.075F, 1.0F, 2.0F, 2.15F),
-                PartPose.offset(1.575F, -0.5F, 3.5F));
+                        .addBox(-1F, -1.0F, -1F, 2.0F, 2.0F, 2F),
+                PartPose.offset(2.5F, -0.5F, 2.75F));
 
         // 4 tiges 0.25x0.25 reliant les 4 coins des electrodes
         // Longueur X = 2.15 (distance entre les faces internes des electrodes)
@@ -104,14 +101,14 @@ public class SaddlePartModelB extends HoverbikePartModel {
                 CubeListBuilder.create()
                         .texOffs(0, 0)
                         // Tige haut avant
-                        .addBox(-1.075F, 0.875F, -1.2F, 2.15F, 0.25F, 0.25F)
+                        .addBox(-1.5F, 0.875F, -1.125F, 3F, 0.25F, 0.25F)
                         // Tige haut arriere
-                        .addBox(-1.075F, 0.875F, 0.95F, 2.15F, 0.25F, 0.25F)
+                        .addBox(-1.5F, 0.875F, 0.875F, 3F, 0.25F, 0.25F)
                         // Tige bas avant
-                        .addBox(-1.075F, -1.125F, -1.2F, 2.15F, 0.25F, 0.25F)
+                        .addBox(-1.5F, -1.125F, -1.125F, 3F, 0.25F, 0.25F)
                         // Tige bas arriere
-                        .addBox(-1.075F, -1.125F, 0.95F, 2.15F, 0.25F, 0.25F),
-                PartPose.offset(0.0F, -0.5F, 3.5F));
+                        .addBox(-1.5F, -1.125F, 0.875F, 3F, 0.25F, 0.25F),
+                PartPose.offset(0.0F, -0.5F, 2.75F));
 
         return LayerDefinition.create(mesh, 32, 16);
     }

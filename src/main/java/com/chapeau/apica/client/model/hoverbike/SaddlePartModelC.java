@@ -51,41 +51,38 @@ public class SaddlePartModelC extends HoverbikePartModel {
         PartDefinition root = mesh.getRoot();
 
 
-        // Assise: 6x1x5, centree a l'origine
         root.addOrReplaceChild("seat",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-3.0F, -0.0F, -2.5F, 6.0F, 0.5F, 4.5F),
+                        .addBox(-3.0F, -0.0F, -2.5F, 6.0F, 0.5F, 5.0F),
                 PartPose.ZERO);
 
-        // Dossier: 5x1x1, derriere le siege et legèrement plus haut
         root.addOrReplaceChild("backrest",
                 CubeListBuilder.create()
                         .texOffs(1, 6)
                         .addBox(-2.5F, -0.0F, -0.5F, 5.0F, 0.5F, 0.5F),
                 PartPose.offset(0.0F, -0.5F, 1.75F));
 
-        // Electrode gauche: 1x2x2.15
+
         root.addOrReplaceChild("electrode_left",
                 CubeListBuilder.create()
                         .texOffs(0, 8)
-                        .addBox(-0.5F, -1.0F, -1.075F, 1.0F, 2.0F, 2.15F),
-                PartPose.offset(-1.575F, -0.5F, 2.75F));
+                        .addBox(-1F, -1.0F, -1F, 2.0F, 2.0F, 2F),
+                PartPose.offset(-2.5F, -0.5F, 2.75F));
 
-        // Electrode droite: 1x2x2.15 (miroir)
+
         root.addOrReplaceChild("electrode_right",
                 CubeListBuilder.create()
                         .texOffs(0, 8)
                         .mirror()
-                        .addBox(-0.5F, -1.0F, -1.075F, 1.0F, 2.0F, 2.15F),
-                PartPose.offset(1.575F, -0.5F, 2.75F));
+                        .addBox(-1F, -1.0F, -1F, 2.0F, 2.0F, 2F),
+                PartPose.offset(2.5F, -0.5F, 2.75F));
 
         // Cube central: 2x2x2, positionne au-dessus de la selle
         root.addOrReplaceChild("center_cube",
                 CubeListBuilder.create()
                         .texOffs(0, 14)
-                        .mirror()
-                        .addBox(-1.12F, -0.9F, -0.9F, 2.5F, 1.8F, 1.8F),
+                        .addBox(-1.5F, -0.9F, -0.9F, 3F, 1.8F, 1.8F),
                 PartPose.offset(0.0F, -0.5F, 2.75F));
 
         return LayerDefinition.create(mesh, 32, 32);
