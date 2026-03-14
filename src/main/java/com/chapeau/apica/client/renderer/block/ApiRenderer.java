@@ -415,28 +415,44 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
     }
 
     /**
-     * VertexConsumer wrapper qui transforme les normales par la matrice normale de la PoseStack.
-     * Corrige le lighting quand un modele est rotate via PoseStack.
+     * VertexConsumer wrapper qui corrige le shading directionnel pour les modeles rotates.
+     * Recalcule le shade basé sur la normale transformée au lieu de la direction originale.
      */
     private static class NormalTransformingConsumer implements VertexConsumer {
         private final VertexConsumer delegate;
         private final Matrix3f normalMatrix;
         private final Vector3f tempNormal = new Vector3f();
 
+        // Shades directionnels de Minecraft
+        private static final float SHADE_UP = 1.0f;
+        private static final float SHADE_DOWN = 0.5f;
+        private static final float SHADE_NS = 0.8f;  // North/South
+        private static final float SHADE_EW = 0.6f;  // East/West
+
+        // Stocke la couleur originale pour la corriger
+        private int pendingR, pendingG, pendingB, pendingA;
+        private boolean hasColor = false;
+
         NormalTransformingConsumer(VertexConsumer delegate, PoseStack.Pose pose) {
             this.delegate = delegate;
-            this.normalMatrix = pose.normal();
+            this.normalMatrix = new Matrix3f(pose.normal());
         }
 
         @Override
         public VertexConsumer addVertex(float x, float y, float z) {
             delegate.addVertex(x, y, z);
+            hasColor = false;
             return this;
         }
 
         @Override
         public VertexConsumer setColor(int r, int g, int b, int a) {
-            delegate.setColor(r, g, b, a);
+            // Stocke la couleur, on la corrigera quand on aura la normale
+            pendingR = r;
+            pendingG = g;
+            pendingB = b;
+            pendingA = a;
+            hasColor = true;
             return this;
         }
 
@@ -460,12 +476,45 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
 
         @Override
         public VertexConsumer setNormal(float x, float y, float z) {
-            // Transforme la normale par la matrice normale
+            // Transforme la normale
             tempNormal.set(x, y, z);
             tempNormal.mul(normalMatrix);
             tempNormal.normalize();
+
+            // Calcule le shade original (basé sur la normale non-transformée)
+            float originalShade = calculateShade(x, y, z);
+
+            // Calcule le nouveau shade (basé sur la normale transformée)
+            float newShade = calculateShade(tempNormal.x(), tempNormal.y(), tempNormal.z());
+
+            // Corrige la couleur si on en a une
+            if (hasColor && originalShade > 0.01f) {
+                float correction = newShade / originalShade;
+                int correctedR = Math.min(255, (int)(pendingR * correction));
+                int correctedG = Math.min(255, (int)(pendingG * correction));
+                int correctedB = Math.min(255, (int)(pendingB * correction));
+                delegate.setColor(correctedR, correctedG, correctedB, pendingA);
+            } else if (hasColor) {
+                delegate.setColor(pendingR, pendingG, pendingB, pendingA);
+            }
+
             delegate.setNormal(tempNormal.x(), tempNormal.y(), tempNormal.z());
             return this;
+        }
+
+        private float calculateShade(float nx, float ny, float nz) {
+            // Pondère le shade basé sur les composantes de la normale
+            float absX = Math.abs(nx);
+            float absY = Math.abs(ny);
+            float absZ = Math.abs(nz);
+
+            // Contribution de chaque axe
+            float shade = 0;
+            shade += absY * (ny > 0 ? SHADE_UP : SHADE_DOWN);
+            shade += absZ * SHADE_NS;
+            shade += absX * SHADE_EW;
+
+            return shade;
         }
     }
 }
