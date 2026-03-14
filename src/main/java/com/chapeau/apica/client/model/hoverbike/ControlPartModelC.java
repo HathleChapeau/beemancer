@@ -73,7 +73,7 @@ public class ControlPartModelC extends HoverbikePartModel {
         root.addOrReplaceChild("secondary_cube",
                 CubeListBuilder.create()
                         .texOffs(0, 4)
-                        .addBox(-0.5F, -1.0F, -1.0F, 1.0F, 2.0F, 2.0F),
+                        .addBox(0F, -1.0F, -1.0F, 0.5F, 2.0F, 2.0F),
                 PartPose.offset(-1.0F, 0F, 0F));
 
         // Barre horizontale 0.5x1x3.5 tournee a 45° sur X

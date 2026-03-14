@@ -57,15 +57,17 @@ public class WingProtectorPartModel extends HoverbikePartModel {
         root.addOrReplaceChild("protector_right",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-6.0F, -0.5F, -2.5F, 6.0F, 1.0F, 5.0F),
-                PartPose.offset(-1.5F, 0.0F, 0.0F));
+                        .addBox(-6.0F, -0.75F, -2.5F, 6.0F, 0.5F, 5.0F)
+                        .addBox(-6.5F, -0.60F, -2F, 6.0F, 0.2F, 5.0F),
+                PartPose.offset(-2.5F, 0.5F, 2.0F));
 
         // Protection aile gauche: 6x1x5, offset X=+1.5 pour pivot de rotation
         root.addOrReplaceChild("protector_left",
                 CubeListBuilder.create()
                         .texOffs(0, 6)
-                        .addBox(0.0F, -0.5F, -2.5F, 6.0F, 1.0F, 5.0F),
-                PartPose.offset(1.5F, 0.0F, 0.0F));
+                        .addBox(0.0F, -0.75F, -2.5F, 6.0F, 0.5F, 5.0F)
+                        .addBox(0.5F, -0.60F, -2F, 6.0F, 0.2F, 5.0F),
+                PartPose.offset(2.5F, 0.5F, 2.0F));
 
         return LayerDefinition.create(mesh, 32, 16);
     }
