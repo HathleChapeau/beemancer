@@ -52,7 +52,7 @@ public class AltarCraftSection extends CodexBookSection {
 
     private static final int CROSS_SPACING = 24;
     private static final int ARROW_WIDTH = 20;
-    private static final int POLLEN_SPACING = 32;
+    private static final int POLLEN_SPACING = 36;
     private static final int POLLEN_ROW_HEIGHT = 20;
     private static final int POLLEN_NAME_OFFSET = 5;
     private static final int SECTION_HEIGHT = CROSS_SPACING * 2 + SLOT_SIZE + POLLEN_ROW_HEIGHT + POLLEN_NAME_OFFSET + 12;
@@ -117,7 +117,7 @@ public class AltarCraftSection extends CodexBookSection {
         if (!pollenEntries.isEmpty()) {
             int pollenY = crossCenterY + CROSS_SPACING + SLOT_SIZE + 8;
             int totalPollenWidth = pollenEntries.size() * POLLEN_SPACING - (POLLEN_SPACING - POLLEN_POT_SLOT_W);
-            int pollenStartX = x + (pageWidth - totalPollenWidth) / 2;
+            int pollenStartX = x + (pageWidth - totalPollenWidth) / 2 - 4;
 
             for (int i = 0; i < pollenEntries.size(); i++) {
                 PollenEntry entry = pollenEntries.get(i);
