@@ -50,7 +50,7 @@ import java.util.stream.Collectors;
  * - Adjacent block info line
  * - Zone filtres: jusqu'a 3 lignes de 20px
  *   Chaque ligne: [T] [5 slots OU EditBox] [S] [qty EditBox] [-]
- * - Bouton [+] si < 3 filtres
+ * - Bouton [+] si inférieur 3 filtres
  * - Bouton [S] global si 0 filtres
  * - Separateur
  * - Inventaire joueur

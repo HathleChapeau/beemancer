@@ -34,7 +34,7 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 /**
  * Affiche le nom et le proprietaire du hoverbike en haut-centre de l'ecran
- * quand le joueur regarde un hoverbike (distance < 8 blocs).
+ * quand le joueur regarde un hoverbike (distance inferieur 8 blocs).
  * Visible par tous les joueurs.
  */
 @OnlyIn(Dist.CLIENT)

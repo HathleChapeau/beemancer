@@ -23,6 +23,7 @@ package com.chapeau.apica.client.renderer.item;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartVariants;
 import com.chapeau.apica.common.entity.mount.HoverbikePart;
+import com.chapeau.apica.common.item.debug.DebugWandItem;
 import com.chapeau.apica.common.item.mount.HoverbikePartItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -88,29 +89,53 @@ public class HoverbikePartItemRenderer extends BlockEntityWithoutLevelRenderer {
 
         switch (context) {
             case GUI -> {
-                poseStack.translate(0.5f, 0.5f, 0.5f);
+                poseStack.translate(0.57, 0.45, 0);
                 poseStack.mulPose(Axis.XP.rotationDegrees(30));
                 poseStack.mulPose(Axis.YP.rotationDegrees(225));
-                poseStack.scale(baseScale * 2.5f, baseScale * 2.5f, baseScale * 2.5f);
+                poseStack.mulPose(Axis.ZP.rotationDegrees(180));
+                poseStack.scale(baseScale * 4, baseScale * 4, baseScale * 4);
             }
             case FIXED -> {
-                poseStack.translate(0.5, 0.5, 0.5);
+                poseStack.translate(0.5, 0.45, 0.5);
+                poseStack.mulPose(Axis.XP.rotationDegrees(90));
                 poseStack.mulPose(Axis.YP.rotationDegrees(180));
-                poseStack.scale(baseScale * 2.0f, baseScale * 2.0f, baseScale * 2.0f);
+                poseStack.mulPose(Axis.ZP.rotationDegrees(0));
+                poseStack.scale(baseScale * 4, baseScale * 4, baseScale * 4);
             }
-            case FIRST_PERSON_RIGHT_HAND, FIRST_PERSON_LEFT_HAND -> {
-                poseStack.translate(0.5, 0.5, 0.5);
-                poseStack.mulPose(Axis.YP.rotationDegrees(180));
-                poseStack.scale(baseScale * 1.5f, baseScale * 1.5f, baseScale * 1.5f);
+            case FIRST_PERSON_RIGHT_HAND -> {
+                poseStack.translate(0.65, 0.50, 0.4);
+                poseStack.mulPose(Axis.XP.rotationDegrees(180));
+                poseStack.mulPose(Axis.YP.rotationDegrees(0));
+                poseStack.mulPose(Axis.ZP.rotationDegrees(0));
+                poseStack.scale(baseScale * 4, baseScale * 4, baseScale * 4);
             }
-            case THIRD_PERSON_RIGHT_HAND, THIRD_PERSON_LEFT_HAND -> {
-                poseStack.translate(0.5, 0.5, 0.5);
-                poseStack.mulPose(Axis.YP.rotationDegrees(180));
-                poseStack.scale(baseScale * 1.2f, baseScale * 1.2f, baseScale * 1.2f);
+            case FIRST_PERSON_LEFT_HAND -> {
+                poseStack.translate(0.35, 0.50, 0.4);
+                poseStack.mulPose(Axis.XP.rotationDegrees(180));
+                poseStack.mulPose(Axis.YP.rotationDegrees(0));
+                poseStack.mulPose(Axis.ZP.rotationDegrees(0));
+                poseStack.scale(baseScale * 4, baseScale * 4, baseScale * 4);
+            }
+            case THIRD_PERSON_RIGHT_HAND -> {
+                poseStack.translate(0.5, 0.6, 0.5);
+                poseStack.mulPose(Axis.XP.rotationDegrees(-90));
+                poseStack.mulPose(Axis.YP.rotationDegrees(0));
+                poseStack.mulPose(Axis.ZP.rotationDegrees(0));
+                poseStack.scale(baseScale * 2, baseScale * 2, baseScale * 2);
+            }
+            case THIRD_PERSON_LEFT_HAND -> {
+                poseStack.translate(0.5, 0.6, 0.5);
+                poseStack.mulPose(Axis.XP.rotationDegrees(-90));
+                poseStack.mulPose(Axis.YP.rotationDegrees(0));
+                poseStack.mulPose(Axis.ZP.rotationDegrees(0));
+                poseStack.scale(baseScale * 2, baseScale * 2, baseScale * 2);
             }
             case GROUND -> {
-                poseStack.translate(0.5, 0.25, 0.5);
-                poseStack.scale(baseScale * 1.5f, baseScale * 1.5f, baseScale * 1.5f);
+                poseStack.translate(0.5, 0.5, 0.5);
+                poseStack.mulPose(Axis.XP.rotationDegrees(180));
+                poseStack.mulPose(Axis.YP.rotationDegrees(0));
+                poseStack.mulPose(Axis.ZP.rotationDegrees(0));
+                poseStack.scale(baseScale * 2, baseScale * 2, baseScale * 2);
             }
             default -> {
                 poseStack.translate(0.5, 0.5, 0.5);
