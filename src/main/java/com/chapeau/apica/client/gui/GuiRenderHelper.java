@@ -494,17 +494,17 @@ public class GuiRenderHelper {
      * Rendu d'un badge MobEffect dans le coin haut-gauche d'une zone.
      * Utilise par: IItemDecorator (slowness sur backpack quand items a l'interieur).
      */
-    public static void renderEffectBadgeTopLeft(GuiGraphics g, net.minecraft.world.effect.MobEffect effect,
+    public static void renderEffectBadgeTopLeft(GuiGraphics g, net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effectHolder,
                                                  int x, int y, float scale, float zOffset) {
         net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
-        net.minecraft.client.renderer.texture.TextureAtlasSprite sprite = mc.getMobEffectTextures().get(effect);
+        net.minecraft.client.renderer.texture.TextureAtlasSprite sprite = mc.getMobEffectTextures().get(effectHolder);
         if (sprite == null) return;
 
         PoseStack pose = g.pose();
         pose.pushPose();
         pose.translate(x, y, zOffset);
         pose.scale(scale, scale, 1.0f);
-        g.blit(x, y, 0, 18, 18, sprite);
+        g.blit(0, 0, 0, 18, 18, sprite);
         pose.popPose();
     }
 
