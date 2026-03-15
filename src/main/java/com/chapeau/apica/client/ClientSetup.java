@@ -822,19 +822,36 @@ public class ClientSetup {
     private static void registerItemDecorations(final net.neoforged.neoforge.client.event.RegisterItemDecorationsEvent event) {
         net.minecraft.world.item.ItemStack chestIcon = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.CHEST);
         ResourceLocation magnetTex = ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/item/artifacts/magnet.png");
+        ResourceLocation slownessTex = ResourceLocation.withDefaultNamespace("textures/mob_effect/slowness.png");
 
         // Backpack: icone coffre en bas a droite (toujours visible)
-        // + icone slowness en haut a gauche si items a l'interieur
+        // + icone slowness en haut a droite si items ET pas en slot accessoire
         event.register(ApicaItems.BACKPACK.get(), (graphics, font, stack, xOffset, yOffset) -> {
             GuiRenderHelper.renderBadgeIcon(graphics, chestIcon, xOffset, yOffset, 16, 0.5f, 200);
-            // Affiche icone slowness si backpack contient des items
+
+            // Ne pas afficher slowness si le backpack est dans un slot accessoire
+            for (int i = 0; i < 2; i++) {
+                if (stack == com.chapeau.apica.client.gui.AccessoryClientCache.getSlot(i)) return false;
+            }
+            // Afficher slowness seulement si contient des items
             net.minecraft.world.item.component.ItemContainerContents contents =
                 stack.get(net.minecraft.core.component.DataComponents.CONTAINER);
-            if (contents != null && !contents.stream().allMatch(net.minecraft.world.item.ItemStack::isEmpty)) {
-                GuiRenderHelper.renderEffectBadgeTopRight(graphics,
-                    net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN,
-                    xOffset, yOffset, 16, 0.45f, 200);
+            if (contents == null) return false;
+            net.minecraft.core.NonNullList<net.minecraft.world.item.ItemStack> items =
+                net.minecraft.core.NonNullList.withSize(27, net.minecraft.world.item.ItemStack.EMPTY);
+            contents.copyInto(items);
+            boolean hasItems = false;
+            for (net.minecraft.world.item.ItemStack item : items) {
+                if (!item.isEmpty()) { hasItems = true; break; }
             }
+            if (!hasItems) return false;
+            // Render slowness icon en haut a droite
+            com.mojang.blaze3d.vertex.PoseStack pose = graphics.pose();
+            pose.pushPose();
+            pose.translate(xOffset + 8, yOffset, 200);
+            pose.scale(0.45f, 0.45f, 1.0f);
+            graphics.blit(slownessTex, 0, 0, 0, 0, 18, 18, 18, 18);
+            pose.popPose();
             return false;
         });
 
