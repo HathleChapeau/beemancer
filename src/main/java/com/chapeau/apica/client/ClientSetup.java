@@ -831,9 +831,9 @@ public class ClientSetup {
             net.minecraft.world.item.component.ItemContainerContents contents =
                 stack.get(net.minecraft.core.component.DataComponents.CONTAINER);
             if (contents != null && !contents.stream().allMatch(net.minecraft.world.item.ItemStack::isEmpty)) {
-                GuiRenderHelper.renderEffectBadgeTopLeft(graphics,
+                GuiRenderHelper.renderEffectBadgeTopRight(graphics,
                     net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN,
-                    xOffset, yOffset, 0.5f, 200);
+                    xOffset, yOffset, 16, 0.5f, 200);
             }
             return false;
         });
