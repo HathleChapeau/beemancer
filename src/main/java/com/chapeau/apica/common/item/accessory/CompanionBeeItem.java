@@ -118,12 +118,9 @@ public class CompanionBeeItem extends Item implements IAccessory {
         super.appendHoverText(stack, context, tooltip, flag);
         String speciesId = getSpeciesId(stack);
         if (speciesId == null) {
-            speciesId = "meadow"; // default species
+            speciesId = "meadow";
         }
-        tooltip.add(Component.translatable("tooltip.apica.species")
-                .withStyle(ChatFormatting.GRAY)
-                .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-                .append(Component.translatable("species.apica." + speciesId).withStyle(ChatFormatting.GOLD)));
+        tooltip.add(Component.translatable("species.apica." + speciesId).withStyle(ChatFormatting.GOLD));
     }
 
     // =========================================================================
@@ -209,7 +206,7 @@ public class CompanionBeeItem extends Item implements IAccessory {
     private int findAccessorySlot(ServerPlayer player, ItemStack stack) {
         AccessoryPlayerData data = player.getData(ApicaAttachments.ACCESSORY_DATA);
         for (int i = 0; i < AccessoryPlayerData.SLOT_COUNT; i++) {
-            if (data.getAccessory(i) == stack) {
+            if (ItemStack.isSameItemSameComponents(data.getAccessory(i), stack)) {
                 return i;
             }
         }
