@@ -199,7 +199,7 @@ public final class HoverbikePhysics {
 
     /**
      * Verifie si on doit passer de RUN a HOVER.
-     * Condition : vitesse forward < seuil.
+     * Condition : vitesse forward inferieur seuil.
      */
     public static boolean shouldTransitionToHover(double forwardSpeed, HoverbikeSettings settings) {
         return forwardSpeed < settings.runThresholdSpeed();
