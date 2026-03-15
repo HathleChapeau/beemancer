@@ -25,6 +25,9 @@
 package com.chapeau.apica.common.blockentity.injector;
 
 import com.chapeau.apica.common.codex.CodexPlayerData;
+import com.chapeau.apica.common.item.BackpackItem;
+import com.chapeau.apica.common.item.accessory.BeeMagnetItem;
+import com.chapeau.apica.common.item.accessory.CompanionBeeItem;
 import com.chapeau.apica.common.item.bee.MagicBeeItem;
 import com.chapeau.apica.common.item.essence.EssenceItem;
 import com.chapeau.apica.common.item.essence.SpeciesEssenceItem;
@@ -85,7 +88,7 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
 
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
-            if (slot == BEE_SLOT) return stack.is(ApicaItems.MAGIC_BEE.get());
+            if (slot == BEE_SLOT) return isValidBeeSlotItem(stack);
             if (slot == ESSENCE_SLOT) return stack.getItem() instanceof EssenceItem
                     || stack.getItem() instanceof SpeciesEssenceItem;
             return false;
@@ -138,7 +141,14 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, InjectorBlockEntity be) {
         ItemStack beeStack = be.itemHandler.getStackInSlot(BEE_SLOT);
-        if (beeStack.isEmpty() || BeeInjectionHelper.isSatiated(beeStack)) {
+        if (beeStack.isEmpty()) {
+            be.resetTimer();
+            return;
+        }
+
+        // Companion items: seule species essence acceptee
+        boolean isCompanion = isCompanionItem(beeStack);
+        if (!isCompanion && BeeInjectionHelper.isSatiated(beeStack)) {
             be.resetTimer();
             return;
         }
@@ -150,6 +160,13 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
         }
 
         boolean isSpeciesEssence = essenceStack.getItem() instanceof SpeciesEssenceItem;
+
+        // Companion items: ONLY species essence allowed
+        if (isCompanion && !isSpeciesEssence) {
+            be.resetTimer();
+            return;
+        }
+
         if (!isSpeciesEssence && !(essenceStack.getItem() instanceof EssenceItem)) {
             be.resetTimer();
             return;
@@ -159,17 +176,21 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
         if (be.processTimer < be.getMaxProcessTicks()) return;
 
         // Processing complet: consommer l'essence
-        if (isSpeciesEssence) {
+        if (isCompanion) {
+            be.processCompanionSpeciesEssence(beeStack, essenceStack);
+        } else if (isSpeciesEssence) {
             be.processSpeciesEssence(beeStack, essenceStack);
         } else {
             be.processEssence(beeStack, (EssenceItem) essenceStack.getItem());
         }
 
-        // Decouvrir le nom de l'espece pour le joueur qui a utilise l'injecteur
-        be.learnSpeciesForPlayer(beeStack, level);
+        // Decouvrir le nom de l'espece pour le joueur qui a utilise l'injecteur (magic bee only)
+        if (!isCompanion) {
+            be.learnSpeciesForPlayer(beeStack, level);
+        }
 
-        // Explosion spherique de runes quand l'abeille devient attuned
-        if (BeeInjectionHelper.isSatiated(beeStack) && level instanceof ServerLevel serverLevel) {
+        // Explosion spherique de runes quand l'abeille devient attuned (magic bee only)
+        if (!isCompanion && BeeInjectionHelper.isSatiated(beeStack) && level instanceof ServerLevel serverLevel) {
             ParticleHelper.spawnRingBurst(serverLevel, ApicaParticles.RUNE.get(), Vec3.atCenterOf(pos), 30, 0.15);
         }
 
@@ -198,6 +219,16 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
 
         // La faim monte TOUJOURS (meme si pas de gain de stat)
         BeeInjectionHelper.addHunger(beeStack, value.hungerCost());
+    }
+
+    /**
+     * Traite une essence d'espece sur un companion item : change simplement l'espece.
+     * Pas de jauge de saturation, changement illimite.
+     */
+    private void processCompanionSpeciesEssence(ItemStack companionStack, ItemStack essenceStack) {
+        String essenceSpeciesId = SpeciesEssenceItem.getSpeciesId(essenceStack);
+        if (essenceSpeciesId == null) return;
+        CompanionBeeItem.setSpeciesId(companionStack, essenceSpeciesId);
     }
 
     /**
@@ -306,6 +337,23 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
         return type == EssenceItem.EssenceType.DIURNAL
             || type == EssenceItem.EssenceType.NOCTURNAL
             || type == EssenceItem.EssenceType.INSOMNIA;
+    }
+
+    /**
+     * Verifie si un item est valide pour le slot abeille.
+     * Accepte: magic_bee, companion_bee, backpack, bee_magnet.
+     */
+    private static boolean isValidBeeSlotItem(ItemStack stack) {
+        return stack.is(ApicaItems.MAGIC_BEE.get()) || isCompanionItem(stack);
+    }
+
+    /**
+     * Verifie si un item est un companion item (companion_bee, backpack, bee_magnet).
+     */
+    private static boolean isCompanionItem(ItemStack stack) {
+        return stack.getItem() instanceof CompanionBeeItem
+            || stack.getItem() instanceof BackpackItem
+            || stack.getItem() instanceof BeeMagnetItem;
     }
 
     // ========== NBT ==========

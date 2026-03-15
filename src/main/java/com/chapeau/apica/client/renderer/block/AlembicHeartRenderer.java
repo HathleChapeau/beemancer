@@ -109,15 +109,16 @@ public class AlembicHeartRenderer implements BlockEntityRenderer<AlembicHeartBlo
 
         float ringRotation = time * ringSpeed * 20.0f; // 20 deg/sec base
 
-        // Small ring: rotation Y autour du centre
-        RotatingModelHelper.renderWithYRotation(blockRenderer, smallRingModel,
-            blockEntity.getLevel(), state, blockEntity.getBlockPos(),
-            poseStack, vertexConsumer, random, packedLight, packedOverlay,
-            RenderType.solid(), ringRotation);
+        // Centre de rotation = centre des rings/cubes (Y=16 = 1.0 en coordonnées bloc)
+        float pivotY = 1.0f;
+
+        // Small ring: rotation Y autour du centre des rings
+        renderWithYRotationAtPivot(smallRingModel, blockEntity, state,
+            poseStack, vertexConsumer, packedLight, packedOverlay, ringRotation, pivotY);
 
         // Big ring: rotation X autour du centre (sens inverse)
-        renderWithXRotation(bigRingModel, blockEntity, state,
-            poseStack, vertexConsumer, packedLight, packedOverlay, -ringRotation * 0.7f);
+        renderWithXRotationAtPivot(bigRingModel, blockEntity, state,
+            poseStack, vertexConsumer, packedLight, packedOverlay, -ringRotation * 0.7f, pivotY);
 
         // Cubes: rotation XYZ sur eux-memes
         float xRot1 = time * cubeSpeed * 3.0f;
@@ -125,30 +126,63 @@ public class AlembicHeartRenderer implements BlockEntityRenderer<AlembicHeartBlo
         float zRot1 = time * cubeSpeed * 2.1f;
 
         // Cube 1
-        RotatingModelHelper.renderWithXYZRotation(blockRenderer, cubeModel,
-            blockEntity.getLevel(), state, blockEntity.getBlockPos(),
-            poseStack, vertexConsumer, random, packedLight, packedOverlay,
-            RenderType.solid(), xRot1, yRot1, zRot1, 1.0f);
+        renderWithXYZRotationAtPivot(cubeModel, blockEntity, state,
+            poseStack, vertexConsumer, packedLight, packedOverlay,
+            xRot1, yRot1, zRot1, pivotY);
 
         // Cube 2: phase decalee (comme Crystallizer)
-        RotatingModelHelper.renderWithXYZRotation(blockRenderer, cubeModel,
-            blockEntity.getLevel(), state, blockEntity.getBlockPos(),
-            poseStack, vertexConsumer, random, packedLight, packedOverlay,
-            RenderType.solid(),
-            xRot1 + 90, yRot1 + 60, zRot1 + 45, 1.0f);
+        renderWithXYZRotationAtPivot(cubeModel, blockEntity, state,
+            poseStack, vertexConsumer, packedLight, packedOverlay,
+            xRot1 + 90, yRot1 + 60, zRot1 + 45, pivotY);
     }
 
     /**
-     * Rend un modele avec rotation X autour du centre du bloc.
+     * Rend un modele avec rotation Y autour d'un pivot personnalise.
      */
-    private void renderWithXRotation(BakedModel model, AlembicHeartBlockEntity blockEntity,
-                                      BlockState state, PoseStack poseStack,
-                                      VertexConsumer consumer, int light, int overlay,
-                                      float xRotation) {
+    private void renderWithYRotationAtPivot(BakedModel model, AlembicHeartBlockEntity blockEntity,
+                                             BlockState state, PoseStack poseStack,
+                                             VertexConsumer consumer, int light, int overlay,
+                                             float yRotation, float pivotY) {
         poseStack.pushPose();
-        poseStack.translate(0.5, 0.5, 0.5);
+        poseStack.translate(0.5, pivotY, 0.5);
+        poseStack.mulPose(Axis.YP.rotationDegrees(yRotation));
+        poseStack.translate(-0.5, -pivotY, -0.5);
+        RenderHelper.tesselateModel(blockRenderer, model, blockEntity.getLevel(), state,
+            blockEntity.getBlockPos(), poseStack, consumer, random, light, overlay,
+            RenderType.solid());
+        poseStack.popPose();
+    }
+
+    /**
+     * Rend un modele avec rotation X autour d'un pivot personnalise.
+     */
+    private void renderWithXRotationAtPivot(BakedModel model, AlembicHeartBlockEntity blockEntity,
+                                             BlockState state, PoseStack poseStack,
+                                             VertexConsumer consumer, int light, int overlay,
+                                             float xRotation, float pivotY) {
+        poseStack.pushPose();
+        poseStack.translate(0.5, pivotY, 0.5);
         poseStack.mulPose(Axis.XP.rotationDegrees(xRotation));
-        poseStack.translate(-0.5, -0.5, -0.5);
+        poseStack.translate(-0.5, -pivotY, -0.5);
+        RenderHelper.tesselateModel(blockRenderer, model, blockEntity.getLevel(), state,
+            blockEntity.getBlockPos(), poseStack, consumer, random, light, overlay,
+            RenderType.solid());
+        poseStack.popPose();
+    }
+
+    /**
+     * Rend un modele avec rotation XYZ autour d'un pivot personnalise.
+     */
+    private void renderWithXYZRotationAtPivot(BakedModel model, AlembicHeartBlockEntity blockEntity,
+                                               BlockState state, PoseStack poseStack,
+                                               VertexConsumer consumer, int light, int overlay,
+                                               float xRot, float yRot, float zRot, float pivotY) {
+        poseStack.pushPose();
+        poseStack.translate(0.5, pivotY, 0.5);
+        poseStack.mulPose(Axis.XP.rotationDegrees(xRot));
+        poseStack.mulPose(Axis.YP.rotationDegrees(yRot));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(zRot));
+        poseStack.translate(-0.5, -pivotY, -0.5);
         RenderHelper.tesselateModel(blockRenderer, model, blockEntity.getLevel(), state,
             blockEntity.getBlockPos(), poseStack, consumer, random, light, overlay,
             RenderType.solid());
