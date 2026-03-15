@@ -201,18 +201,25 @@ public class AltarCraftSection extends CodexBookSection {
 
     /**
      * Extrait le nom court du pollen: "Pollen of Water" → "Water", "Flower Pollen" → "Flower".
+     * Tronque les noms longs (>6 caractères) à la moitié + "." pour l'affichage compact.
      */
     private static String extractPollenShortName(String displayName) {
+        String shortName;
         if (displayName.startsWith("Pollen of ")) {
-            return displayName.substring("Pollen of ".length());
+            shortName = displayName.substring("Pollen of ".length());
+        } else if (displayName.endsWith(" Pollen")) {
+            shortName = displayName.substring(0, displayName.length() - " Pollen".length());
+        } else if (displayName.endsWith(" Spore")) {
+            shortName = displayName.substring(0, displayName.length() - " Spore".length());
+        } else {
+            shortName = displayName;
         }
-        if (displayName.endsWith(" Pollen")) {
-            return displayName.substring(0, displayName.length() - " Pollen".length());
+
+        int maxLength = 5;
+        if (shortName.length() > maxLength) {
+            shortName = shortName.substring(0, maxLength) + ".";
         }
-        if (displayName.endsWith(" Spore")) {
-            return displayName.substring(0, displayName.length() - " Spore".length());
-        }
-        return displayName;
+        return shortName;
     }
 
     public static AltarCraftSection fromJson(JsonObject json) {
