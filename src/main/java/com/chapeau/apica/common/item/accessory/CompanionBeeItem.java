@@ -56,7 +56,8 @@ public class CompanionBeeItem extends Item implements IAccessory {
     public void onEquip(Player player, ItemStack stack) {
         if (!(player instanceof ServerPlayer serverPlayer)) return;
         int slot = findAccessorySlot(serverPlayer, stack);
-        spawnCompanionBee(serverPlayer, slot);
+        String speciesId = getSpeciesId(stack);
+        spawnCompanionBee(serverPlayer, slot, speciesId != null ? speciesId : "meadow");
     }
 
     @Override
@@ -116,12 +117,13 @@ public class CompanionBeeItem extends Item implements IAccessory {
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
         String speciesId = getSpeciesId(stack);
-        if (speciesId != null) {
-            tooltip.add(Component.translatable("tooltip.apica.species")
-                    .withStyle(ChatFormatting.GRAY)
-                    .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-                    .append(Component.translatable("gene.apica.species." + speciesId).withStyle(ChatFormatting.GOLD)));
+        if (speciesId == null) {
+            speciesId = "meadow"; // default species
         }
+        tooltip.add(Component.translatable("tooltip.apica.species")
+                .withStyle(ChatFormatting.GRAY)
+                .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
+                .append(Component.translatable("species.apica." + speciesId).withStyle(ChatFormatting.GOLD)));
     }
 
     // =========================================================================
@@ -133,6 +135,13 @@ public class CompanionBeeItem extends Item implements IAccessory {
      * Utilisable depuis onEquip et depuis le login/respawn dans Apica.java.
      */
     public static void spawnCompanionBee(ServerPlayer player, int slot) {
+        spawnCompanionBee(player, slot, "meadow");
+    }
+
+    /**
+     * Spawne une abeille compagnon COMPANION pour le joueur au slot donne avec une espece specifique.
+     */
+    public static void spawnCompanionBee(ServerPlayer player, int slot, String speciesId) {
         if (!(player.level() instanceof ServerLevel serverLevel)) return;
 
         despawnCompanionBee(player, slot);
@@ -150,6 +159,7 @@ public class CompanionBeeItem extends Item implements IAccessory {
         bee.setOwnerUuid(player.getUUID());
         bee.setAccessorySlot(slot);
         bee.setCompanionType(CompanionBeeEntity.CompanionType.COMPANION);
+        bee.setSpeciesId(speciesId != null ? speciesId : "meadow");
         serverLevel.addFreshEntity(bee);
     }
 

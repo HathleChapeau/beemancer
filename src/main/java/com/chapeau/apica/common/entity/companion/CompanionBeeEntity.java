@@ -119,6 +119,8 @@ public class CompanionBeeEntity extends Bee {
         SynchedEntityData.defineId(CompanionBeeEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<String> DATA_COMPANION_TYPE =
         SynchedEntityData.defineId(CompanionBeeEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<String> DATA_SPECIES_ID =
+        SynchedEntityData.defineId(CompanionBeeEntity.class, EntityDataSerializers.STRING);
 
     /** Type de compagnon: MAGNET ramasse les items, BACKPACK transporte un coffre, COMPANION simple. */
     public enum CompanionType {
@@ -166,6 +168,7 @@ public class CompanionBeeEntity extends Bee {
         builder.define(DATA_OWNER_UUID, Optional.empty());
         builder.define(DATA_ACCESSORY_SLOT, 0);
         builder.define(DATA_COMPANION_TYPE, CompanionType.MAGNET.name());
+        builder.define(DATA_SPECIES_ID, "meadow");
     }
 
     @Override
@@ -506,6 +509,14 @@ public class CompanionBeeEntity extends Bee {
     public void setCompanionType(CompanionType type) {
         entityData.set(DATA_COMPANION_TYPE, type.name());
         refreshDimensions();
+    }
+
+    public String getSpeciesId() {
+        return entityData.get(DATA_SPECIES_ID);
+    }
+
+    public void setSpeciesId(String speciesId) {
+        entityData.set(DATA_SPECIES_ID, speciesId != null ? speciesId : "meadow");
     }
 
     @Override
