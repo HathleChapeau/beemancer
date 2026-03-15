@@ -1,7 +1,7 @@
 /**
  * ============================================================
- * [MiningLaserBlockBreaker.java]
- * Description: Logique server-side de destruction de blocs par le Mining Laser
+ * [ExcavationLaserBlockBreaker.java]
+ * Description: Logique server-side de destruction de blocs par le Excavation Laser
  * ============================================================
  *
  * DÉPENDANCES:
@@ -12,7 +12,7 @@
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
- * - MiningLaserItem.java (appel lors du tir)
+ * - ExcavationLaserItem.java (appel lors du tir)
  *
  * ============================================================
  */
@@ -35,7 +35,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 
 /**
- * Gère le raycast et la destruction de blocs pour le Mining Laser.
+ * Gère le raycast et la destruction de blocs pour le Excavation Laser.
  * Le rayon part de la position des yeux du joueur dans la direction du regard,
  * détruit le premier bloc solide (hardness 0-50, exclut bedrock).
  * Le chargeLevel détermine le rayon AoE :
@@ -44,7 +44,7 @@ import java.util.List;
  * - 2 : sphère rayon 2
  * - 3 : sphère rayon 3
  */
-public final class MiningLaserBlockBreaker {
+public final class ExcavationLaserBlockBreaker {
 
     /** Hardness maximale destructible (obsidienne = 50, bedrock = -1) */
     private static final float MAX_HARDNESS = 50.0f;
@@ -169,6 +169,6 @@ public final class MiningLaserBlockBreaker {
         ParticleHelper.spawnParticles(level, ParticleTypes.ELECTRIC_SPARK, center, count, spread, 0.1);
     }
 
-    private MiningLaserBlockBreaker() {
+    private ExcavationLaserBlockBreaker() {
     }
 }

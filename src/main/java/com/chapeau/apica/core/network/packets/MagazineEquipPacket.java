@@ -30,7 +30,7 @@ import com.chapeau.apica.common.item.magazine.MagazineConstants;
 import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.magazine.MagazineFluidData;
 import com.chapeau.apica.common.item.magazine.MagazineItem;
-import com.chapeau.apica.common.item.tool.MiningLaserItem;
+import com.chapeau.apica.common.item.tool.ExcavationLaserItem;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -151,16 +151,16 @@ public record MagazineEquipPacket(int slotIndex, boolean equip)
      * Equip/swap → force minimum niveau 1. Unequip → force niveau 0.
      */
     private static void syncChargeLevelAfterMagazineChange(ItemStack holderStack) {
-        if (!(holderStack.getItem() instanceof MiningLaserItem)) return;
+        if (!(holderStack.getItem() instanceof ExcavationLaserItem)) return;
 
         boolean hasMag = MagazineData.hasMagazine(holderStack)
                 && MagazineData.getFluidAmount(holderStack) > 0;
         if (hasMag) {
-            if (MiningLaserItem.getChargeLevel(holderStack) < 1) {
-                MiningLaserItem.setChargeLevel(holderStack, 1);
+            if (ExcavationLaserItem.getChargeLevel(holderStack) < 1) {
+                ExcavationLaserItem.setChargeLevel(holderStack, 1);
             }
         } else {
-            MiningLaserItem.setChargeLevel(holderStack, 0);
+            ExcavationLaserItem.setChargeLevel(holderStack, 0);
         }
     }
 

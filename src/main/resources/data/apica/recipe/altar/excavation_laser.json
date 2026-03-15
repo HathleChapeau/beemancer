@@ -1,0 +1,20 @@
+{
+  "type": "apica:altar",
+  "center_item": { "item": "apica:royal_artifact_core" },
+  "pedestal_items": [
+    { "item": "apica:honeyed_iron" },
+    { "item": "apica:honeyed_iron" },
+    { "item": "apica:honey_crystal" },
+    { "item": "apica:honey_crystal" },
+    { "item": "apica:honeyed_glass" },
+    { "item": "minecraft:redstone" },
+    { "item": "minecraft:redstone" },
+    { "item": "minecraft:stick" }
+  ],
+  "pollen": {
+    "apica:pollen_of_fire": 19,
+    "apica:pollen_of_thunder": 11,
+    "apica:crystal_pollen": 22
+  },
+  "result": { "id": "apica:excavation_laser" }
+}

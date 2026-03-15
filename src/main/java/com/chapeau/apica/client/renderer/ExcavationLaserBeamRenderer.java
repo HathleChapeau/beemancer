@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * [MiningLaserBeamRenderer.java]
+ * [ExcavationLaserBeamRenderer.java]
  * Description: Rendu world-space du rayon laser (2 quads billboard croisés)
  * ============================================================
  *
@@ -9,7 +9,7 @@
  * | Dépendance              | Raison                | Utilisation                    |
  * |-------------------------|----------------------|--------------------------------|
  * | RenderLevelStageEvent   | Hook rendu world     | Rendu après translucents       |
- * | MiningLaserItem         | Détection item actif | chargeLevel + useTicks         |
+ * | ExcavationLaserItem         | Détection item actif | chargeLevel + useTicks         |
  * | AnimationTimer          | Temps fluide         | Oscillation du beam            |
  * ------------------------------------------------------------
  *
@@ -22,7 +22,7 @@ package com.chapeau.apica.client.renderer;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.animation.AnimationTimer;
-import com.chapeau.apica.common.item.tool.MiningLaserItem;
+import com.chapeau.apica.common.item.tool.ExcavationLaserItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
@@ -45,7 +45,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 
 /**
- * Renderer world-space pour le rayon du Mining Laser.
+ * Renderer world-space pour le rayon du Excavation Laser.
  * Dessine 2 quads billboard croisés (formant un X vu de face) de l'origine
  * à la destination, avec un core lumineux fin et un glow large semi-transparent.
  *
@@ -54,10 +54,10 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
  * - Third-person : pointe du canon (position joueur + offset pour simuler le bout de l'arme)
  */
 @OnlyIn(Dist.CLIENT)
-public class MiningLaserBeamRenderer {
+public class ExcavationLaserBeamRenderer {
 
     private static final ResourceLocation BEAM_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/item/artifacts/mining_laser_beam.png");
+            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/item/artifacts/excavation_laser_beam.png");
 
     /** Demi-largeur du core lumineux */
     private static final float CORE_HALF_WIDTH = 0.03f;
@@ -112,15 +112,15 @@ public class MiningLaserBeamRenderer {
      */
     private static boolean isLaserFiring(Player player) {
         if (!player.isUsingItem()) return false;
-        if (!(player.getUseItem().getItem() instanceof MiningLaserItem)) return false;
-        return player.getTicksUsingItem() >= MiningLaserItem.CHARGE_TICKS;
+        if (!(player.getUseItem().getItem() instanceof ExcavationLaserItem)) return false;
+        return player.getTicksUsingItem() >= ExcavationLaserItem.CHARGE_TICKS;
     }
 
     /**
      * Détermine dans quelle main le joueur tient le laser.
      */
     private static InteractionHand getLaserHand(Player player) {
-        if (player.getMainHandItem().getItem() instanceof MiningLaserItem) {
+        if (player.getMainHandItem().getItem() instanceof ExcavationLaserItem) {
             return InteractionHand.MAIN_HAND;
         }
         return InteractionHand.OFF_HAND;
@@ -167,7 +167,7 @@ public class MiningLaserBeamRenderer {
     private static Vec3 computeBeamDestination(Player player, float partialTick) {
         Vec3 eyePos = player.getEyePosition(partialTick);
         Vec3 look = player.getViewVector(partialTick);
-        Vec3 endPos = eyePos.add(look.scale(MiningLaserItem.MAX_RANGE));
+        Vec3 endPos = eyePos.add(look.scale(ExcavationLaserItem.MAX_RANGE));
 
         BlockHitResult hitResult = player.level().clip(new ClipContext(
                 eyePos, endPos,

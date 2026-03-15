@@ -7,7 +7,8 @@
     { "item": "apica:honeyed_iron" },
     { "item": "apica:honeyed_iron" },
     { "item": "minecraft:grass_block" },
-    { "item": "apica:honeyed_glass" }
+    { "item": "apica:honeyed_glass" },
+    { "item": "apica:blank_rune" }
   ],
   "pollen": {
     "apica:crystal_pollen": 22

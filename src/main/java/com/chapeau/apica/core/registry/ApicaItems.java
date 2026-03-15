@@ -26,7 +26,7 @@ import com.chapeau.apica.common.item.magazine.CreativeMagazineItem;
 import com.chapeau.apica.common.item.magazine.MagazineItem;
 import com.chapeau.apica.common.item.tool.LeafBlowerItem;
 import com.chapeau.apica.common.item.tool.ChopperHiveItem;
-import com.chapeau.apica.common.item.tool.MiningLaserItem;
+import com.chapeau.apica.common.item.tool.ExcavationLaserItem;
 import com.chapeau.apica.common.item.tool.RailgunItem;
 import com.chapeau.apica.common.item.BackpackItem;
 import com.chapeau.apica.common.item.CombItem;
@@ -434,8 +434,8 @@ public class ApicaItems {
     public static final DeferredItem<LeafBlowerItem> LEAF_BLOWER = ITEMS.register("leaf_blower",
             () -> new LeafBlowerItem(new Item.Properties().stacksTo(1)));
 
-    public static final DeferredItem<MiningLaserItem> MINING_LASER = ITEMS.register("mining_laser",
-            () -> new MiningLaserItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<ExcavationLaserItem> EXCAVATION_LASER = ITEMS.register("excavation_laser",
+            () -> new ExcavationLaserItem(new Item.Properties().stacksTo(1)));
 
     public static final DeferredItem<RailgunItem> RAILGUN = ITEMS.register("railgun",
             () -> new RailgunItem(new Item.Properties().stacksTo(1)));

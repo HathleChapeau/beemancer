@@ -1213,7 +1213,7 @@
   "codex.apica.logistics.storage_hive_mk3.lore": "Pushed it as far as the design allows. Royal gold framing sustains a much denser colony. The Storage Hive MK3 handles everything I can throw at the network. If throughput becomes an issue again, the problem is elsewhere.",
   "codex.apica.logistics.storage_hive_mk3.lore.p2": "Did it just look at me?",
   "item.apica.leaf_blower": "Leaf Blower",
-  "item.apica.mining_laser": "Excavation Laser",
+  "item.apica.excavation_laser": "Excavation Laser",
   "item.apica.railgun": "Railgun",
   "entity.apica.leaf_blower_orb": "Wind Orb",
   "item.apica.magazine": "Magazine",

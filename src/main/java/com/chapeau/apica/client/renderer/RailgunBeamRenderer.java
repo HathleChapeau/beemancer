@@ -54,7 +54,7 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 public class RailgunBeamRenderer {
 
     private static final ResourceLocation BEAM_TEXTURE =
-        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/item/artifacts/mining_laser_beam.png");
+        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/item/artifacts/excavation_laser_beam.png");
 
     private static final float CORE_HALF_WIDTH = 0.06f;
     private static final float GLOW_HALF_WIDTH = 0.20f;

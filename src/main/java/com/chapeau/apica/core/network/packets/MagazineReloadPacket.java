@@ -8,7 +8,7 @@ package com.chapeau.apica.core.network.packets;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.item.magazine.IMagazineHolder;
-import com.chapeau.apica.common.item.tool.MiningLaserItem;
+import com.chapeau.apica.common.item.tool.ExcavationLaserItem;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;

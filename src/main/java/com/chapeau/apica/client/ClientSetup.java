@@ -37,7 +37,7 @@ import com.chapeau.apica.client.gui.screen.storage.NetworkInterfaceScreen;
 import com.chapeau.apica.client.gui.screen.storage.StorageTerminalScreen;
 import com.chapeau.apica.client.renderer.BuildingWandPreviewRenderer;
 import com.chapeau.apica.client.renderer.ChopperHivePreviewRenderer;
-import com.chapeau.apica.client.renderer.MiningLaserBeamRenderer;
+import com.chapeau.apica.client.renderer.ExcavationLaserBeamRenderer;
 import com.chapeau.apica.client.renderer.RailgunBeamRenderer;
 import com.chapeau.apica.client.renderer.PlayerAlignmentHandler;
 import com.chapeau.apica.client.renderer.block.AssemblyTableRenderer;
@@ -82,7 +82,7 @@ import com.chapeau.apica.client.renderer.entity.CompanionBeeRenderer;
 import com.chapeau.apica.client.renderer.entity.DeliveryBeeRenderer;
 import com.chapeau.apica.client.renderer.item.BuildingStaffItemRenderer;
 import com.chapeau.apica.client.renderer.item.LeafBlowerItemRenderer;
-import com.chapeau.apica.client.renderer.item.MiningLaserItemRenderer;
+import com.chapeau.apica.client.renderer.item.ExcavationLaserItemRenderer;
 import com.chapeau.apica.client.renderer.item.RailgunItemRenderer;
 import com.chapeau.apica.client.renderer.item.ChopperHiveItemRenderer;
 import com.chapeau.apica.client.renderer.item.MagicBeeItemRenderer;
@@ -142,7 +142,7 @@ public class ClientSetup {
 
         NeoForge.EVENT_BUS.register(BuildingWandPreviewRenderer.class);
         NeoForge.EVENT_BUS.register(ChopperHivePreviewRenderer.class);
-        NeoForge.EVENT_BUS.register(MiningLaserBeamRenderer.class);
+        NeoForge.EVENT_BUS.register(ExcavationLaserBeamRenderer.class);
         NeoForge.EVENT_BUS.register(RailgunBeamRenderer.class);
         NeoForge.EVENT_BUS.register(DebugPanelRenderer.class);
         NeoForge.EVENT_BUS.register(DebugKeyHandler.class);
@@ -437,12 +437,12 @@ public class ClientSetup {
 
         // Mining Laser - render 3D model + charging animation overlay + rings + beam + no equip bob
         event.registerItem(new IClientItemExtensions() {
-            private MiningLaserItemRenderer renderer;
+            private ExcavationLaserItemRenderer renderer;
 
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
                 if (renderer == null) {
-                    renderer = new MiningLaserItemRenderer();
+                    renderer = new ExcavationLaserItemRenderer();
                 }
                 return renderer;
             }
@@ -471,7 +471,7 @@ public class ClientSetup {
                 }
                 return true;
             }
-        }, ApicaItems.MINING_LASER.get());
+        }, ApicaItems.EXCAVATION_LASER.get());
 
         // Railgun - render 3D model (sniper) + arm pose (crossbow hold) + no equip bob
         event.registerItem(new IClientItemExtensions() {
@@ -778,7 +778,7 @@ public class ClientSetup {
         event.register(LeafBlowerItemRenderer.BODY_MODEL_LOC);
 
         // Mining Laser 3D body model (rendu par BEWLR)
-        event.register(MiningLaserItemRenderer.BODY_MODEL_LOC);
+        event.register(ExcavationLaserItemRenderer.BODY_MODEL_LOC);
 
         // Railgun 3D body model (sniper converti, rendu par BEWLR)
         event.register(RailgunItemRenderer.BODY_MODEL_LOC);
@@ -876,7 +876,7 @@ public class ClientSetup {
             return false;
         };
         event.register(ApicaItems.LEAF_BLOWER.get(), magazineDecorator);
-        event.register(ApicaItems.MINING_LASER.get(), magazineDecorator);
+        event.register(ApicaItems.EXCAVATION_LASER.get(), magazineDecorator);
         event.register(ApicaItems.CHOPPER_HIVE.get(), magazineDecorator);
         event.register(ApicaItems.BUILDING_STAFF.get(), magazineDecorator);
         event.register(ApicaItems.RAILGUN.get(), magazineDecorator);

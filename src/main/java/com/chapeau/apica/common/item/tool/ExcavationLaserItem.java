@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * [MiningLaserItem.java]
+ * [ExcavationLaserItem.java]
  * Description: Arme chargeable qui tire un rayon laser detruisant des blocs
  * ============================================================
  */
@@ -29,7 +29,7 @@ import net.minecraft.world.level.Level;
 
 import java.util.Set;
 
-public class MiningLaserItem extends Item implements IMagazineHolder {
+public class ExcavationLaserItem extends Item implements IMagazineHolder {
 
     public static final int CHARGE_TICKS = 40;
     private static final int FIRE_INTERVAL = 5;
@@ -45,7 +45,7 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
     private static final String TAG_PREV_CHARGE_LEVEL = "PrevChargeLevel";
     private static final String TAG_LAST_CLICK_TICK = "LastClickTick";
 
-    public MiningLaserItem(Properties properties) {
+    public ExcavationLaserItem(Properties properties) {
         super(properties);
     }
 
@@ -81,8 +81,8 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
     public void startReloadAnimation(Player player, ItemStack holder, float currentTime) {
         setReloading(player, true);
         if (player.level().isClientSide()) {
-            com.chapeau.apica.client.renderer.item.MiningLaserItemRenderer renderer =
-                    com.chapeau.apica.client.renderer.item.MiningLaserItemRenderer.getInstance();
+            com.chapeau.apica.client.renderer.item.ExcavationLaserItemRenderer renderer =
+                    com.chapeau.apica.client.renderer.item.ExcavationLaserItemRenderer.getInstance();
             if (renderer != null) {
                 renderer.getReloadAnimator().startReloadAnimation(currentTime, () -> {
                     boolean mainHand = player.getMainHandItem() == holder;
@@ -185,7 +185,7 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
                 return;
             }
 
-            boolean brokeBlock = MiningLaserBlockBreaker.tryBreakBlock(level, player, MAX_RANGE, chargeLevel);
+            boolean brokeBlock = ExcavationLaserBlockBreaker.tryBreakBlock(level, player, MAX_RANGE, chargeLevel);
 
             if (brokeBlock) {
                 float pitch = 0.8f + level.random.nextFloat() * 0.4f;

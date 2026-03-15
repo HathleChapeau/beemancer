@@ -115,7 +115,7 @@ public class CodexNodeWidget extends AbstractWidget {
         NODE_TO_ITEM.put("honey_lamp", "apica:honey_lamp");
         NODE_TO_ITEM.put("api", "apica:api");
         NODE_TO_ITEM.put("leaf_blower", "apica:leaf_blower");
-        NODE_TO_ITEM.put("excavation_laser", "apica:mining_laser");
+        NODE_TO_ITEM.put("excavation_laser", "apica:excavation_laser");
         NODE_TO_ITEM.put("railgun", "apica:railgun");
         NODE_TO_ITEM.put("honey_bread", "apica:honey_bread");
         NODE_TO_ITEM.put("royal_bread", "apica:royal_bread");

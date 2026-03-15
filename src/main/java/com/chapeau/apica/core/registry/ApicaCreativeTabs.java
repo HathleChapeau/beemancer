@@ -112,7 +112,7 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.RESONATOR.get());
         output.accept(ApicaItems.WAVE_MIXER.get());
         output.accept(ApicaItems.LEAF_BLOWER.get());
-        output.accept(ApicaItems.MINING_LASER.get());
+        output.accept(ApicaItems.EXCAVATION_LASER.get());
         output.accept(ApicaItems.RAILGUN.get());
         output.accept(ApicaItems.CHOPPER_HIVE.get());
         // Magazines

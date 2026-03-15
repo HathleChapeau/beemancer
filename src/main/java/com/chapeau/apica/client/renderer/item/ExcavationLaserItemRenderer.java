@@ -1,7 +1,7 @@
 /**
  * ============================================================
- * [MiningLaserItemRenderer.java]
- * Description: BEWLR pour le Mining Laser — rendu 3D avec charge bars et halo sprite
+ * [ExcavationLaserItemRenderer.java]
+ * Description: BEWLR pour le Excavation Laser — rendu 3D avec charge bars et halo sprite
  * ============================================================
  *
  * DÉPENDANCES:
@@ -10,8 +10,8 @@
  * |-------------------------|----------------------|--------------------------------|
  * | AnimationTimer          | Temps client         | Tracking frame animation       |
  * | BakedModel              | Modèle 3D body       | Rendu statique via putBulkData |
- * | MiningLaserItem         | Détection item       | Lecture chargeLevel            |
- * | MiningLaserRingOverlay  | Géométrie ring       | Anneaux autour des barres      |
+ * | ExcavationLaserItem         | Détection item       | Lecture chargeLevel            |
+ * | ExcavationLaserRingOverlay  | Géométrie ring       | Anneaux autour des barres      |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -27,7 +27,7 @@ import com.chapeau.apica.client.renderer.LightningArcRenderer;
 import com.chapeau.apica.client.renderer.PlayerAlignmentHandler;
 import com.chapeau.apica.client.renderer.shader.MagazineSweepShader;
 import com.chapeau.apica.common.item.magazine.MagazineData;
-import com.chapeau.apica.common.item.tool.MiningLaserItem;
+import com.chapeau.apica.common.item.tool.ExcavationLaserItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
@@ -50,7 +50,7 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.model.data.ModelData;
 
 /**
- * BEWLR pour le Mining Laser. Rendu hybride en 5 couches :
+ * BEWLR pour le Excavation Laser. Rendu hybride en 5 couches :
  * 1. Body statique (baked model via putBulkData)
  * 2. Beam core animé (14 frames, 2px/frame, texture 16x28 : côtés col 0-12, bouts col 14-15)
  * 3. Charge bars (3 barres : off/on selon chargeLevel stocké dans CustomData)
@@ -58,26 +58,26 @@ import net.neoforged.neoforge.client.model.data.ModelData;
  * 5. Halo sprite (quad billboard au bout du canon, rotation continue, toujours visible en main)
  */
 @OnlyIn(Dist.CLIENT)
-public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
+public class ExcavationLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
 
-    private static MiningLaserItemRenderer instance;
+    private static ExcavationLaserItemRenderer instance;
 
-    public static MiningLaserItemRenderer getInstance() {
+    public static ExcavationLaserItemRenderer getInstance() {
         return instance;
     }
 
     /** Modèle baked du body */
     public static final ModelResourceLocation BODY_MODEL_LOC =
             ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
-                    Apica.MOD_ID, "item/mining_laser_body"));
+                    Apica.MOD_ID, "item/excavation_laser_body"));
 
     /** Texture du beam core (animation de chargement 14 frames, 16x28, 2px/frame) */
     private static final ResourceLocation BEAM_CORE_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/item/artifacts/mining_laser_beam_core.png");
+            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/item/artifacts/excavation_laser_beam_core.png");
 
     /** Texture des barres indicatrices (atlas 3 colonnes × 2 états) */
     private static final ResourceLocation CHARGING2_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/item/artifacts/mining_laser_charging2.png");
+            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/item/artifacts/excavation_laser_charging2.png");
 
     /** Texture halo pour le sprite au bout du canon (tourne en continu) */
     private static final ResourceLocation HALO_TEXTURE =
@@ -144,7 +144,7 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     // Reload animation (shared)
     private final MagazineReloadAnimator reloadAnimator = new MagazineReloadAnimator();
 
-    public MiningLaserItemRenderer() {
+    public ExcavationLaserItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
                 Minecraft.getInstance().getEntityModels());
         instance = this;
@@ -192,12 +192,12 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
             // Aligner corps/tete pendant le chargement
             Minecraft mc = Minecraft.getInstance();
             boolean isCharging = mc.player != null && mc.player.isUsingItem()
-                    && mc.player.getUseItem().getItem() instanceof MiningLaserItem;
+                    && mc.player.getUseItem().getItem() instanceof ExcavationLaserItem;
             if (isCharging) {
                 PlayerAlignmentHandler.setAlignmentEnabled(true);
             }
         } else {
-            chargeLevel = MiningLaserItem.getChargeLevel(stack);
+            chargeLevel = ExcavationLaserItem.getChargeLevel(stack);
             renderChargingOverlay(poseStack, buffer, packedLight, 0);
             renderChargeBars(poseStack, buffer, packedLight, chargeLevel);
         }
@@ -259,7 +259,7 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
 
         Minecraft mc = Minecraft.getInstance();
         boolean isCharging = mc.player != null && mc.player.isUsingItem()
-                && mc.player.getUseItem().getItem() instanceof MiningLaserItem;
+                && mc.player.getUseItem().getItem() instanceof ExcavationLaserItem;
 
         if (isCharging) {
             if (currentFrame < TOTAL_FRAMES - 1) currentFrame++;
@@ -393,7 +393,7 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
         for (int i = 0; i < Math.min(chargeLevel, 3); i++) {
             float centerZ = (BAR_Z_MIN[i] + BAR_Z_MAX[i]) / 2f;
             float rotation = time * (1.5f + (i - 1) * 0.15f);
-            MiningLaserRingOverlay.renderRing(poseStack, buffer, packedLight,
+            ExcavationLaserRingOverlay.renderRing(poseStack, buffer, packedLight,
                     centerX, centerY, centerZ, rotation, RING_TEXTURE);
         }
     }
@@ -483,12 +483,12 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return 0;
         ItemStack mainHand = mc.player.getMainHandItem();
-        if (mainHand.getItem() instanceof MiningLaserItem) {
-            return MiningLaserItem.getChargeLevel(mainHand);
+        if (mainHand.getItem() instanceof ExcavationLaserItem) {
+            return ExcavationLaserItem.getChargeLevel(mainHand);
         }
         ItemStack offHand = mc.player.getOffhandItem();
-        if (offHand.getItem() instanceof MiningLaserItem) {
-            return MiningLaserItem.getChargeLevel(offHand);
+        if (offHand.getItem() instanceof ExcavationLaserItem) {
+            return ExcavationLaserItem.getChargeLevel(offHand);
         }
         return 0;
     }

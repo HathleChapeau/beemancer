@@ -1,7 +1,7 @@
 /**
  * ============================================================
- * [MiningLaserRingOverlay.java]
- * Description: Rendu de la géométrie ring dans l'espace item du Mining Laser
+ * [ExcavationLaserRingOverlay.java]
+ * Description: Rendu de la géométrie ring dans l'espace item du Excavation Laser
  * ============================================================
  *
  * DÉPENDANCES:
@@ -35,7 +35,7 @@ import net.neoforged.api.distmarker.OnlyIn;
  * Chaque face de l'anneau est un quad texturé avec la texture ring.png.
  */
 @OnlyIn(Dist.CLIENT)
-public final class MiningLaserRingOverlay {
+public final class ExcavationLaserRingOverlay {
 
     private static final int FACE_COUNT = 12;
     private static final float RING_RADIUS = 0.155f;
@@ -111,6 +111,6 @@ public final class MiningLaserRingOverlay {
                 .setUv(1f, 1f).setOverlay(overlay).setLight(light).setNormal(pose, nx, ny, nz);
     }
 
-    private MiningLaserRingOverlay() {
+    private ExcavationLaserRingOverlay() {
     }
 }
