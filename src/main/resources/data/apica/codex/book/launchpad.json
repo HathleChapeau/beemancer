@@ -15,6 +15,13 @@
       "type": "page_break"
     },
     {
+      "type": "text",
+      "key": "codex.apica.artifacts.launchpad.lore.p3"
+    },
+    {
+      "type": "page_break"
+    },
+    {
       "type": "altar_craft",
       "result": "apica:launchpad"
     }

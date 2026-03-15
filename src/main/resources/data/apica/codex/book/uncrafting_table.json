@@ -8,6 +8,13 @@
       "key": "codex.apica.artifacts.uncrafting_table.lore.p1"
     },
     {
+      "type": "handraw_line"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.artifacts.uncrafting_table.lore.p2"
+    },
+    {
       "type": "page_break"
     },
     {
