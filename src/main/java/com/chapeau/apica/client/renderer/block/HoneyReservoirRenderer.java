@@ -26,6 +26,7 @@ import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.renderer.util.FluidCubeRenderer;
 import com.chapeau.apica.client.renderer.util.RenderHelper;
 import com.chapeau.apica.common.block.altar.HoneyReservoirBlock;
+import com.chapeau.apica.common.blockentity.alchemy.AlembicHeartBlockEntity;
 import com.chapeau.apica.core.multiblock.MultiblockProperty;
 import com.chapeau.apica.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -39,10 +40,15 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+
+import javax.annotation.Nullable;
 
 /**
  * Renderer pour le fluide à l'intérieur du Honey Reservoir.
@@ -86,13 +92,26 @@ public class HoneyReservoirRenderer implements BlockEntityRenderer<HoneyReservoi
             renderFormedModel(blockEntity, poseStack, buffer, packedLight, packedOverlay, spreadX, spreadZ);
         }
 
-        // Rendre le fluide
-        FluidStack fluidStack = blockEntity.getFluid();
-        if (fluidStack.isEmpty()) {
-            return;
+        // Rendre le fluide - pour Alembic, on query le controller
+        FluidStack fluidStack;
+        float fillRatio;
+
+        if (multiblock == MultiblockProperty.ALEMBIC || multiblock == MultiblockProperty.ALEMBIC_0 || multiblock == MultiblockProperty.ALEMBIC_1) {
+            // Query controller for Alembic reservoirs
+            AlembicFluidData alembicData = getAlembicFluidData(blockEntity, multiblock);
+            if (alembicData == null || alembicData.fluidStack.isEmpty()) {
+                return;
+            }
+            fluidStack = alembicData.fluidStack;
+            fillRatio = alembicData.fillRatio;
+        } else {
+            fluidStack = blockEntity.getFluid();
+            if (fluidStack.isEmpty()) {
+                return;
+            }
+            fillRatio = (float) blockEntity.getFluidAmount() / HoneyReservoirBlockEntity.CAPACITY;
         }
 
-        float fillRatio = (float) blockEntity.getFluidAmount() / HoneyReservoirBlockEntity.CAPACITY;
         TextureAtlasSprite sprite = RenderHelper.getFluidSprite(fluidStack.getFluid());
 
         poseStack.pushPose();
@@ -103,13 +122,87 @@ public class HoneyReservoirRenderer implements BlockEntityRenderer<HoneyReservoi
         }
 
         VertexConsumer consumer = buffer.getBuffer(RenderType.translucent());
-        if (formed) {
-            renderFormedFluid(poseStack, consumer, sprite, fillRatio);
-        } else {
-            renderUnformedFluid(poseStack, consumer, sprite, fillRatio);
+
+        // Rendu spécifique selon le type de multibloc
+        switch (multiblock) {
+            case ALEMBIC, ALEMBIC_1 -> renderAlembicLateralFluid(poseStack, consumer, sprite, fillRatio);
+            case ALEMBIC_0 -> renderAlembicBottomFluid(poseStack, consumer, sprite, fillRatio);
+            default -> {
+                if (formed) {
+                    renderFormedFluid(poseStack, consumer, sprite, fillRatio);
+                } else {
+                    renderUnformedFluid(poseStack, consumer, sprite, fillRatio);
+                }
+            }
         }
 
         poseStack.popPose();
+    }
+
+    /**
+     * Data structure pour les données fluide de l'Alembic.
+     */
+    private record AlembicFluidData(FluidStack fluidStack, float fillRatio) {}
+
+    /**
+     * Récupère les données fluide depuis le contrôleur Alembic selon la position du réservoir.
+     * - ALEMBIC_0 (Y=-1, bas) : nectar tank
+     * - ALEMBIC latéraux : honey ou royal jelly selon offset X
+     */
+    @Nullable
+    private AlembicFluidData getAlembicFluidData(HoneyReservoirBlockEntity reservoir, MultiblockProperty multiblock) {
+        BlockPos controllerPos = reservoir.getControllerPos();
+        if (controllerPos == null || reservoir.getLevel() == null) {
+            return null;
+        }
+
+        BlockEntity be = reservoir.getLevel().getBlockEntity(controllerPos);
+        if (!(be instanceof AlembicHeartBlockEntity alembic)) {
+            return null;
+        }
+
+        BlockPos reservoirPos = reservoir.getBlockPos();
+        int offsetX = reservoirPos.getX() - controllerPos.getX();
+        int offsetY = reservoirPos.getY() - controllerPos.getY();
+        int offsetZ = reservoirPos.getZ() - controllerPos.getZ();
+
+        // Ajuster pour la rotation du multibloc
+        int rotation = alembic.getRotation();
+        int[] rotated = rotateOffsetInverse(offsetX, offsetZ, rotation);
+        int patternX = rotated[0];
+
+        FluidTank tank;
+        if (multiblock == MultiblockProperty.ALEMBIC_0 || offsetY == -1) {
+            // Réservoir du bas → nectar
+            tank = alembic.getNectarTank();
+        } else if (patternX < 0) {
+            // Réservoir gauche (pattern X=-1) → honey
+            tank = alembic.getHoneyTank();
+        } else {
+            // Réservoir droit (pattern X=+1) → royal jelly
+            tank = alembic.getRoyalJellyTank();
+        }
+
+        if (tank.isEmpty()) {
+            return null;
+        }
+
+        float ratio = (float) tank.getFluidAmount() / tank.getCapacity();
+        return new AlembicFluidData(tank.getFluid(), ratio);
+    }
+
+    /**
+     * Inverse la rotation pour récupérer les coordonnées pattern depuis les coordonnées monde.
+     */
+    private int[] rotateOffsetInverse(int x, int z, int rotation) {
+        // Rotation inverse: (4 - rotation) % 4
+        int invRot = (4 - rotation) & 3;
+        return switch (invRot) {
+            case 1 -> new int[] { z, -x };   // 90° CCW
+            case 2 -> new int[] { -x, -z };  // 180°
+            case 3 -> new int[] { -z, x };   // 270° CCW
+            default -> new int[] { x, z };   // 0°
+        };
     }
 
     /**
@@ -164,6 +257,47 @@ public class HoneyReservoirRenderer implements BlockEntityRenderer<HoneyReservoi
         float maxX = 13f / 16f;
         float minZ = 5f / 16f;
         float maxZ = 11f / 16f;
+        float minY = 5f / 16f;
+        float maxY = minY + (fluidHeight / 16f);
+
+        FluidCubeRenderer.renderFluidCube(consumer, pose, sprite, minX, minY, minZ, maxX, maxY, maxZ);
+    }
+
+    /**
+     * Rend le fluide pour les réservoirs latéraux de l'Alembic (ALEMBIC, ALEMBIC_1).
+     * Glass: [2, 2, 2] à [14, 14, 14] - fluide à l'intérieur avec marge de 1px.
+     */
+    private void renderAlembicLateralFluid(PoseStack poseStack, VertexConsumer consumer, TextureAtlasSprite sprite,
+                                            float fillRatio) {
+        var pose = poseStack.last();
+
+        // Fluide à l'intérieur du verre: [3, 3, 3] à [13, 3+10*fillRatio, 13]
+        float fluidHeight = 10.0f * fillRatio;
+        float minX = 3f / 16f;
+        float maxX = 13f / 16f;
+        float minZ = 3f / 16f;
+        float maxZ = 13f / 16f;
+        float minY = 3f / 16f;
+        float maxY = minY + (fluidHeight / 16f);
+
+        FluidCubeRenderer.renderFluidCube(consumer, pose, sprite, minX, minY, minZ, maxX, maxY, maxZ);
+    }
+
+    /**
+     * Rend le fluide pour le réservoir du bas de l'Alembic (ALEMBIC_0).
+     * Glass: [2, 4, 2] à [14, 24, 14] - colonne haute, fluide à l'intérieur.
+     */
+    private void renderAlembicBottomFluid(PoseStack poseStack, VertexConsumer consumer, TextureAtlasSprite sprite,
+                                           float fillRatio) {
+        var pose = poseStack.last();
+
+        // Fluide à l'intérieur du verre: [3, 5, 3] à [13, 5+18*fillRatio, 13]
+        // La colonne fait 20 pixels de haut (Y=4 à Y=24), fluide sur 18 pixels
+        float fluidHeight = 18.0f * fillRatio;
+        float minX = 3f / 16f;
+        float maxX = 13f / 16f;
+        float minZ = 3f / 16f;
+        float maxZ = 13f / 16f;
         float minY = 5f / 16f;
         float maxY = minY + (fluidHeight / 16f);
 

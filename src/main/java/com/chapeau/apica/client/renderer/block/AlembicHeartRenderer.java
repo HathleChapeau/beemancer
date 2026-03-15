@@ -112,8 +112,8 @@ public class AlembicHeartRenderer implements BlockEntityRenderer<AlembicHeartBlo
         // Centre de rotation = centre des rings/cubes (Y=16 = 1.0 en coordonnées bloc)
         float pivotY = 1.0f;
 
-        // Small ring: rotation Y autour du centre des rings
-        renderWithYRotationAtPivot(smallRingModel, blockEntity, state,
+        // Small ring: rotation Z autour du centre des rings
+        renderWithZRotationAtPivot(smallRingModel, blockEntity, state,
             poseStack, vertexConsumer, packedLight, packedOverlay, ringRotation, pivotY);
 
         // Big ring: rotation X autour du centre (sens inverse)
@@ -163,6 +163,23 @@ public class AlembicHeartRenderer implements BlockEntityRenderer<AlembicHeartBlo
         poseStack.pushPose();
         poseStack.translate(0.5, pivotY, 0.5);
         poseStack.mulPose(Axis.XP.rotationDegrees(xRotation));
+        poseStack.translate(-0.5, -pivotY, -0.5);
+        RenderHelper.tesselateModel(blockRenderer, model, blockEntity.getLevel(), state,
+            blockEntity.getBlockPos(), poseStack, consumer, random, light, overlay,
+            RenderType.solid());
+        poseStack.popPose();
+    }
+
+    /**
+     * Rend un modele avec rotation Z autour d'un pivot personnalise.
+     */
+    private void renderWithZRotationAtPivot(BakedModel model, AlembicHeartBlockEntity blockEntity,
+                                             BlockState state, PoseStack poseStack,
+                                             VertexConsumer consumer, int light, int overlay,
+                                             float zRotation, float pivotY) {
+        poseStack.pushPose();
+        poseStack.translate(0.5, pivotY, 0.5);
+        poseStack.mulPose(Axis.ZP.rotationDegrees(zRotation));
         poseStack.translate(-0.5, -pivotY, -0.5);
         RenderHelper.tesselateModel(blockRenderer, model, blockEntity.getLevel(), state,
             blockEntity.getBlockPos(), poseStack, consumer, random, light, overlay,
