@@ -1,7 +1,7 @@
 /**
  * ============================================================
- * [InfusingCategory.java]
- * Description: Categorie JEI pour les recettes d'infusion (item + miel -> honeyed item)
+ * [AlembicCategory.java]
+ * Description: Categorie JEI pour les recettes de distillation (fluides -> fluide)
  * ============================================================
  *
  * DEPENDANCES:
@@ -9,8 +9,8 @@
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | JEI API             | Interface categorie  | IRecipeCategory, slots         |
- * | InfusingRecipe      | Type de recette      | Donnees a afficher             |
- * | ApicaBlocks         | Icone categorie      | Infuser block                  |
+ * | DistillingRecipe    | Type de recette      | Donnees a afficher             |
+ * | ApicaBlocks         | Icone categorie      | Alembic heart block            |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -21,9 +21,9 @@
 package com.chapeau.apica.compat.jei.category;
 
 import com.chapeau.apica.compat.jei.ApicaJeiRecipeTypes;
-import com.chapeau.apica.core.recipe.type.InfusingRecipe;
+import com.chapeau.apica.core.recipe.FluidIngredient;
+import com.chapeau.apica.core.recipe.type.DistillingRecipe;
 import com.chapeau.apica.core.registry.ApicaBlocks;
-import com.chapeau.apica.core.registry.ApicaFluids;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
@@ -38,22 +38,23 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 
-public class InfusingCategory implements IRecipeCategory<InfusingRecipe> {
+import java.util.List;
 
-    private static final int WIDTH = 110;
+public class AlembicCategory implements IRecipeCategory<DistillingRecipe> {
+
+    private static final int WIDTH = 130;
     private static final int HEIGHT = 40;
 
-    // Layout: equal spacing between elements
-    // Elements: Input(18) + gap(8) + Fluid(18) + gap(8) + Arrow(24) + gap(8) + Output(18) = 102
-    // Margins: (110 - 102) / 2 = 4
-    private static final int MARGIN = 4;
+    // Layout constants for equal spacing
+    private static final int MARGIN = 6;
     private static final int GAP = 8;
     private static final int SLOT_SIZE = 18;
     private static final int ARROW_WIDTH = 24;
 
-    private static final int INPUT_X = MARGIN;
-    private static final int FLUID_X = INPUT_X + SLOT_SIZE + GAP;
-    private static final int ARROW_X = FLUID_X + SLOT_SIZE + GAP;
+    // Positions: fluid1(18) + gap(8) + "+"(6) + gap(8) + fluid2(18) + gap(8) + arrow(24) + gap(8) + output(18)
+    private static final int FLUID1_X = MARGIN;
+    private static final int FLUID2_X = FLUID1_X + SLOT_SIZE + GAP + 6 + GAP;
+    private static final int ARROW_X = FLUID2_X + SLOT_SIZE + GAP;
     private static final int OUTPUT_X = ARROW_X + ARROW_WIDTH + GAP;
     private static final int SLOT_Y = 12;
 
@@ -66,17 +67,17 @@ public class InfusingCategory implements IRecipeCategory<InfusingRecipe> {
     private final IDrawable arrow;
     private final Component title;
 
-    public InfusingCategory(IGuiHelper guiHelper) {
+    public AlembicCategory(IGuiHelper guiHelper) {
         this.background = guiHelper.createBlankDrawable(WIDTH, HEIGHT);
-        this.icon = guiHelper.createDrawableItemStack(ApicaBlocks.INFUSER.get().asItem().getDefaultInstance());
+        this.icon = guiHelper.createDrawableItemStack(ApicaBlocks.ALEMBIC_HEART.get().asItem().getDefaultInstance());
         // Arrow from furnace GUI at position (79, 34), size 24x17
         this.arrow = guiHelper.createDrawable(FURNACE_TEXTURE, 79, 34, 24, 17);
-        this.title = Component.translatable("gui.apica.jei.infusing");
+        this.title = Component.translatable("gui.apica.jei.alembic");
     }
 
     @Override
-    public RecipeType<InfusingRecipe> getRecipeType() {
-        return ApicaJeiRecipeTypes.INFUSING;
+    public RecipeType<DistillingRecipe> getRecipeType() {
+        return ApicaJeiRecipeTypes.ALEMBIC;
     }
 
     @Override
@@ -95,46 +96,56 @@ public class InfusingCategory implements IRecipeCategory<InfusingRecipe> {
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, InfusingRecipe recipe, IFocusGroup focuses) {
-        // Input item slot (left)
-        builder.addSlot(RecipeIngredientRole.INPUT, INPUT_X, SLOT_Y)
-                .addIngredients(recipe.ingredient());
+    public void setRecipe(IRecipeLayoutBuilder builder, DistillingRecipe recipe, IFocusGroup focuses) {
+        List<FluidIngredient> inputs = recipe.fluidIngredients();
 
-        // Fluid input (center) - honey bucket representation
-        FluidStack fluidStack = new FluidStack(
-                ApicaFluids.HONEY_SOURCE.get(),
-                recipe.fluidIngredient().amount()
-        );
-        builder.addSlot(RecipeIngredientRole.CATALYST, FLUID_X, SLOT_Y)
-                .addFluidStack(fluidStack.getFluid(), fluidStack.getAmount())
-                .setFluidRenderer(fluidStack.getAmount(), false, 16, 16);
+        // First fluid input
+        if (inputs.size() > 0) {
+            FluidStack fluid1 = inputs.get(0).toFluidStack();
+            builder.addSlot(RecipeIngredientRole.INPUT, FLUID1_X, SLOT_Y)
+                    .addFluidStack(fluid1.getFluid(), fluid1.getAmount())
+                    .setFluidRenderer(fluid1.getAmount(), false, 16, 16);
+        }
 
-        // Output item slot (right)
+        // Second fluid input
+        if (inputs.size() > 1) {
+            FluidStack fluid2 = inputs.get(1).toFluidStack();
+            builder.addSlot(RecipeIngredientRole.INPUT, FLUID2_X, SLOT_Y)
+                    .addFluidStack(fluid2.getFluid(), fluid2.getAmount())
+                    .setFluidRenderer(fluid2.getAmount(), false, 16, 16);
+        }
+
+        // Fluid output
+        FluidStack output = recipe.getFluidOutput();
         builder.addSlot(RecipeIngredientRole.OUTPUT, OUTPUT_X, SLOT_Y)
-                .addItemStack(recipe.result());
+                .addFluidStack(output.getFluid(), output.getAmount())
+                .setFluidRenderer(output.getAmount(), false, 16, 16);
     }
 
     @Override
-    public void draw(InfusingRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
+    public void draw(DistillingRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
         net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
 
-        // Draw slot backgrounds (using vanilla inventory slot style)
-        drawSlot(guiGraphics, INPUT_X - 1, SLOT_Y - 1);
-        drawSlot(guiGraphics, FLUID_X - 1, SLOT_Y - 1);
+        // Draw fluid input slots
+        drawSlot(guiGraphics, FLUID1_X - 1, SLOT_Y - 1);
+        if (recipe.fluidIngredients().size() > 1) {
+            drawSlot(guiGraphics, FLUID2_X - 1, SLOT_Y - 1);
+        }
+
+        // Draw output slot
         drawSlot(guiGraphics, OUTPUT_X - 1, SLOT_Y - 1);
 
-        // Draw "+" between input and fluid slots (centered in gap)
-        int plusX = INPUT_X + SLOT_SIZE + (GAP - 6) / 2;
+        // Draw "+" between input fluids
+        int plusX = FLUID1_X + SLOT_SIZE + GAP;
         guiGraphics.drawString(mc.font, "+", plusX, SLOT_Y + 4, 0x404040, false);
 
-        // Draw arrow (vanilla furnace arrow texture)
+        // Draw arrow
         arrow.draw(guiGraphics, ARROW_X, SLOT_Y);
     }
 
     private void drawSlot(GuiGraphics graphics, int x, int y) {
         // Vanilla-style slot (18x18)
         graphics.fill(x, y, x + 18, y + 18, 0xFF8B8B8B);
-        graphics.fill(x + 1, y + 1, x + 17, y + 17, 0xFF373737);
         graphics.fill(x + 1, y + 1, x + 17, y + 17, 0xFFC6C6C6);
     }
 }

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": {
+      "item": "apica:honeyed_glass"
+    },
+    "S": {
+      "item": "apica:honeyed_slab"
+    }
+  },
+  "pattern": [
+    " S ",
+    "G G",
+    "GGG"
+  ],
+  "result": {
+    "id": "apica:magazine",
+    "count": 1
+  }
+}

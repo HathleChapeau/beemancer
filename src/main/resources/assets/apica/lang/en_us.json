@@ -1224,6 +1224,8 @@
   "config.jade.plugin_apica.companion_cooldown": "Companion Cooldown",
   "gui.apica.jei.infusing": "Honey Infusion",
   "gui.apica.jei.centrifuge": "Centrifugation",
+  "gui.apica.jei.crystallizer": "Crystallization",
+  "gui.apica.jei.alembic": "Distillation",
   "gui.apica.jei.altar": "Altar Crafting",
   "gui.apica.jei.multiblock": "Multiblock Structures",
   "gui.apica.jei.multiblock.centrifuge": "Powered Centrifuge",

@@ -23,8 +23,10 @@
 package com.chapeau.apica.compat.jei;
 
 import com.chapeau.apica.Apica;
+import com.chapeau.apica.compat.jei.category.AlembicCategory;
 import com.chapeau.apica.compat.jei.category.AltarCategory;
 import com.chapeau.apica.compat.jei.category.CentrifugeCategory;
+import com.chapeau.apica.compat.jei.category.CrystallizerCategory;
 import com.chapeau.apica.compat.jei.category.InfusingCategory;
 import com.chapeau.apica.compat.jei.category.MultiblockCategory;
 import com.chapeau.apica.compat.jei.category.MultiblockInfo;
@@ -32,6 +34,8 @@ import com.chapeau.apica.core.multiblock.MultiblockPatterns;
 import com.chapeau.apica.core.recipe.ApicaRecipeTypes;
 import com.chapeau.apica.core.recipe.type.AltarRecipe;
 import com.chapeau.apica.core.recipe.type.CentrifugeRecipe;
+import com.chapeau.apica.core.recipe.type.CrystallizingRecipe;
+import com.chapeau.apica.core.recipe.type.DistillingRecipe;
 import com.chapeau.apica.core.recipe.type.InfusingRecipe;
 import com.chapeau.apica.core.registry.ApicaBlocks;
 import mezz.jei.api.IModPlugin;
@@ -65,6 +69,8 @@ public class ApicaJeiPlugin implements IModPlugin {
         registration.addRecipeCategories(
                 new InfusingCategory(guiHelper),
                 new CentrifugeCategory(guiHelper),
+                new CrystallizerCategory(guiHelper),
+                new AlembicCategory(guiHelper),
                 new AltarCategory(guiHelper),
                 new MultiblockCategory(guiHelper)
         );
@@ -100,6 +106,22 @@ public class ApicaJeiPlugin implements IModPlugin {
                 .map(RecipeHolder::value)
                 .toList();
         registration.addRecipes(ApicaJeiRecipeTypes.ALTAR, altarRecipes);
+
+        // Crystallizer recipes
+        List<CrystallizingRecipe> crystallizerRecipes = recipeManager
+                .getAllRecipesFor(ApicaRecipeTypes.CRYSTALLIZING.get())
+                .stream()
+                .map(RecipeHolder::value)
+                .toList();
+        registration.addRecipes(ApicaJeiRecipeTypes.CRYSTALLIZER, crystallizerRecipes);
+
+        // Alembic (distilling) recipes
+        List<DistillingRecipe> alembicRecipes = recipeManager
+                .getAllRecipesFor(ApicaRecipeTypes.DISTILLING.get())
+                .stream()
+                .map(RecipeHolder::value)
+                .toList();
+        registration.addRecipes(ApicaJeiRecipeTypes.ALEMBIC, alembicRecipes);
 
         // Multiblock info
         List<MultiblockInfo> multiblocks = createMultiblockInfos();
@@ -174,6 +196,18 @@ public class ApicaJeiPlugin implements IModPlugin {
         registration.addRecipeCatalyst(
                 ApicaBlocks.ALTAR_HEART.get().asItem().getDefaultInstance(),
                 ApicaJeiRecipeTypes.ALTAR
+        );
+
+        // Crystallizer catalyst
+        registration.addRecipeCatalyst(
+                ApicaBlocks.CRYSTALLIZER.get().asItem().getDefaultInstance(),
+                ApicaJeiRecipeTypes.CRYSTALLIZER
+        );
+
+        // Alembic catalyst
+        registration.addRecipeCatalyst(
+                ApicaBlocks.ALEMBIC_HEART.get().asItem().getDefaultInstance(),
+                ApicaJeiRecipeTypes.ALEMBIC
         );
 
         // Multiblock catalysts - tous les blocs qui font partie des multiblocs

@@ -24,6 +24,8 @@ import com.chapeau.apica.Apica;
 import com.chapeau.apica.compat.jei.category.MultiblockInfo;
 import com.chapeau.apica.core.recipe.type.AltarRecipe;
 import com.chapeau.apica.core.recipe.type.CentrifugeRecipe;
+import com.chapeau.apica.core.recipe.type.CrystallizingRecipe;
+import com.chapeau.apica.core.recipe.type.DistillingRecipe;
 import com.chapeau.apica.core.recipe.type.InfusingRecipe;
 import mezz.jei.api.recipe.RecipeType;
 
@@ -37,6 +39,12 @@ public final class ApicaJeiRecipeTypes {
 
     public static final RecipeType<AltarRecipe> ALTAR = RecipeType.create(
             Apica.MOD_ID, "altar", AltarRecipe.class);
+
+    public static final RecipeType<CrystallizingRecipe> CRYSTALLIZER = RecipeType.create(
+            Apica.MOD_ID, "crystallizer", CrystallizingRecipe.class);
+
+    public static final RecipeType<DistillingRecipe> ALEMBIC = RecipeType.create(
+            Apica.MOD_ID, "alembic", DistillingRecipe.class);
 
     public static final RecipeType<MultiblockInfo> MULTIBLOCK = RecipeType.create(
             Apica.MOD_ID, "multiblock", MultiblockInfo.class);

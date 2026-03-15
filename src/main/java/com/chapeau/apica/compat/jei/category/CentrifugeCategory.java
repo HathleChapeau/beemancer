@@ -35,13 +35,14 @@ import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public class CentrifugeCategory implements IRecipeCategory<CentrifugeRecipe> {
 
-    private static final int WIDTH = 130;
+    private static final int WIDTH = 150;
     private static final int HEIGHT = 50;
 
     // Vanilla furnace GUI texture (256x256)
@@ -83,18 +84,18 @@ public class CentrifugeCategory implements IRecipeCategory<CentrifugeRecipe> {
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, CentrifugeRecipe recipe, IFocusGroup focuses) {
-        // Centered layout: input(18) + gap(6) + arrow(24) + gap(6) + outputs(38) = 92
-        // Center offset: (130 - 92) / 2 = 19
-        int inputX = 19;
+        // Layout: input(18) + gap(6) + arrow(24) + gap(6) + items(38) + gap(6) + fluid(18) = 116
+        // Center offset: (150 - 116) / 2 = 17
+        int inputX = 17;
         int inputY = 17;
 
         // Input comb slot (left)
         builder.addSlot(RecipeIngredientRole.INPUT, inputX, inputY)
                 .addIngredients(recipe.ingredient());
 
-        // Output slots (right, grid of 2x2)
+        // Output item slots (2x2 grid)
         List<ProcessingOutput> outputs = recipe.results();
-        int outputX = inputX + 18 + 6 + 24 + 6;  // 73
+        int outputX = inputX + 18 + 6 + 24 + 6;  // 71
         int outputY = 8;
 
         for (int i = 0; i < Math.min(outputs.size(), 4); i++) {
@@ -105,31 +106,47 @@ public class CentrifugeCategory implements IRecipeCategory<CentrifugeRecipe> {
             builder.addSlot(RecipeIngredientRole.OUTPUT, x, y)
                     .addItemStack(output.stack());
         }
+
+        // Fluid output slot (right side)
+        FluidStack fluidOutput = recipe.getFluidOutput();
+        if (!fluidOutput.isEmpty()) {
+            int fluidX = outputX + 38 + 6;  // After items grid + gap
+            builder.addSlot(RecipeIngredientRole.OUTPUT, fluidX, inputY)
+                    .addFluidStack(fluidOutput.getFluid(), fluidOutput.getAmount())
+                    .setFluidRenderer(fluidOutput.getAmount(), false, 16, 16);
+        }
     }
 
     @Override
     public void draw(CentrifugeRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
         net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
 
-        int inputX = 19;
+        int inputX = 17;
         int inputY = 17;
 
         // Draw input slot
         drawSlot(guiGraphics, inputX - 1, inputY - 1);
 
         // Draw arrow (vanilla furnace arrow texture)
-        int arrowX = inputX + 18 + 6;  // 43
+        int arrowX = inputX + 18 + 6;  // 41
         arrow.draw(guiGraphics, arrowX, inputY);
 
-        // Draw output slots (2x2 grid)
+        // Draw output item slots (2x2 grid)
         List<ProcessingOutput> outputs = recipe.results();
-        int outputX = inputX + 18 + 6 + 24 + 6;  // 73
+        int outputX = inputX + 18 + 6 + 24 + 6;  // 71
         int outputY = 8;
 
         for (int i = 0; i < Math.min(outputs.size(), 4); i++) {
             int x = outputX + (i % 2) * 20 - 1;
             int y = outputY + (i / 2) * 20 - 1;
             drawSlot(guiGraphics, x, y);
+        }
+
+        // Draw fluid output slot
+        FluidStack fluidOutput = recipe.getFluidOutput();
+        if (!fluidOutput.isEmpty()) {
+            int fluidX = outputX + 38 + 6;  // After items grid + gap
+            drawSlot(guiGraphics, fluidX - 1, inputY - 1);
         }
 
         // Draw chance percentages
