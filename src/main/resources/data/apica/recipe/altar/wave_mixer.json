@@ -1,0 +1,20 @@
+{
+  "type": "apica:altar",
+  "center_item": { "item": "apica:nectar_artifact_core" },
+  "pedestal_items": [
+    { "item": "minecraft:nether_star" },
+    { "item": "minecraft:nether_star" },
+    { "tag": "minecraft:planks" },
+    { "tag": "minecraft:planks" },
+    { "tag": "minecraft:planks" },
+    { "tag": "minecraft:planks" },
+    { "item": "apica:blank_rune" },
+    { "item": "minecraft:jukebox" }
+  ],
+  "pollen": {
+    "apica:void_pollen": 6,
+    "apica:light_pollen": 12,
+    "apica:dark_pollen": 12
+  },
+  "result": { "id": "apica:wave_mixer" }
+}

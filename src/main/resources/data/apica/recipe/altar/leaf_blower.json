@@ -1,0 +1,19 @@
+{
+  "type": "apica:altar",
+  "center_item": { "item": "apica:honey_artifact_core" },
+  "pedestal_items": [
+    { "item": "apica:honeyed_iron" },
+    { "item": "apica:honeyed_iron" },
+    { "item": "apica:honeyed_iron" },
+    { "item": "minecraft:stick" },
+    { "item": "apica:honeyed_glass" },
+    { "item": "apica:honeyed_glass" },
+    { "item": "apica:blank_rune" }
+  ],
+  "pollen": {
+    "apica:pollen_of_wind": 8,
+    "apica:tree_pollen": 16,
+    "apica:flower_pollen": 4
+  },
+  "result": { "id": "apica:leaf_blower" }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "apica:altar",
+  "center_item": { "item": "apica:honey_artifact_core" },
+  "pedestal_items": [
+    { "item": "minecraft:stick" },
+    { "item": "minecraft:stick" },
+    { "item": "apica:honeyed_iron" },
+    { "item": "apica:honeyed_iron" },
+    { "item": "minecraft:grass_block" },
+    { "item": "apica:honeyed_glass" }
+  ],
+  "pollen": {
+    "apica:crystal_pollen": 22
+  },
+  "result": { "id": "apica:building_wand" }
+}
