@@ -34,8 +34,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * Mur en honeyed stone.
  * Participe aux multiblocs Infuser et Centrifuge.
- *
- * WallBlock stocke ses VoxelShapes dans un Map<BlockState, VoxelShape> construit
+ * <p>
+ * WallBlock stocke ses VoxelShapes dans un Map BlockState, VoxelShape  construit
  * uniquement pour les etats avec MULTIBLOCK=NONE. On normalise la propriete
  * MULTIBLOCK avant le lookup pour eviter un NPE.
  */

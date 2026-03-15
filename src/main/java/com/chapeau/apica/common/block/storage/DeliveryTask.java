@@ -217,7 +217,7 @@ public class DeliveryTask {
     }
 
     /**
-     * [AV] Verifie si la tache peut encore etre retentee (< MAX_RETRIES).
+     * [AV] Verifie si la tache peut encore etre retentee (inférieur MAX_RETRIES).
      */
     public boolean canRetry() {
         return retryCount < MAX_RETRIES;

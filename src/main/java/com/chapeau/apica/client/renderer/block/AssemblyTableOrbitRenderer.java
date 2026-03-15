@@ -40,7 +40,7 @@ import java.util.Random;
  * Chaque cube se deplace a une position aleatoire dans une zone 1x0.1x1
  * 1.5 blocs au-dessus de la table, pointe vers le centre, tire un beam vert,
  * puis change de position.
- * Etat gere par table (client-side, Map<BlockPos, OrbitState>).
+ * Etat gere par table (client-side, Map BlockPos, OrbitState ).
  */
 @OnlyIn(Dist.CLIENT)
 public class AssemblyTableOrbitRenderer {

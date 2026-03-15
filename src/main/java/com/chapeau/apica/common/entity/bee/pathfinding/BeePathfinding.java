@@ -77,7 +77,7 @@ public class BeePathfinding {
     /**
      * Calcule un chemin de start vers end.
      * Vol direct si ligne de vue, sinon Lazy Theta*.
-     * Cache TTL: meme destination + < 20 ticks → reutilise le chemin existant.
+     * Cache TTL: meme destination +   20 ticks → reutilise le chemin existant.
      */
     @Nullable
     public List<BlockPos> findPath(BlockPos start, BlockPos end) {
