@@ -25,10 +25,5 @@
       "type": "altar_craft",
       "result": "apica:wave_mixer"
     }
-  ],
-  "sticky_notes_display": "page",
-  "sticky_notes": [
-    {"craft": "apica:nectar_artifact_core"},
-    {"craft": "apica:blank_rune"}
   ]
 }

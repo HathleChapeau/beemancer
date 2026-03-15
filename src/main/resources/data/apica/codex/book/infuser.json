@@ -5,14 +5,14 @@
     },
     {
       "type": "text",
-      "key": "codex.apica.alchemy.infuser_t1.lore.p1"
+      "key": "codex.apica.artifacts.infuser.lore.p1"
     },
     {
       "type": "page_break"
     },
     {
       "type": "text",
-      "key": "codex.apica.alchemy.infuser_t1.lore.p2"
+      "key": "codex.apica.artifacts.infuser.lore.p2"
     },
     {
       "type": "craft",
