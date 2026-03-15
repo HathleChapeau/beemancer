@@ -93,10 +93,10 @@ public class CentrifugeCategory implements IRecipeCategory<CentrifugeRecipe> {
         builder.addSlot(RecipeIngredientRole.INPUT, inputX, inputY)
                 .addIngredients(recipe.ingredient());
 
-        // Output item slots (2x2 grid)
+        // Output item slots (2x2 grid) - shifted down by half slot size
         List<ProcessingOutput> outputs = recipe.results();
         int outputX = inputX + 18 + 6 + 24 + 6;  // 71
-        int outputY = 8;
+        int outputY = 17;  // Same Y as input (was 8, +9 = half slot size)
 
         for (int i = 0; i < Math.min(outputs.size(), 4); i++) {
             ProcessingOutput output = outputs.get(i);
@@ -131,10 +131,10 @@ public class CentrifugeCategory implements IRecipeCategory<CentrifugeRecipe> {
         int arrowX = inputX + 18 + 6;  // 41
         arrow.draw(guiGraphics, arrowX, inputY);
 
-        // Draw output item slots (2x2 grid)
+        // Draw output item slots (2x2 grid) - shifted down by half slot size
         List<ProcessingOutput> outputs = recipe.results();
         int outputX = inputX + 18 + 6 + 24 + 6;  // 71
-        int outputY = 8;
+        int outputY = 17;  // Same Y as input
 
         for (int i = 0; i < Math.min(outputs.size(), 4); i++) {
             int x = outputX + (i % 2) * 20 - 1;

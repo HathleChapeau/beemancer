@@ -1,0 +1,6 @@
+{
+  "type": "apica:crystallizing",
+  "fluid_ingredient": { "fluid": "apica:royal_jelly", "amount": 1000 },
+  "result": { "id": "apica:royal_crystal" },
+  "processing_time": 400
+}

@@ -40,20 +40,19 @@ import org.jetbrains.annotations.Nullable;
 public class CrystallizerCategory implements IRecipeCategory<CrystallizingRecipe> {
 
     private static final int WIDTH = 100;
-    private static final int HEIGHT = 50;
+    private static final int HEIGHT = 41;
 
     // Layout constants for equal spacing
     // Content: SLOT(18) + GAP(12) + ARROW(24) + GAP(12) + SLOT(18) = 84
-    // Margins: (100 - 84) / 2 = 8
     private static final int MARGIN = 8;
     private static final int GAP = 12;
     private static final int SLOT_SIZE = 18;
     private static final int ARROW_WIDTH = 24;
 
-    private static final int FLUID_X = MARGIN;
-    private static final int ARROW_X = FLUID_X + SLOT_SIZE + GAP;
+    private static final int FLUID_X = MARGIN + 2;  // +2px shift right
+    private static final int ARROW_X = FLUID_X + SLOT_SIZE + GAP + 1;  // +1px shift right
     private static final int OUTPUT_X = ARROW_X + ARROW_WIDTH + GAP;
-    private static final int SLOT_Y = 12;
+    private static final int SLOT_Y = 6;  // Equal margins top/bottom (6px each)
 
     // Vanilla furnace GUI texture (256x256)
     private static final ResourceLocation FURNACE_TEXTURE = ResourceLocation.withDefaultNamespace(
