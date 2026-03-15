@@ -13,8 +13,8 @@
   ],
   "pollen": {
     "apica:void_pollen": 6,
-    "apica:light_pollen": 12,
-    "apica:dark_pollen": 12
+    "apica:pollen_of_light": 12,
+    "apica:pollen_of_darkness": 12
   },
   "result": { "id": "apica:wave_mixer" }
 }

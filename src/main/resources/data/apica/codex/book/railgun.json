@@ -19,7 +19,7 @@
       "type": "page_break"
     },
     {
-      "type": "craft",
+      "type": "altar_craft",
       "result": "apica:railgun"
     }
   ],

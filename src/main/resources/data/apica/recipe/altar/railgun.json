@@ -1,0 +1,20 @@
+{
+  "type": "apica:altar",
+  "center_item": { "item": "apica:royal_artifact_core" },
+  "pedestal_items": [
+    { "item": "apica:royal_crystal" },
+    { "item": "apica:honey_crystal" },
+    { "item": "apica:honey_crystal" },
+    { "item": "apica:honeyed_glass" },
+    { "item": "apica:blank_rune" },
+    { "item": "apica:honeyed_iron" },
+    { "item": "apica:honeyed_iron" }
+  ],
+  "pollen": {
+    "apica:pollen_of_fire": 32,
+    "apica:pollen_of_wind": 15,
+    "apica:crystal_pollen": 20,
+    "apica:pollen_of_thunder": 12
+  },
+  "result": { "id": "apica:railgun" }
+}
