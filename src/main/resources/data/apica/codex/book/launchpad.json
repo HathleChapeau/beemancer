@@ -19,8 +19,9 @@
       "result": "apica:launchpad"
     }
   ],
+  "sticky_notes_display": "page",
   "sticky_notes": [
     {"craft": "apica:honey_artifact_core"},
-    {"process": {"input": "minecraft:iron_ingot", "output": "apica:honeyed_iron", "top_slot": "apica:honey_bucket"}}
+    {"type": "process", "input": "minecraft:iron_ingot", "output": "apica:honeyed_iron"}
   ]
 }

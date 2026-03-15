@@ -118,6 +118,7 @@ public class CodexBookScreen extends Screen {
     private List<ItemStack> noteIconStacks = List.of();
     private List<CodexBookSection> noteCraftSections = List.of();
     private int openedNoteIndex = -1;
+    private CodexBookContent.StickyNotesDisplay stickyNotesDisplay = CodexBookContent.StickyNotesDisplay.SIDE;
 
     public CodexBookScreen(CodexNode node, CodexPage returnPage) {
         super(Component.translatable("screen.apica.codex_book"));
@@ -155,6 +156,7 @@ public class CodexBookScreen extends Screen {
         leftSections = split.get(0);
         rightSections = split.get(1);
         stickyNotes = content.getStickyNotes();
+        stickyNotesDisplay = content.getStickyNotesDisplay();
         resolveNoteData();
         openedNoteIndex = -1;
 
@@ -204,8 +206,12 @@ public class CodexBookScreen extends Screen {
         // Bouton retour
         backButton.render(graphics, mouseX, mouseY, partialTick);
 
-        // Sticky note buttons (a droite du livre)
-        renderStickyNoteButtons(graphics, mouseX, mouseY);
+        // Sticky note buttons (a droite du livre) ou en bas de page
+        if (stickyNotesDisplay == CodexBookContent.StickyNotesDisplay.PAGE) {
+            renderStickyNotesOnPage(graphics, mouseX, mouseY);
+        } else {
+            renderStickyNoteButtons(graphics, mouseX, mouseY);
+        }
 
         // Sticky note overlay (par dessus tout)
         // flush() force le GPU a dessiner tout le contenu batche (items 3D inclus)
@@ -284,6 +290,7 @@ public class CodexBookScreen extends Screen {
 
     private void renderStickyNoteButtons(GuiGraphics graphics, int mouseX, int mouseY) {
         if (stickyNotes.isEmpty()) return;
+        if (stickyNotesDisplay == CodexBookContent.StickyNotesDisplay.PAGE) return;
 
         int btnX = bookX + BOOK_WIDTH + NOTE_BUTTON_OFFSET_X;
         int btnY = bookY + MARGIN_TOP;
@@ -317,6 +324,36 @@ public class CodexBookScreen extends Screen {
             if (i < stickyNotes.size() && stickyNotes.get(i).isResonation()) {
                 graphics.blit(WAVE_ICON, iconX, iconY, 16, 16, 0, 0, 16, 16, 16, 16);
             } else if (i < noteIconStacks.size() && !noteIconStacks.get(i).isEmpty()) {
+                graphics.renderItem(noteIconStacks.get(i), iconX, iconY);
+            }
+        }
+    }
+
+    private void renderStickyNotesOnPage(GuiGraphics graphics, int mouseX, int mouseY) {
+        if (stickyNotes.isEmpty()) return;
+
+        int slotSize = 24;
+        int gap = 4;
+        int totalWidth = stickyNotes.size() * slotSize + (stickyNotes.size() - 1) * gap;
+        int startX = rightPageX + RIGHT_PAGE_EXTRA_MARGIN + (pageWidth - totalWidth) / 2;
+        int y = bookY + BOOK_HEIGHT - MARGIN_BOTTOM - slotSize - 8;
+
+        for (int i = 0; i < stickyNotes.size(); i++) {
+            int x = startX + i * (slotSize + gap);
+
+            boolean hovered = mouseX >= x && mouseX < x + slotSize
+                    && mouseY >= y && mouseY < y + slotSize;
+
+            int bgColor = hovered ? 0xFFD4B896 : 0xFFE8D44D;
+            graphics.fill(x, y, x + slotSize, y + slotSize, bgColor);
+            graphics.fill(x, y, x + slotSize, y + 1, 0xFF5C3A1E);
+            graphics.fill(x, y + slotSize - 1, x + slotSize, y + slotSize, 0xFF5C3A1E);
+            graphics.fill(x, y, x + 1, y + slotSize, 0xFF5C3A1E);
+            graphics.fill(x + slotSize - 1, y, x + slotSize, y + slotSize, 0xFF5C3A1E);
+
+            if (i < noteIconStacks.size() && !noteIconStacks.get(i).isEmpty()) {
+                int iconX = x + (slotSize - 16) / 2;
+                int iconY = y + (slotSize - 16) / 2;
                 graphics.renderItem(noteIconStacks.get(i), iconX, iconY);
             }
         }
@@ -407,18 +444,35 @@ public class CodexBookScreen extends Screen {
 
         // Check sticky note button clicks
         if (!stickyNotes.isEmpty()) {
-            int btnX = bookX + BOOK_WIDTH + NOTE_BUTTON_OFFSET_X;
-            int btnY = bookY + MARGIN_TOP;
+            if (stickyNotesDisplay == CodexBookContent.StickyNotesDisplay.PAGE) {
+                int slotSize = 24;
+                int gap = 4;
+                int totalWidth = stickyNotes.size() * slotSize + (stickyNotes.size() - 1) * gap;
+                int startX = rightPageX + RIGHT_PAGE_EXTRA_MARGIN + (pageWidth - totalWidth) / 2;
+                int slotY = bookY + BOOK_HEIGHT - MARGIN_BOTTOM - slotSize - 8;
 
-            for (int i = 0; i < stickyNotes.size(); i++) {
-                int texIdx = i % NOTE_TEXTURES.length;
-                int texW = NOTE_TEX_SIZES[texIdx][0];
-                int texH = NOTE_TEX_SIZES[texIdx][1];
-                int y = btnY + i * (NOTE_BUTTON_SIZE + NOTE_BUTTON_GAP);
-                if (mouseX >= btnX && mouseX < btnX + texW
-                        && mouseY >= y && mouseY < y + texH) {
-                    openedNoteIndex = i;
-                    return true;
+                for (int i = 0; i < stickyNotes.size(); i++) {
+                    int x = startX + i * (slotSize + gap);
+                    if (mouseX >= x && mouseX < x + slotSize
+                            && mouseY >= slotY && mouseY < slotY + slotSize) {
+                        openedNoteIndex = i;
+                        return true;
+                    }
+                }
+            } else {
+                int btnX = bookX + BOOK_WIDTH + NOTE_BUTTON_OFFSET_X;
+                int btnY = bookY + MARGIN_TOP;
+
+                for (int i = 0; i < stickyNotes.size(); i++) {
+                    int texIdx = i % NOTE_TEXTURES.length;
+                    int texW = NOTE_TEX_SIZES[texIdx][0];
+                    int texH = NOTE_TEX_SIZES[texIdx][1];
+                    int y = btnY + i * (NOTE_BUTTON_SIZE + NOTE_BUTTON_GAP);
+                    if (mouseX >= btnX && mouseX < btnX + texW
+                            && mouseY >= y && mouseY < y + texH) {
+                        openedNoteIndex = i;
+                        return true;
+                    }
                 }
             }
         }

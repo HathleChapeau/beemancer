@@ -33,5 +33,8 @@
       "result": "apica:honey_lamp"
     }
   ],
-  "sticky_notes": []
+  "sticky_notes_display": "page",
+  "sticky_notes": [
+    {"craft": "apica:blank_rune"}
+  ]
 }

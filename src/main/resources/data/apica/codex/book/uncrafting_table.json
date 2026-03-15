@@ -15,6 +15,7 @@
       "result": "apica:uncrafting_table"
     }
   ],
+  "sticky_notes_display": "page",
   "sticky_notes": [
     {"craft": "apica:nectar_artifact_core"}
   ]

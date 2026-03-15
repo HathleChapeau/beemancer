@@ -32,14 +32,18 @@ import java.util.List;
 
 public class CodexBookContent {
 
+    public enum StickyNotesDisplay { SIDE, PAGE }
+
     private final String nodeId;
     private final List<CodexBookSection> sections;
     private final List<StickyNote> stickyNotes;
+    private final StickyNotesDisplay stickyNotesDisplay;
 
-    public CodexBookContent(String nodeId, List<CodexBookSection> sections, List<StickyNote> stickyNotes) {
+    public CodexBookContent(String nodeId, List<CodexBookSection> sections, List<StickyNote> stickyNotes, StickyNotesDisplay stickyNotesDisplay) {
         this.nodeId = nodeId;
         this.sections = Collections.unmodifiableList(sections);
         this.stickyNotes = Collections.unmodifiableList(stickyNotes);
+        this.stickyNotesDisplay = stickyNotesDisplay;
     }
 
     public String getNodeId() {
@@ -54,6 +58,10 @@ public class CodexBookContent {
         return stickyNotes;
     }
 
+    public StickyNotesDisplay getStickyNotesDisplay() {
+        return stickyNotesDisplay;
+    }
+
     /**
      * Crée un contenu par défaut (page vierge) avec uniquement un HeaderSection.
      * @param nodeId L'identifiant du node
@@ -62,7 +70,7 @@ public class CodexBookContent {
     public static CodexBookContent createDefault(String nodeId) {
         List<CodexBookSection> defaultSections = new ArrayList<>();
         defaultSections.add(new HeaderSection());
-        return new CodexBookContent(nodeId, defaultSections, List.of());
+        return new CodexBookContent(nodeId, defaultSections, List.of(), StickyNotesDisplay.SIDE);
     }
 
     /**
@@ -103,6 +111,14 @@ public class CodexBookContent {
             }
         }
 
-        return new CodexBookContent(nodeId, sections, stickyNotes);
+        StickyNotesDisplay display = StickyNotesDisplay.SIDE;
+        if (json.has("sticky_notes_display")) {
+            String displayStr = json.get("sticky_notes_display").getAsString();
+            if ("page".equalsIgnoreCase(displayStr)) {
+                display = StickyNotesDisplay.PAGE;
+            }
+        }
+
+        return new CodexBookContent(nodeId, sections, stickyNotes, display);
     }
 }

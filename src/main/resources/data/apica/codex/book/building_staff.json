@@ -22,10 +22,11 @@
       "result": "apica:building_staff"
     }
   ],
+  "sticky_notes_display": "page",
   "sticky_notes": [
     {"craft": "apica:honey_artifact_core"},
     {"craft": "apica:blank_rune"},
-    {"process": {"input": "minecraft:glass", "output": "apica:honeyed_glass", "top_slot": "apica:honey_bucket"}},
-    {"process": {"input": "minecraft:iron_ingot", "output": "apica:honeyed_iron", "top_slot": "apica:honey_bucket"}}
+    {"type": "process", "input": "minecraft:glass", "output": "apica:honeyed_glass"},
+    {"type": "process", "input": "minecraft:iron_ingot", "output": "apica:honeyed_iron"}
   ]
 }

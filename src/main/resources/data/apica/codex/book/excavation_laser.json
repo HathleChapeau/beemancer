@@ -15,9 +15,10 @@
       "result": "apica:excavation_laser"
     }
   ],
+  "sticky_notes_display": "page",
   "sticky_notes": [
     {"craft": "apica:royal_artifact_core"},
-    {"process": {"input": "minecraft:glass", "output": "apica:honeyed_glass", "top_slot": "apica:honey_bucket"}},
-    {"process": {"input": "minecraft:iron_ingot", "output": "apica:honeyed_iron", "top_slot": "apica:honey_bucket"}}
+    {"type": "process", "input": "minecraft:glass", "output": "apica:honeyed_glass"},
+    {"type": "process", "input": "minecraft:iron_ingot", "output": "apica:honeyed_iron"}
   ]
 }
