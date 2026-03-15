@@ -59,13 +59,24 @@ public class AltarCategory implements IRecipeCategory<AltarRecipe> {
     private static final int CENTER_Y = 35;
     private static final int PEDESTAL_RADIUS = 24;
 
+    // Couleur texte standard Minecraft (gris fonce)
+    private static final int TEXT_COLOR = 0x404040;
+
+    // Texture arrow vanilla (furnace)
+    private static final ResourceLocation ARROW_TEXTURE = ResourceLocation.withDefaultNamespace(
+            "textures/gui/sprites/container/furnace/burn_progress.png");
+
     private final IDrawable background;
     private final IDrawable icon;
+    private final IDrawable arrow;
     private final Component title;
 
     public AltarCategory(IGuiHelper guiHelper) {
         this.background = guiHelper.createBlankDrawable(WIDTH, HEIGHT);
         this.icon = guiHelper.createDrawableItemStack(ApicaBlocks.ALTAR_HEART.get().asItem().getDefaultInstance());
+        this.arrow = guiHelper.createDrawable(
+                ResourceLocation.withDefaultNamespace("textures/gui/sprites/container/furnace/arrow.png"),
+                0, 0, 24, 17);
         this.title = Component.translatable("gui.apica.jei.altar");
     }
 
@@ -133,8 +144,8 @@ public class AltarCategory implements IRecipeCategory<AltarRecipe> {
         // Draw result slot
         drawSlot(guiGraphics, 129, CENTER_Y - 1);
 
-        // Draw arrow
-        guiGraphics.drawString(font, "\u2192", 95, CENTER_Y + 4, 0xFF8B6914, false);
+        // Draw arrow texture
+        arrow.draw(guiGraphics, 90, CENTER_Y);
 
         // Draw pollen requirements at the bottom
         Map<ResourceLocation, Integer> pollen = recipe.pollen();
@@ -165,14 +176,14 @@ public class AltarCategory implements IRecipeCategory<AltarRecipe> {
                 guiGraphics.renderItem(entry.stack, 0, 0);
                 guiGraphics.pose().popPose();
 
-                // Render count
+                // Render count (standard Minecraft text color)
                 String countStr = "x" + entry.count;
-                guiGraphics.drawString(font, countStr, px + 12, pollenY + 4, 0xFF8B6914, false);
+                guiGraphics.drawString(font, countStr, px + 12, pollenY + 4, TEXT_COLOR, false);
 
                 // Render short name below
                 int nameWidth = font.width(entry.shortName);
                 int nameX = px + 8 - nameWidth / 2;
-                guiGraphics.drawString(font, entry.shortName, nameX, pollenY + 14, 0xFF8B6914, false);
+                guiGraphics.drawString(font, entry.shortName, nameX, pollenY + 14, TEXT_COLOR, false);
             }
         }
     }
