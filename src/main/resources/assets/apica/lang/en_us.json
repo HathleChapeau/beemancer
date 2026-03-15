@@ -1221,5 +1221,8 @@
   "tooltip.apica.magazine.empty": "Empty",
   "tooltip.apica.creative_magazine": "Infinite Nectar - Never empties",
   "config.jade.plugin_apica.api_cooldown": "Api Cooldown",
-  "config.jade.plugin_apica.companion_cooldown": "Companion Cooldown"
+  "config.jade.plugin_apica.companion_cooldown": "Companion Cooldown",
+  "gui.apica.jei.infusing": "Honey Infusion",
+  "gui.apica.jei.centrifuge": "Centrifugation",
+  "gui.apica.jei.altar": "Altar Crafting"
 }

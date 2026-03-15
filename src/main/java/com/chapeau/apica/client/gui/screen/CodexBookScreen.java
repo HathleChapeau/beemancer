@@ -261,15 +261,15 @@ public class CodexBookScreen extends Screen {
         List<CodexBookSection> crafts = new ArrayList<>();
         for (StickyNote note : stickyNotes) {
             if (note.isProcess()) {
-                // Process note: icon from craft item, content from input -> output
-                if (note.craftItem() != null && !note.craftItem().isEmpty()) {
-                    ResourceLocation loc = ResourceLocation.parse(note.craftItem());
+                // Process note: icon from output item, content from input -> output
+                if (note.output() != null && !note.output().isEmpty()) {
+                    ResourceLocation loc = ResourceLocation.parse(note.output());
                     var item = BuiltInRegistries.ITEM.get(loc);
                     icons.add(item != null ? new ItemStack(item) : ItemStack.EMPTY);
                 } else {
                     icons.add(ItemStack.EMPTY);
                 }
-                crafts.add(new ProcessSection(note.input(), note.output(), note.craftItem()));
+                crafts.add(new ProcessSection(note.input(), note.output(), "apica:honey_bucket"));
             } else if (note.craftItem() != null && !note.craftItem().isEmpty()) {
                 ResourceLocation loc = ResourceLocation.parse(note.craftItem());
                 var item = BuiltInRegistries.ITEM.get(loc);
@@ -332,30 +332,46 @@ public class CodexBookScreen extends Screen {
     private void renderStickyNotesOnPage(GuiGraphics graphics, int mouseX, int mouseY) {
         if (stickyNotes.isEmpty()) return;
 
-        int slotSize = 24;
-        int gap = 4;
-        int totalWidth = stickyNotes.size() * slotSize + (stickyNotes.size() - 1) * gap;
-        int startX = rightPageX + RIGHT_PAGE_EXTRA_MARGIN + (pageWidth - totalWidth) / 2;
-        int y = bookY + BOOK_HEIGHT - MARGIN_BOTTOM - slotSize - 8;
-
+        int gap = 2;
+        int totalWidth = 0;
         for (int i = 0; i < stickyNotes.size(); i++) {
-            int x = startX + i * (slotSize + gap);
+            int texIdx = i % NOTE_TEXTURES.length;
+            totalWidth += NOTE_TEX_SIZES[texIdx][0];
+            if (i < stickyNotes.size() - 1) totalWidth += gap;
+        }
 
-            boolean hovered = mouseX >= x && mouseX < x + slotSize
-                    && mouseY >= y && mouseY < y + slotSize;
+        int startX = rightPageX + RIGHT_PAGE_EXTRA_MARGIN + (pageWidth - totalWidth) / 2;
+        int baseY = bookY + BOOK_HEIGHT - MARGIN_BOTTOM - 34;
 
-            int bgColor = hovered ? 0xFFD4B896 : 0xFFE8D44D;
-            graphics.fill(x, y, x + slotSize, y + slotSize, bgColor);
-            graphics.fill(x, y, x + slotSize, y + 1, 0xFF5C3A1E);
-            graphics.fill(x, y + slotSize - 1, x + slotSize, y + slotSize, 0xFF5C3A1E);
-            graphics.fill(x, y, x + 1, y + slotSize, 0xFF5C3A1E);
-            graphics.fill(x + slotSize - 1, y, x + slotSize, y + slotSize, 0xFF5C3A1E);
+        int currentX = startX;
+        for (int i = 0; i < stickyNotes.size(); i++) {
+            int texIdx = i % NOTE_TEXTURES.length;
+            int texW = NOTE_TEX_SIZES[texIdx][0];
+            int texH = NOTE_TEX_SIZES[texIdx][1];
 
-            if (i < noteIconStacks.size() && !noteIconStacks.get(i).isEmpty()) {
-                int iconX = x + (slotSize - 16) / 2;
-                int iconY = y + (slotSize - 16) / 2;
+            boolean hovered = mouseX >= currentX && mouseX < currentX + texW
+                    && mouseY >= baseY && mouseY < baseY + texH;
+
+            if (hovered) {
+                graphics.setColor(0.85f, 0.85f, 0.85f, 1.0f);
+            }
+
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            graphics.blit(NOTE_TEXTURES[texIdx], currentX, baseY, texW, texH,
+                    0, 0, texW, texH, texW, texH);
+
+            graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+            int iconX = currentX + (texW - 16) / 2;
+            int iconY = baseY + (texH - 16) / 2 + 2;
+            if (i < stickyNotes.size() && stickyNotes.get(i).isResonation()) {
+                graphics.blit(WAVE_ICON, iconX, iconY, 16, 16, 0, 0, 16, 16, 16, 16);
+            } else if (i < noteIconStacks.size() && !noteIconStacks.get(i).isEmpty()) {
                 graphics.renderItem(noteIconStacks.get(i), iconX, iconY);
             }
+
+            currentX += texW + gap;
         }
     }
 
@@ -445,19 +461,27 @@ public class CodexBookScreen extends Screen {
         // Check sticky note button clicks
         if (!stickyNotes.isEmpty()) {
             if (stickyNotesDisplay == CodexBookContent.StickyNotesDisplay.PAGE) {
-                int slotSize = 24;
-                int gap = 4;
-                int totalWidth = stickyNotes.size() * slotSize + (stickyNotes.size() - 1) * gap;
-                int startX = rightPageX + RIGHT_PAGE_EXTRA_MARGIN + (pageWidth - totalWidth) / 2;
-                int slotY = bookY + BOOK_HEIGHT - MARGIN_BOTTOM - slotSize - 8;
-
+                int gap = 2;
+                int totalWidth = 0;
                 for (int i = 0; i < stickyNotes.size(); i++) {
-                    int x = startX + i * (slotSize + gap);
-                    if (mouseX >= x && mouseX < x + slotSize
-                            && mouseY >= slotY && mouseY < slotY + slotSize) {
+                    int texIdx = i % NOTE_TEXTURES.length;
+                    totalWidth += NOTE_TEX_SIZES[texIdx][0];
+                    if (i < stickyNotes.size() - 1) totalWidth += gap;
+                }
+                int startX = rightPageX + RIGHT_PAGE_EXTRA_MARGIN + (pageWidth - totalWidth) / 2;
+                int baseY = bookY + BOOK_HEIGHT - MARGIN_BOTTOM - 34;
+
+                int currentX = startX;
+                for (int i = 0; i < stickyNotes.size(); i++) {
+                    int texIdx = i % NOTE_TEXTURES.length;
+                    int texW = NOTE_TEX_SIZES[texIdx][0];
+                    int texH = NOTE_TEX_SIZES[texIdx][1];
+                    if (mouseX >= currentX && mouseX < currentX + texW
+                            && mouseY >= baseY && mouseY < baseY + texH) {
                         openedNoteIndex = i;
                         return true;
                     }
+                    currentX += texW + gap;
                 }
             } else {
                 int btnX = bookX + BOOK_WIDTH + NOTE_BUTTON_OFFSET_X;
