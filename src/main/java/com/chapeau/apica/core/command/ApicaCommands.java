@@ -27,6 +27,7 @@ import com.chapeau.apica.common.codex.CodexNode;
 import com.chapeau.apica.common.codex.CodexPage;
 import com.chapeau.apica.common.codex.CodexPlayerData;
 import com.chapeau.apica.common.entity.mount.HoverbikeConfigManager;
+import com.chapeau.apica.common.item.accessory.CompanionBeeItem;
 import com.chapeau.apica.common.item.mount.HoverbikeSpawnItem;
 import com.chapeau.apica.core.registry.ApicaItems;
 import com.chapeau.apica.common.quest.Quest;
@@ -147,6 +148,57 @@ public class ApicaCommands {
                             context.getSource(),
                             StringArgumentType.getString(context, "species")
                         ))
+                    )
+                )
+                .then(Commands.literal("giveCompanion")
+                    .requires(source -> source.hasPermission(2))
+                    .then(Commands.literal("bee")
+                        .then(Commands.argument("species", StringArgumentType.string())
+                            .suggests((context, builder) -> {
+                                for (String id : BeeSpeciesManager.getAllSpeciesIds()) {
+                                    if (id.startsWith(builder.getRemainingLowerCase())) {
+                                        builder.suggest(id);
+                                    }
+                                }
+                                return builder.buildFuture();
+                            })
+                            .executes(context -> giveCompanion(
+                                context.getSource(), "bee",
+                                StringArgumentType.getString(context, "species")
+                            ))
+                        )
+                    )
+                    .then(Commands.literal("magnet")
+                        .then(Commands.argument("species", StringArgumentType.string())
+                            .suggests((context, builder) -> {
+                                for (String id : BeeSpeciesManager.getAllSpeciesIds()) {
+                                    if (id.startsWith(builder.getRemainingLowerCase())) {
+                                        builder.suggest(id);
+                                    }
+                                }
+                                return builder.buildFuture();
+                            })
+                            .executes(context -> giveCompanion(
+                                context.getSource(), "magnet",
+                                StringArgumentType.getString(context, "species")
+                            ))
+                        )
+                    )
+                    .then(Commands.literal("backpack")
+                        .then(Commands.argument("species", StringArgumentType.string())
+                            .suggests((context, builder) -> {
+                                for (String id : BeeSpeciesManager.getAllSpeciesIds()) {
+                                    if (id.startsWith(builder.getRemainingLowerCase())) {
+                                        builder.suggest(id);
+                                    }
+                                }
+                                return builder.buildFuture();
+                            })
+                            .executes(context -> giveCompanion(
+                                context.getSource(), "backpack",
+                                StringArgumentType.getString(context, "species")
+                            ))
+                        )
                     )
                 )
                 .then(Commands.literal("dimension")
@@ -380,6 +432,37 @@ public class ApicaCommands {
             }
 
             source.sendSuccess(() -> Component.literal("Gave HoverBee (" + speciesId + ")"), true);
+            return Command.SINGLE_SUCCESS;
+        }
+
+        source.sendFailure(Component.literal("This command can only be used by a player."));
+        return 0;
+    }
+
+    // ============================================================
+    // GIVE COMPANION COMMAND
+    // ============================================================
+
+    private static int giveCompanion(CommandSourceStack source, String type, String speciesId) {
+        if (source.getEntity() instanceof ServerPlayer player) {
+            if (!BeeSpeciesManager.hasSpecies(speciesId)) {
+                source.sendFailure(Component.literal("Unknown species: " + speciesId));
+                return 0;
+            }
+
+            ItemStack stack = switch (type) {
+                case "magnet" -> new ItemStack(ApicaItems.BEE_MAGNET.get());
+                case "backpack" -> new ItemStack(ApicaItems.BACKPACK.get());
+                default -> new ItemStack(ApicaItems.COMPANION_BEE.get());
+            };
+
+            CompanionBeeItem.setSpeciesId(stack, speciesId);
+
+            if (!player.getInventory().add(stack)) {
+                player.drop(stack, false);
+            }
+
+            source.sendSuccess(() -> Component.literal("Gave Companion " + type + " (" + speciesId + ")"), true);
             return Command.SINGLE_SUCCESS;
         }
 

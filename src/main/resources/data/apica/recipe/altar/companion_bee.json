@@ -1,0 +1,17 @@
+{
+  "type": "apica:altar",
+  "center_item": { "item": "apica:magic_bee" },
+  "pedestal_items": [
+    { "tag": "minecraft:flowers" },
+    { "item": "minecraft:amethyst_shard" },
+    { "tag": "apica:mushrooms" },
+    { "tag": "minecraft:saplings" }
+  ],
+  "pollen": {
+    "apica:flower_pollen": 15,
+    "apica:crystal_pollen": 5,
+    "apica:tree_pollen": 11,
+    "apica:mushroom_spore": 2
+  },
+  "result": { "id": "apica:companion_bee" }
+}

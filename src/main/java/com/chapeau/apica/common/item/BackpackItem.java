@@ -30,12 +30,15 @@ package com.chapeau.apica.common.item;
 
 import com.chapeau.apica.common.data.AccessoryPlayerData;
 import com.chapeau.apica.common.entity.companion.CompanionBeeEntity;
+import com.chapeau.apica.common.item.accessory.CompanionBeeItem;
 import com.chapeau.apica.common.item.accessory.IAccessory;
 import com.chapeau.apica.core.network.packets.BackpackOpenPacket;
 import com.chapeau.apica.core.registry.ApicaAttachments;
 import com.chapeau.apica.core.registry.ApicaEntities;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -46,6 +49,7 @@ import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -67,6 +71,18 @@ public class BackpackItem extends Item implements IAccessory {
 
     public BackpackItem(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+        super.appendHoverText(stack, context, tooltip, flag);
+        String speciesId = CompanionBeeItem.getSpeciesId(stack);
+        if (speciesId != null) {
+            tooltip.add(Component.translatable("tooltip.apica.species")
+                    .withStyle(ChatFormatting.GRAY)
+                    .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
+                    .append(Component.translatable("gene.apica.species." + speciesId).withStyle(ChatFormatting.GOLD)));
+        }
     }
 
     @Override

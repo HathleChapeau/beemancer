@@ -26,12 +26,19 @@ import com.chapeau.apica.common.data.AccessoryPlayerData;
 import com.chapeau.apica.common.entity.companion.CompanionBeeEntity;
 import com.chapeau.apica.core.registry.ApicaAttachments;
 import com.chapeau.apica.core.registry.ApicaEntities;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.phys.AABB;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -62,6 +69,59 @@ public class CompanionBeeItem extends Item implements IAccessory {
     @Override
     public boolean hasInventoryTab() {
         return false;
+    }
+
+    // =========================================================================
+    // SPECIES DATA
+    // =========================================================================
+
+    /**
+     * Stocke l'identifiant d'espece sur un item companion (companion_bee, bee_magnet, backpack).
+     */
+    public static void setSpeciesId(ItemStack stack, String speciesId) {
+        CompoundTag tag = getOrCreateTag(stack);
+        tag.putString("SpeciesId", speciesId);
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+    }
+
+    /**
+     * Recupere l'identifiant d'espece stocke sur un item companion.
+     * @return l'ID de l'espece (ex: "meadow") ou null si absent
+     */
+    @Nullable
+    public static String getSpeciesId(ItemStack stack) {
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        if (customData != null) {
+            CompoundTag tag = customData.copyTag();
+            if (tag.contains("SpeciesId")) {
+                return tag.getString("SpeciesId");
+            }
+        }
+        return null;
+    }
+
+    private static CompoundTag getOrCreateTag(ItemStack stack) {
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        if (customData != null) {
+            return customData.copyTag();
+        }
+        return new CompoundTag();
+    }
+
+    // =========================================================================
+    // TOOLTIP
+    // =========================================================================
+
+    @Override
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+        super.appendHoverText(stack, context, tooltip, flag);
+        String speciesId = getSpeciesId(stack);
+        if (speciesId != null) {
+            tooltip.add(Component.translatable("tooltip.apica.species")
+                    .withStyle(ChatFormatting.GRAY)
+                    .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
+                    .append(Component.translatable("gene.apica.species." + speciesId).withStyle(ChatFormatting.GOLD)));
+        }
     }
 
     // =========================================================================

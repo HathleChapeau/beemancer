@@ -1,0 +1,15 @@
+{
+  "type": "apica:altar",
+  "center_item": { "item": "apica:companion_bee" },
+  "pedestal_items": [
+    { "item": "minecraft:chest" },
+    { "item": "minecraft:leather" },
+    { "item": "minecraft:leather" }
+  ],
+  "pollen": {
+    "apica:tree_pollen": 20,
+    "apica:flower_pollen": 8,
+    "apica:pollen_of_wind": 12
+  },
+  "result": { "id": "apica:backpack" }
+}

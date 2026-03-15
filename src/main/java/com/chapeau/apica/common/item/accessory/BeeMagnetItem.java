@@ -27,11 +27,14 @@ import com.chapeau.apica.common.data.AccessoryPlayerData;
 import com.chapeau.apica.common.entity.companion.CompanionBeeEntity;
 import com.chapeau.apica.core.registry.ApicaAttachments;
 import com.chapeau.apica.core.registry.ApicaEntities;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.phys.AABB;
 
 import java.util.List;
@@ -64,6 +67,18 @@ public class BeeMagnetItem extends Item implements IAccessory {
     @Override
     public boolean hasInventoryTab() {
         return false;
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+        super.appendHoverText(stack, context, tooltip, flag);
+        String speciesId = CompanionBeeItem.getSpeciesId(stack);
+        if (speciesId != null) {
+            tooltip.add(Component.translatable("tooltip.apica.species")
+                    .withStyle(ChatFormatting.GRAY)
+                    .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
+                    .append(Component.translatable("gene.apica.species." + speciesId).withStyle(ChatFormatting.GOLD)));
+        }
     }
 
     // =========================================================================

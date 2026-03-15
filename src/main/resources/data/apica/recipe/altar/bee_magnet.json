@@ -1,0 +1,17 @@
+{
+  "type": "apica:altar",
+  "center_item": { "item": "apica:companion_bee" },
+  "pedestal_items": [
+    { "item": "minecraft:iron_ingot" },
+    { "item": "minecraft:iron_ingot" },
+    { "item": "minecraft:iron_ingot" },
+    { "item": "minecraft:lapis_lazuli" },
+    { "item": "minecraft:redstone" }
+  ],
+  "pollen": {
+    "apica:pollen_of_thunder": 13,
+    "apica:pollen_of_wind": 3,
+    "apica:crystal_pollen": 18
+  },
+  "result": { "id": "apica:bee_magnet" }
+}

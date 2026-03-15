@@ -33,6 +33,8 @@ import com.chapeau.apica.core.multiblock.MultiblockFormationHelper;
 import com.chapeau.apica.core.multiblock.MultiblockPattern;
 import com.chapeau.apica.core.multiblock.MultiblockPatterns;
 import com.chapeau.apica.core.multiblock.MultiblockValidator;
+import com.chapeau.apica.common.item.accessory.CompanionBeeItem;
+import com.chapeau.apica.common.item.bee.MagicBeeItem;
 import com.chapeau.apica.core.recipe.AltarRecipeInput;
 import com.chapeau.apica.core.recipe.ApicaRecipeTypes;
 import com.chapeau.apica.core.recipe.type.AltarRecipe;
@@ -345,9 +347,11 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
                                List<HoneyPedestalBlockEntity> surroundingPedestals,
                                List<PollenPotBlockEntity> pollenPots,
                                Map<Item, Integer> availablePollen) {
-        // Consommer l'item central
+        // Sauvegarder l'item central avant consommation (pour transfert d'espece)
         BlockEntity centerBe = level.getBlockEntity(centerPedestalPos);
+        ItemStack originalCenterItem = ItemStack.EMPTY;
         if (centerBe instanceof HoneyPedestalBlockEntity centerPedestal) {
+            originalCenterItem = centerPedestal.getStoredItem().copy();
             centerPedestal.consumeItem();
         }
 
@@ -377,6 +381,18 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
 
         // Placer le resultat sur le pedestal central
         ItemStack result = recipe.result().copy();
+
+        // Transferer l'espece de l'item central (magic_bee ou companion_bee) vers le resultat
+        String speciesId = null;
+        if (originalCenterItem.getItem() instanceof MagicBeeItem) {
+            speciesId = MagicBeeItem.getSpeciesId(originalCenterItem);
+        } else {
+            speciesId = CompanionBeeItem.getSpeciesId(originalCenterItem);
+        }
+        if (speciesId != null && !speciesId.isEmpty()) {
+            CompanionBeeItem.setSpeciesId(result, speciesId);
+        }
+
         if (centerBe instanceof HoneyPedestalBlockEntity centerPedestal) {
             centerPedestal.placeItem(result);
         }
