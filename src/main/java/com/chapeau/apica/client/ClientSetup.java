@@ -48,6 +48,7 @@ import com.chapeau.apica.client.renderer.block.BeeCreatorRenderer;
 import com.chapeau.apica.client.renderer.block.BeeStatueRenderer;
 import com.chapeau.apica.client.renderer.block.HoneyPedestalRenderer;
 import com.chapeau.apica.client.renderer.block.HoneyReservoirRenderer;
+import com.chapeau.apica.client.renderer.block.AlembicHeartRenderer;
 import com.chapeau.apica.client.renderer.block.CentrifugeHeartRenderer;
 import com.chapeau.apica.client.renderer.block.CrankRenderer;
 import com.chapeau.apica.client.renderer.block.LaunchpadRenderer;
@@ -299,6 +300,9 @@ public class ClientSetup {
         // CentrifugeHeartRenderer - cubes centraux animés de la centrifuge multibloc
         event.registerBlockEntityRenderer(ApicaBlockEntities.CENTRIFUGE_HEART.get(),
             CentrifugeHeartRenderer::new);
+        // AlembicHeartRenderer - ring + cubes animés de l'alembic multibloc
+        event.registerBlockEntityRenderer(ApicaBlockEntities.ALEMBIC_HEART.get(),
+            AlembicHeartRenderer::new);
         // InfuserHeartRenderer - cubes centraux statiques de l'infuser multibloc
         // event.registerBlockEntityRenderer(ApicaBlockEntities.INFUSER_HEART.get(),
         //     InfuserHeartRenderer::new);
@@ -770,6 +774,10 @@ public class ClientSetup {
 
         // Modèle core de l'infuser heart (cubes statiques)
         event.register(InfuserHeartRenderer.CORE_MODEL_LOC);
+
+        // Modèles alembic heart (ring + cubes animés)
+        event.register(AlembicHeartRenderer.RING_MODEL_LOC);
+        event.register(AlembicHeartRenderer.CUBE_MODEL_LOC);
 
         // Building Staff 3D model (rendu par BEWLR)
         event.register(BuildingStaffItemRenderer.STAFF_MODEL_LOC);

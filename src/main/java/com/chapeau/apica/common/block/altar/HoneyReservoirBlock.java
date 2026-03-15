@@ -76,11 +76,17 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
         Block.box(1, 2, 1, 15, 4, 15),
         Block.box(2, 4, 2, 14, 16, 14)
     );
-    // Alembic_0: base + cadres latéraux (côtés est/ouest)
-    private static final VoxelShape SHAPE_ALEMBIC_0 = Shapes.or(
+    // Alembic_0: base + cadres latéraux (côtés est/ouest pour FACING=WEST)
+    private static final VoxelShape SHAPE_ALEMBIC_0_EW = Shapes.or(
         SHAPE_ALEMBIC_BASE,
-        Block.box(0, 4, 4, 3, 12, 12),
-        Block.box(13, 4, 4, 16, 12, 12)
+        Block.box(0, 4, 4, 3, 12, 12),    // Frame ouest
+        Block.box(13, 4, 4, 16, 12, 12)   // Frame est
+    );
+    // Alembic_0: base + cadres latéraux (côtés nord/sud pour FACING=NORTH)
+    private static final VoxelShape SHAPE_ALEMBIC_0_NS = Shapes.or(
+        SHAPE_ALEMBIC_BASE,
+        Block.box(4, 4, 0, 12, 12, 3),    // Frame nord
+        Block.box(4, 4, 13, 12, 12, 16)   // Frame sud
     );
     // Alembic_1: même colonne que alembic (réservoir du bas)
     private static final VoxelShape SHAPE_ALEMBIC_1 = SHAPE_ALEMBIC_BASE;
@@ -107,9 +113,20 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
         MultiblockProperty mb = state.getValue(MULTIBLOCK);
         return switch (mb) {
             case ALEMBIC -> SHAPE_ALEMBIC_BASE;
-            case ALEMBIC_0 -> SHAPE_ALEMBIC_0;
+            case ALEMBIC_0 -> getAlembic0Shape(state.getValue(FACING));
             case ALEMBIC_1 -> SHAPE_ALEMBIC_1;
             default -> SHAPE;
+        };
+    }
+
+    /**
+     * Retourne la VoxelShape pour ALEMBIC_0 selon le FACING.
+     * Les frames sont sur E/W pour FACING=WEST/EAST, sur N/S pour FACING=NORTH/SOUTH.
+     */
+    private static VoxelShape getAlembic0Shape(Direction facing) {
+        return switch (facing) {
+            case NORTH, SOUTH -> SHAPE_ALEMBIC_0_NS;
+            default -> SHAPE_ALEMBIC_0_EW;
         };
     }
 

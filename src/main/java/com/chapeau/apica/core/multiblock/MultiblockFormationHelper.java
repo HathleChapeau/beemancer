@@ -21,8 +21,10 @@
  */
 package com.chapeau.apica.core.multiblock;
 
+import com.chapeau.apica.common.block.altar.HoneyReservoirBlock;
 import com.chapeau.apica.common.blockentity.altar.HoneyReservoirBlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -133,6 +135,62 @@ public class MultiblockFormationHelper {
             BlockPos reservoirPos = controllerPos.offset(rotatedOffset);
             if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
                 reservoir.setControllerPosQuiet(link ? controllerPos : null);
+            }
+        }
+    }
+
+    /**
+     * Définit la propriété FACING sur les réservoirs du multibloc.
+     * Utilisé pour que les modèles des réservoirs soient correctement rotatés.
+     *
+     * @param level Le monde
+     * @param controllerPos Position du contrôleur
+     * @param reservoirOffsets Offsets relatifs des réservoirs (non rotatés)
+     * @param rotation Rotation horizontale (0-3)
+     * @param facing La direction FACING à appliquer
+     */
+    public static void setFacingOnReservoirs(Level level, BlockPos controllerPos,
+                                              BlockPos[] reservoirOffsets, int rotation, Direction facing) {
+        for (BlockPos offset : reservoirOffsets) {
+            Vec3i rotatedOffset = MultiblockPattern.rotateY(offset, rotation);
+            BlockPos reservoirPos = controllerPos.offset(rotatedOffset);
+            BlockState state = level.getBlockState(reservoirPos);
+            if (state.hasProperty(HoneyReservoirBlock.FACING) && state.getValue(HoneyReservoirBlock.FACING) != facing) {
+                level.setBlock(reservoirPos, state.setValue(HoneyReservoirBlock.FACING, facing), 3);
+            }
+        }
+    }
+
+    /**
+     * Définit la propriété FACING sur tous les blocs de la structure qui la supportent.
+     * Itère le pattern, applique la rotation, et set FACING sur chaque bloc applicable.
+     *
+     * @param level Le monde
+     * @param controllerPos Position du contrôleur
+     * @param pattern Le pattern du multibloc
+     * @param rotation Rotation horizontale (0-3)
+     * @param facing La direction FACING à appliquer
+     */
+    @SuppressWarnings("unchecked")
+    public static void setFacingOnStructureBlocks(Level level, BlockPos controllerPos,
+                                                   MultiblockPattern pattern, int rotation, Direction facing) {
+        for (MultiblockPattern.PatternElement element : pattern.getElements()) {
+            if (BlockMatcher.isAirMatcher(element.matcher())) continue;
+
+            Vec3i rotatedOffset = MultiblockPattern.rotateY(element.offset(), rotation);
+            BlockPos blockPos = controllerPos.offset(rotatedOffset);
+            if (!level.hasChunkAt(blockPos)) continue;
+            BlockState state = level.getBlockState(blockPos);
+
+            // Cherche une propriété "facing" de type Direction horizontale
+            for (var prop : state.getProperties()) {
+                if (prop.getName().equals("facing") && prop.getValueClass() == Direction.class) {
+                    var dirProp = (net.minecraft.world.level.block.state.properties.DirectionProperty) prop;
+                    if (dirProp.getPossibleValues().contains(facing) && state.getValue(dirProp) != facing) {
+                        level.setBlock(blockPos, state.setValue(dirProp, facing), 3);
+                    }
+                    break;
+                }
             }
         }
     }

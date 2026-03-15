@@ -61,6 +61,9 @@ public class MultiblockIOConfig {
      * Les offsets définis dans le builder sont en coordonnées non-rotatées (pattern de base).
      * La rotation est appliquée pour trouver la correspondance.
      *
+     * IMPORTANT: Les faces horizontales sont aussi inverse-rotatées pour correspondre
+     * aux coordonnées du pattern. Ex: si rotation=1 (90°), face EAST en monde → SOUTH en pattern.
+     *
      * @param controllerPos position monde du controleur
      * @param queriedPos position monde du bloc querie
      * @param face face du bloc querie (nullable)
@@ -72,8 +75,10 @@ public class MultiblockIOConfig {
         Vec3i worldOffset = queriedPos.subtract(controllerPos);
         // Inverse-rotate the world offset to get back to pattern coordinates
         Vec3i patternOffset = MultiblockPattern.rotateY(worldOffset, (4 - rotation) & 3);
+        // Inverse-rotate the face too (only horizontal faces)
+        Direction patternFace = rotateFaceY(face, (4 - rotation) & 3);
         BlockIORule rule = fluidRules.get(patternOffset);
-        return rule != null ? rule.getModeFor(face) : null;
+        return rule != null ? rule.getModeFor(patternFace) : null;
     }
 
     /**
@@ -102,8 +107,30 @@ public class MultiblockIOConfig {
         Vec3i worldOffset = queriedPos.subtract(controllerPos);
         // Inverse-rotate the world offset to get back to pattern coordinates
         Vec3i patternOffset = MultiblockPattern.rotateY(worldOffset, (4 - rotation) & 3);
+        // Inverse-rotate the face too (only horizontal faces)
+        Direction patternFace = rotateFaceY(face, (4 - rotation) & 3);
         BlockIORule rule = itemRules.get(patternOffset);
-        return rule != null ? rule.getModeFor(face) : null;
+        return rule != null ? rule.getModeFor(patternFace) : null;
+    }
+
+    /**
+     * Rotate une direction horizontale autour de l'axe Y.
+     * UP et DOWN restent inchangées.
+     *
+     * @param face la direction à rotater (nullable)
+     * @param rotation 0=0°, 1=90° CW, 2=180°, 3=270° CW (looking down)
+     * @return la direction rotatée, ou null si face était null
+     */
+    @Nullable
+    private static Direction rotateFaceY(@Nullable Direction face, int rotation) {
+        if (face == null || face.getAxis() == Direction.Axis.Y) {
+            return face;
+        }
+        // rotation 1 = 90° clockwise looking down
+        for (int i = 0; i < rotation; i++) {
+            face = face.getClockWise();
+        }
+        return face;
     }
 
     public static Builder builder() {

@@ -208,16 +208,46 @@ public class AlembicHeartBlockEntity extends BlockEntity implements MultiblockCo
             if (state.hasProperty(AlembicHeartBlock.MULTIBLOCK)) {
                 level.setBlock(worldPosition, state.setValue(AlembicHeartBlock.MULTIBLOCK, MultiblockProperty.ALEMBIC), 3);
             }
+            // Mapping des proprietes MULTIBLOCK pour l'Alembic:
+            // - Reservoirs lateraux (Y=0, X!=0): ALEMBIC_0 (avec frames)
+            // - Reservoir bottom (Y=-1): ALEMBIC (simple colonne)
+            // - Glass et RoyalGold: ALEMBIC
             MultiblockFormationHelper.setFormedOnStructureBlocks(level, worldPosition, getPattern(),
-                offset -> offset.getY() >= 1 ? MultiblockProperty.ALEMBIC_1 : MultiblockProperty.ALEMBIC_0,
+                offset -> {
+                    if (offset.getY() == 0 && offset.getX() != 0) {
+                        return MultiblockProperty.ALEMBIC_0; // Reservoirs lateraux avec frames
+                    }
+                    return MultiblockProperty.ALEMBIC; // Tous les autres (bottom, glass, royal gold)
+                },
                 multiblockRotation);
 
-            // 3. Invalider les capabilities de TOUS les blocs du multibloc
+            // 3. Definir le FACING sur TOUS les blocs de structure selon la rotation du multibloc
+            Direction facing = rotationToFacing(multiblockRotation);
+            MultiblockFormationHelper.setFacingOnStructureBlocks(level, worldPosition, getPattern(), multiblockRotation, facing);
+
+            // 4. Invalider les capabilities de TOUS les blocs du multibloc
             MultiblockFormationHelper.invalidateAllCapabilities(level, worldPosition, getPattern(), multiblockRotation);
 
             MultiblockEvents.registerActiveController(level, worldPosition);
             setChanged();
         }
+    }
+
+    /**
+     * Convertit la rotation du multibloc (0-3) en Direction FACING pour les reservoirs.
+     * Le modele alembic_0 a des frames sur E/W, donc:
+     * - rotation 0 (non rotaté) → WEST (y=0, frames E/W)
+     * - rotation 1 (90° CW) → NORTH (y=90, frames N/S)
+     * - rotation 2 (180°) → EAST (y=180, frames E/W)
+     * - rotation 3 (270°) → SOUTH (y=270, frames N/S)
+     */
+    private static Direction rotationToFacing(int rotation) {
+        return switch (rotation) {
+            case 1 -> Direction.NORTH;
+            case 2 -> Direction.EAST;
+            case 3 -> Direction.SOUTH;
+            default -> Direction.WEST;
+        };
     }
 
     @Override

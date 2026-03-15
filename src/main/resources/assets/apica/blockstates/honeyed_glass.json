@@ -1,6 +1,12 @@
 {
   "variants": {
-    "multiblock=none": { "model": "apica:block/building/honeyed_glass" },
-    "multiblock=alembic": { "model": "apica:block/building/honeyed_glass_alembic" }
+    "facing=north,multiblock=none": { "model": "apica:block/building/honeyed_glass" },
+    "facing=south,multiblock=none": { "model": "apica:block/building/honeyed_glass" },
+    "facing=east,multiblock=none": { "model": "apica:block/building/honeyed_glass" },
+    "facing=west,multiblock=none": { "model": "apica:block/building/honeyed_glass" },
+    "facing=north,multiblock=alembic": { "model": "apica:block/building/honeyed_glass_alembic", "y": 90 },
+    "facing=south,multiblock=alembic": { "model": "apica:block/building/honeyed_glass_alembic", "y": 270 },
+    "facing=east,multiblock=alembic": { "model": "apica:block/building/honeyed_glass_alembic", "y": 180 },
+    "facing=west,multiblock=alembic": { "model": "apica:block/building/honeyed_glass_alembic", "y": 0 }
   }
 }
