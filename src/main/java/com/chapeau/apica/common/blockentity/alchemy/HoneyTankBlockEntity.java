@@ -41,7 +41,7 @@ public class HoneyTankBlockEntity extends BlockEntity implements MenuProvider {
 
     protected final FluidTank fluidTank;
 
-    // Slot pour bucket
+    // Slot pour bucket (input: bucket plein, output: bucket vide pour remplir)
     protected final ItemStackHandler bucketSlot = new ItemStackHandler(1) {
         @Override
         protected void onContentsChanged(int slot) {
@@ -50,8 +50,8 @@ public class HoneyTankBlockEntity extends BlockEntity implements MenuProvider {
 
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
-            // Accept buckets with fluid
-            return isBucketWithFluid(stack);
+            // Accept buckets with fluid (to fill tank) or empty buckets (to drain tank)
+            return isBucketWithFluid(stack) || isEmptyBucket(stack);
         }
     };
 
@@ -101,15 +101,25 @@ public class HoneyTankBlockEntity extends BlockEntity implements MenuProvider {
         ItemStack bucket = bucketSlot.getStackInSlot(0);
         if (bucket.isEmpty()) return;
 
-        // Check if bucket has fluid we can accept
+        // Try to fill tank from full bucket
         FluidStack contained = getFluidFromBucket(bucket);
-        if (contained.isEmpty() || !fluidTank.isFluidValid(contained)) return;
+        if (!contained.isEmpty() && fluidTank.isFluidValid(contained)) {
+            int canFill = fluidTank.fill(contained, IFluidHandler.FluidAction.SIMULATE);
+            if (canFill >= FluidType.BUCKET_VOLUME) {
+                fluidTank.fill(new FluidStack(contained.getFluid(), FluidType.BUCKET_VOLUME), IFluidHandler.FluidAction.EXECUTE);
+                bucketSlot.setStackInSlot(0, new ItemStack(Items.BUCKET));
+                return;
+            }
+        }
 
-        // Try to fill the tank
-        int canFill = fluidTank.fill(contained, IFluidHandler.FluidAction.SIMULATE);
-        if (canFill >= FluidType.BUCKET_VOLUME) {
-            fluidTank.fill(new FluidStack(contained.getFluid(), FluidType.BUCKET_VOLUME), IFluidHandler.FluidAction.EXECUTE);
-            bucketSlot.setStackInSlot(0, new ItemStack(Items.BUCKET));
+        // Try to drain tank into empty bucket
+        if (isEmptyBucket(bucket) && fluidTank.getFluidAmount() >= FluidType.BUCKET_VOLUME) {
+            FluidStack tankFluid = fluidTank.getFluid();
+            ItemStack filledBucket = fillBucketWithFluid(bucket, tankFluid);
+            if (!filledBucket.isEmpty()) {
+                fluidTank.drain(FluidType.BUCKET_VOLUME, IFluidHandler.FluidAction.EXECUTE);
+                bucketSlot.setStackInSlot(0, filledBucket);
+            }
         }
     }
 
@@ -119,17 +129,40 @@ public class HoneyTankBlockEntity extends BlockEntity implements MenuProvider {
         return !fluid.isEmpty() && fluidTank.isFluidValid(fluid);
     }
 
+    protected boolean isEmptyBucket(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        if (stack.is(Items.BUCKET)) return true;
+        var cap = stack.getCapability(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.ITEM);
+        if (cap != null) {
+            for (int i = 0; i < cap.getTanks(); i++) {
+                if (!cap.getFluidInTank(i).isEmpty()) return false;
+            }
+            return cap.getTanks() > 0;
+        }
+        return false;
+    }
+
     protected FluidStack getFluidFromBucket(ItemStack bucket) {
         if (bucket.isEmpty()) return FluidStack.EMPTY;
-
-        // Check using capability
         var cap = bucket.getCapability(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.ITEM);
         if (cap != null) {
             FluidStack drained = cap.drain(FluidType.BUCKET_VOLUME, IFluidHandler.FluidAction.SIMULATE);
             if (!drained.isEmpty()) return drained;
         }
-
         return FluidStack.EMPTY;
+    }
+
+    protected ItemStack fillBucketWithFluid(ItemStack emptyBucket, FluidStack fluid) {
+        if (emptyBucket.isEmpty() || fluid.isEmpty()) return ItemStack.EMPTY;
+        ItemStack bucketCopy = emptyBucket.copyWithCount(1);
+        var cap = bucketCopy.getCapability(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.ITEM);
+        if (cap != null) {
+            int filled = cap.fill(new FluidStack(fluid.getFluid(), FluidType.BUCKET_VOLUME), IFluidHandler.FluidAction.EXECUTE);
+            if (filled >= FluidType.BUCKET_VOLUME) {
+                return ((IFluidHandlerItem) cap).getContainer();
+            }
+        }
+        return ItemStack.EMPTY;
     }
 
     public FluidTank getFluidTank() { return fluidTank; }

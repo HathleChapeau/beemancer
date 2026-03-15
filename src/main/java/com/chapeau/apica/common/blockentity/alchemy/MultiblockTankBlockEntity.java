@@ -72,7 +72,7 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
 
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
-            return isBucketWithFluid(stack);
+            return isBucketWithFluid(stack) || isEmptyBucket(stack);
         }
     };
 
@@ -575,13 +575,25 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         ItemStack bucket = bucketSlot.getStackInSlot(0);
         if (bucket.isEmpty() || fluidTank == null) return;
 
+        // Try to fill tank from full bucket
         FluidStack contained = getFluidFromBucket(bucket);
-        if (contained.isEmpty() || !fluidTank.isFluidValid(contained)) return;
+        if (!contained.isEmpty() && fluidTank.isFluidValid(contained)) {
+            int canFill = fluidTank.fill(contained, IFluidHandler.FluidAction.SIMULATE);
+            if (canFill >= FluidType.BUCKET_VOLUME) {
+                fluidTank.fill(new FluidStack(contained.getFluid(), FluidType.BUCKET_VOLUME), IFluidHandler.FluidAction.EXECUTE);
+                bucketSlot.setStackInSlot(0, new ItemStack(Items.BUCKET));
+                return;
+            }
+        }
 
-        int canFill = fluidTank.fill(contained, IFluidHandler.FluidAction.SIMULATE);
-        if (canFill >= FluidType.BUCKET_VOLUME) {
-            fluidTank.fill(new FluidStack(contained.getFluid(), FluidType.BUCKET_VOLUME), IFluidHandler.FluidAction.EXECUTE);
-            bucketSlot.setStackInSlot(0, new ItemStack(Items.BUCKET));
+        // Try to drain tank into empty bucket
+        if (isEmptyBucket(bucket) && fluidTank.getFluidAmount() >= FluidType.BUCKET_VOLUME) {
+            FluidStack tankFluid = fluidTank.getFluid();
+            ItemStack filledBucket = fillBucketWithFluid(bucket, tankFluid);
+            if (!filledBucket.isEmpty()) {
+                fluidTank.drain(FluidType.BUCKET_VOLUME, IFluidHandler.FluidAction.EXECUTE);
+                bucketSlot.setStackInSlot(0, filledBucket);
+            }
         }
     }
 
@@ -589,6 +601,19 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         if (stack.isEmpty()) return false;
         FluidStack fluid = getFluidFromBucket(stack);
         return !fluid.isEmpty() && (fluidTank == null || fluidTank.isFluidValid(fluid));
+    }
+
+    protected boolean isEmptyBucket(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        if (stack.is(Items.BUCKET)) return true;
+        var cap = stack.getCapability(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.ITEM);
+        if (cap != null) {
+            for (int i = 0; i < cap.getTanks(); i++) {
+                if (!cap.getFluidInTank(i).isEmpty()) return false;
+            }
+            return cap.getTanks() > 0;
+        }
+        return false;
     }
 
     protected FluidStack getFluidFromBucket(ItemStack bucket) {
@@ -599,6 +624,19 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
             if (!drained.isEmpty()) return drained;
         }
         return FluidStack.EMPTY;
+    }
+
+    protected ItemStack fillBucketWithFluid(ItemStack emptyBucket, FluidStack fluid) {
+        if (emptyBucket.isEmpty() || fluid.isEmpty()) return ItemStack.EMPTY;
+        ItemStack bucketCopy = emptyBucket.copyWithCount(1);
+        var cap = bucketCopy.getCapability(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.ITEM);
+        if (cap != null) {
+            int filled = cap.fill(new FluidStack(fluid.getFluid(), FluidType.BUCKET_VOLUME), IFluidHandler.FluidAction.EXECUTE);
+            if (filled >= FluidType.BUCKET_VOLUME) {
+                return ((net.neoforged.neoforge.fluids.capability.IFluidHandlerItem) cap).getContainer();
+            }
+        }
+        return ItemStack.EMPTY;
     }
 
     // ==================== Menu ====================

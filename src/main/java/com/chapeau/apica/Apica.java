@@ -44,6 +44,8 @@ import com.chapeau.apica.core.breeding.BreedingManager;
 import com.chapeau.apica.core.gene.GeneRegistry;
 import com.chapeau.apica.core.multiblock.MultiblockEvents;
 import com.chapeau.apica.core.network.ApicaNetwork;
+import com.chapeau.apica.core.util.CentrifugeItemHandler;
+import com.chapeau.apica.core.util.SplitFluidHandler;
 import com.chapeau.apica.core.util.SplitItemHandler;
 import com.chapeau.apica.core.registry.ApicaParticles;
 import com.chapeau.apica.common.data.AccessoryPlayerData;
@@ -388,11 +390,11 @@ public class Apica {
     // =========================================================================
 
     private void registerFluidCapabilities(RegisterCapabilitiesEvent event) {
-        // Simple fluid handlers
+        // Manual Centrifuge: output only (no fluid input accepted)
         event.registerBlockEntity(
                 Capabilities.FluidHandler.BLOCK,
                 ApicaBlockEntities.MANUAL_CENTRIFUGE.get(),
-                (be, side) -> be.getFluidTank()
+                (be, side) -> SplitFluidHandler.outputOnly(be.getFluidTank())
         );
 
         event.registerBlockEntity(
@@ -450,11 +452,16 @@ public class Apica {
                 (be, side) -> be.isFormed() ? be.getFluidTank() : null
         );
 
-        // Directional fluid handlers
+        // Powered Centrifuge: all faces, fill→fuelTank, drain→outputTank
         event.registerBlockEntity(
                 Capabilities.FluidHandler.BLOCK,
                 ApicaBlockEntities.POWERED_CENTRIFUGE.get(),
-                (be, side) -> side == Direction.DOWN ? be.getOutputTank() : be.getFuelTank()
+                (be, side) -> new SplitFluidHandler(be.getFuelTank(), be.getOutputTank())
+        );
+        event.registerBlockEntity(
+                Capabilities.FluidHandler.BLOCK,
+                ApicaBlockEntities.POWERED_CENTRIFUGE_TIER2.get(),
+                (be, side) -> new SplitFluidHandler(be.getFuelTank(), be.getOutputTank())
         );
 
         // Alembic Heart multibloc: delegation IOConfig quand forme, fallback honey quand standalone
@@ -582,21 +589,21 @@ public class Apica {
                 (be, side) -> null
         );
 
-        // Apica Furnaces: input accessible de tous les cotes sauf bas, output par le bas
+        // Apica Furnaces: all faces, insert→inputSlots, extract→outputSlots
         event.registerBlockEntity(
                 Capabilities.ItemHandler.BLOCK,
                 ApicaBlockEntities.HONEY_FURNACE.get(),
-                (be, side) -> side == Direction.DOWN ? be.getOutputSlots() : be.getInputSlots()
+                (be, side) -> new SplitItemHandler(be.getInputSlots(), be.getOutputSlots())
         );
         event.registerBlockEntity(
                 Capabilities.ItemHandler.BLOCK,
                 ApicaBlockEntities.ROYAL_FURNACE.get(),
-                (be, side) -> side == Direction.DOWN ? be.getOutputSlots() : be.getInputSlots()
+                (be, side) -> new SplitItemHandler(be.getInputSlots(), be.getOutputSlots())
         );
         event.registerBlockEntity(
                 Capabilities.ItemHandler.BLOCK,
                 ApicaBlockEntities.NECTAR_FURNACE.get(),
-                (be, side) -> side == Direction.DOWN ? be.getOutputSlots() : be.getInputSlots()
+                (be, side) -> new SplitItemHandler(be.getInputSlots(), be.getOutputSlots())
         );
 
         // Storage Barrel: expose automation handler
@@ -611,6 +618,49 @@ public class Apica {
                 Capabilities.ItemHandler.BLOCK,
                 ApicaBlockEntities.TRASH_CAN.get(),
                 (be, side) -> be.getAutomationHandler()
+        );
+
+        // Tanks: bucket slot pour input/output
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ApicaBlockEntities.HONEY_TANK.get(),
+                (be, side) -> be.getBucketSlot()
+        );
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ApicaBlockEntities.CREATIVE_TANK.get(),
+                (be, side) -> be.getBucketSlot()
+        );
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ApicaBlockEntities.MULTIBLOCK_TANK.get(),
+                (be, side) -> be.isFormed() ? be.getBucketSlot() : null
+        );
+
+        // Manual Centrifuge: input=combs only, output=non-combs only
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ApicaBlockEntities.MANUAL_CENTRIFUGE.get(),
+                (be, side) -> new CentrifugeItemHandler(be.getInputSlot(), be.getOutputSlots())
+        );
+
+        // Powered Centrifuge: input=combs only, output=non-combs only
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ApicaBlockEntities.POWERED_CENTRIFUGE.get(),
+                (be, side) -> new CentrifugeItemHandler(be.getInputSlot(), be.getOutputSlots())
+        );
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ApicaBlockEntities.POWERED_CENTRIFUGE_TIER2.get(),
+                (be, side) -> new CentrifugeItemHandler(be.getInputSlot(), be.getOutputSlots())
+        );
+
+        // Infuser: all faces, insert→inputSlot, extract→outputSlot
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ApicaBlockEntities.INFUSER.get(),
+                (be, side) -> new SplitItemHandler(be.getInputSlot(), be.getOutputSlot())
         );
 
     }
