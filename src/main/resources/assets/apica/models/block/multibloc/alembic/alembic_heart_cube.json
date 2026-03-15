@@ -1,14 +1,14 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "block": "apica:block/altar/honey_crystal",
-    "particle": "apica:block/altar/honey_crystal"
+    "block": "minecraft:block/gold_block",
+    "particle": "minecraft:block/gold_block"
   },
   "elements": [
     {
       "name": "Cube",
-      "from": [6, 14, 6],
-      "to": [10, 18, 10],
+      "from": [6, 6, 6],
+      "to": [10, 10, 10],
       "faces": {
         "north": {"texture": "#block"},
         "east": {"texture": "#block"},

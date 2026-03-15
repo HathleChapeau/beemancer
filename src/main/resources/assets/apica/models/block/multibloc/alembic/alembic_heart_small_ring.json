@@ -1,0 +1,61 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "ring": "minecraft:block/gold_block",
+    "particle": "minecraft:block/gold_block"
+  },
+  "elements": [
+    {
+      "name": "Small Ring - N",
+      "from": [4, 7, 3],
+      "to": [12, 9, 5],
+      "faces": {
+        "north": {"texture": "#ring"},
+        "east": {"texture": "#ring"},
+        "south": {"texture": "#ring"},
+        "west": {"texture": "#ring"},
+        "up": {"texture": "#ring"},
+        "down": {"texture": "#ring"}
+      }
+    },
+    {
+      "name": "Small Ring - S",
+      "from": [4, 7, 11],
+      "to": [12, 9, 13],
+      "faces": {
+        "north": {"texture": "#ring"},
+        "east": {"texture": "#ring"},
+        "south": {"texture": "#ring"},
+        "west": {"texture": "#ring"},
+        "up": {"texture": "#ring"},
+        "down": {"texture": "#ring"}
+      }
+    },
+    {
+      "name": "Small Ring - E",
+      "from": [11, 7, 4],
+      "to": [13, 9, 12],
+      "faces": {
+        "north": {"texture": "#ring"},
+        "east": {"texture": "#ring"},
+        "south": {"texture": "#ring"},
+        "west": {"texture": "#ring"},
+        "up": {"texture": "#ring"},
+        "down": {"texture": "#ring"}
+      }
+    },
+    {
+      "name": "Small Ring - W",
+      "from": [3, 7, 4],
+      "to": [5, 9, 12],
+      "faces": {
+        "north": {"texture": "#ring"},
+        "east": {"texture": "#ring"},
+        "south": {"texture": "#ring"},
+        "west": {"texture": "#ring"},
+        "up": {"texture": "#ring"},
+        "down": {"texture": "#ring"}
+      }
+    }
+  ]
+}

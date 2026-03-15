@@ -775,8 +775,9 @@ public class ClientSetup {
         // Modèle core de l'infuser heart (cubes statiques)
         event.register(InfuserHeartRenderer.CORE_MODEL_LOC);
 
-        // Modèles alembic heart (ring + cubes animés)
-        event.register(AlembicHeartRenderer.RING_MODEL_LOC);
+        // Modèles alembic heart (rings + cubes animés)
+        event.register(AlembicHeartRenderer.SMALL_RING_MODEL_LOC);
+        event.register(AlembicHeartRenderer.BIG_RING_MODEL_LOC);
         event.register(AlembicHeartRenderer.CUBE_MODEL_LOC);
 
         // Building Staff 3D model (rendu par BEWLR)
