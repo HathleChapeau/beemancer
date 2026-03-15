@@ -180,7 +180,7 @@ public class BiomeTemperatureManager {
 
     /**
      * Verifie si une abeille peut travailler dans un biome donne.
-     * L'abeille peut travailler si la difference de temperature est <= tolerance.
+     * L'abeille peut travailler si la difference de temperature est inférieur ou egale tolerance.
      *
      * @param speciesId ID de l'espece
      * @param biomeTemperature Temperature du biome (-2 a 2)

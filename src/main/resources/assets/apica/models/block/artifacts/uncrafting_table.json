@@ -4,6 +4,7 @@
   "textures": {
     "reservoir": "apica:block/reservoir_externe",
     "top": "apica:block/uncrafting_table/uncrafting_table_top",
+    "bottom": "apica:block/uncrafting_table/uncrafting_table_bottom",
     "side": "apica:block/uncrafting_table/uncrafting_table_side",
     "cross": "apica:block/uncrafting_table/uncrafting_table_front",
     "particle": "apica:block/uncrafting_table/uncrafting_table_side"
@@ -15,7 +16,7 @@
       "to": [16, 8, 16],
       "faces": {
         "up":    {"texture": "#top"},
-        "down":  {"texture": "#top"},
+        "down":  {"texture": "#bottom"},
         "north": {"texture": "#side"},
         "south": {"texture": "#side"},
         "east":  {"texture": "#side"},

@@ -41,7 +41,7 @@ import org.jetbrains.annotations.Nullable;
 public class InfusingCategory implements IRecipeCategory<InfusingRecipe> {
 
     private static final int WIDTH = 120;
-    private static final int HEIGHT = 41;
+    private static final int HEIGHT = 50;
 
     // Layout: equal spacing between elements
     // Elements: Input(18) + gap(12) + Fluid(18) + gap(8) + Arrow(24) + gap(8) + Output(18) = 106
@@ -56,7 +56,7 @@ public class InfusingCategory implements IRecipeCategory<InfusingRecipe> {
     private static final int FLUID_X = INPUT_X + SLOT_SIZE + INPUT_GAP;
     private static final int ARROW_X = FLUID_X + SLOT_SIZE + GAP;
     private static final int OUTPUT_X = ARROW_X + ARROW_WIDTH + GAP;
-    private static final int SLOT_Y = 6;  // Equal margins top/bottom (6px each)
+    private static final int SLOT_Y = 17;  // Equal margins top/bottom (6px each)
 
     // Vanilla furnace GUI texture (256x256)
     private static final ResourceLocation FURNACE_TEXTURE = ResourceLocation.withDefaultNamespace(

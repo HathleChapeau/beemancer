@@ -107,6 +107,9 @@ public class CentrifugeCategory implements IRecipeCategory<CentrifugeRecipe> {
                     .addItemStack(output.stack());
         }
 
+        if(outputs.size() <= 0)
+            builder.addSlot(RecipeIngredientRole.OUTPUT, outputX, outputY);
+
         // Fluid output slot (right side)
         FluidStack fluidOutput = recipe.getFluidOutput();
         if (!fluidOutput.isEmpty()) {

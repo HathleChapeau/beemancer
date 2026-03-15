@@ -46,7 +46,7 @@ public class AlembicCategory implements IRecipeCategory<DistillingRecipe> {
     private static final int HEIGHT = 50;
 
     // Layout constants for equal spacing
-    private static final int MARGIN = 6;
+    private static final int MARGIN = 8;
     private static final int GAP = 8;
     private static final int SLOT_SIZE = 18;
     private static final int ARROW_WIDTH = 24;
@@ -56,7 +56,7 @@ public class AlembicCategory implements IRecipeCategory<DistillingRecipe> {
     private static final int FLUID2_X = FLUID1_X + SLOT_SIZE + GAP + 6 + GAP;
     private static final int ARROW_X = FLUID2_X + SLOT_SIZE + GAP;
     private static final int OUTPUT_X = ARROW_X + ARROW_WIDTH + GAP;
-    private static final int SLOT_Y = 12;
+    private static final int SLOT_Y = 17;
 
     // Vanilla furnace GUI texture (256x256)
     private static final ResourceLocation FURNACE_TEXTURE = ResourceLocation.withDefaultNamespace(
