@@ -8,12 +8,11 @@
       "key": "codex.apica.artifacts.railgun.lore.p1"
     },
     {
-      "type": "text",
-      "key": "codex.apica.artifacts.railgun.lore.p2"
+      "type": "handraw_line"
     },
     {
       "type": "text",
-      "key": "codex.apica.artifacts.railgun.lore.p3"
+      "key": "codex.apica.artifacts.railgun.lore.p2"
     },
     {
       "type": "page_break"
