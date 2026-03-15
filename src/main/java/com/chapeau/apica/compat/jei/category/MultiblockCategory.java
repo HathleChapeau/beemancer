@@ -78,9 +78,7 @@ public class MultiblockCategory implements IRecipeCategory<MultiblockInfo> {
 
     public MultiblockCategory(IGuiHelper guiHelper) {
         this.background = guiHelper.createBlankDrawable(WIDTH, HEIGHT);
-        this.icon = guiHelper.createDrawable(
-                Apica.modLoc("textures/gui/codex/codex_book/down_multibloc.png"),
-                0, 0, 16, 16);
+        this.icon = guiHelper.createDrawableItemStack(ApicaBlocks.HONEY_RESERVOIR.get().asItem().getDefaultInstance());
         this.title = Component.translatable("gui.apica.jei.multiblock");
     }
 
@@ -185,17 +183,17 @@ public class MultiblockCategory implements IRecipeCategory<MultiblockInfo> {
 
         if (floorGroups.isEmpty()) return;
 
-        // Calculate rendering position
+        // Calculate rendering position - anchor ground at fixed Y position
         int floorHeight = globalMaxPy - globalMinPy;
-        int totalFloorHeight = floorHeight * floorGroups.size() - (floorGroups.size() - 1) * 15;
         int centerX = WIDTH / 2 - (globalMinPx + globalMaxPx) / 2;
-        int startY = (HEIGHT - 20 - totalFloorHeight) / 2 + totalFloorHeight;
+        int groundBaseY = HEIGHT - 25;  // Fixed ground position (leaves room for text)
+        int startY = groundBaseY;
 
         // Draw ground texture
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         int groundX = WIDTH / 2 - GROUND_TEX_W / 2;
-        int groundY = startY - GROUND_TEX_H + 35 - globalMinPy;
+        int groundY = groundBaseY - GROUND_TEX_H + 35 - globalMinPy;
         guiGraphics.blit(GROUND_TEXTURE, groundX, groundY, GROUND_TEX_W, GROUND_TEX_H,
                 0, 0, GROUND_TEX_W, GROUND_TEX_H, GROUND_TEX_W, GROUND_TEX_H);
 
