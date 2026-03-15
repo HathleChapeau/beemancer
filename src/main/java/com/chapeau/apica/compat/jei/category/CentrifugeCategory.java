@@ -34,22 +34,30 @@ import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public class CentrifugeCategory implements IRecipeCategory<CentrifugeRecipe> {
 
-    private static final int WIDTH = 150;
+    private static final int WIDTH = 130;
     private static final int HEIGHT = 50;
+
+    // Vanilla furnace GUI texture (256x256)
+    private static final ResourceLocation FURNACE_TEXTURE = ResourceLocation.withDefaultNamespace(
+            "textures/gui/container/furnace.png");
 
     private final IDrawable background;
     private final IDrawable icon;
+    private final IDrawable arrow;
     private final Component title;
 
     public CentrifugeCategory(IGuiHelper guiHelper) {
         this.background = guiHelper.createBlankDrawable(WIDTH, HEIGHT);
         this.icon = guiHelper.createDrawableItemStack(ApicaBlocks.MANUAL_CENTRIFUGE.get().asItem().getDefaultInstance());
+        // Arrow from furnace GUI at position (79, 34), size 24x17
+        this.arrow = guiHelper.createDrawable(FURNACE_TEXTURE, 79, 34, 24, 17);
         this.title = Component.translatable("gui.apica.jei.centrifuge");
     }
 
@@ -75,13 +83,18 @@ public class CentrifugeCategory implements IRecipeCategory<CentrifugeRecipe> {
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, CentrifugeRecipe recipe, IFocusGroup focuses) {
+        // Centered layout: input(18) + gap(6) + arrow(24) + gap(6) + outputs(38) = 92
+        // Center offset: (130 - 92) / 2 = 19
+        int inputX = 19;
+        int inputY = 17;
+
         // Input comb slot (left)
-        builder.addSlot(RecipeIngredientRole.INPUT, 5, 17)
+        builder.addSlot(RecipeIngredientRole.INPUT, inputX, inputY)
                 .addIngredients(recipe.ingredient());
 
         // Output slots (right, grid of 2x2)
         List<ProcessingOutput> outputs = recipe.results();
-        int outputX = 90;
+        int outputX = inputX + 18 + 6 + 24 + 6;  // 73
         int outputY = 8;
 
         for (int i = 0; i < Math.min(outputs.size(), 4); i++) {
@@ -98,15 +111,19 @@ public class CentrifugeCategory implements IRecipeCategory<CentrifugeRecipe> {
     public void draw(CentrifugeRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
         net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
 
-        // Draw input slot
-        drawSlot(guiGraphics, 4, 16);
+        int inputX = 19;
+        int inputY = 17;
 
-        // Draw arrow
-        guiGraphics.drawString(mc.font, "\u2192", 40, 20, 0xFF8B6914, false);
+        // Draw input slot
+        drawSlot(guiGraphics, inputX - 1, inputY - 1);
+
+        // Draw arrow (vanilla furnace arrow texture)
+        int arrowX = inputX + 18 + 6;  // 43
+        arrow.draw(guiGraphics, arrowX, inputY);
 
         // Draw output slots (2x2 grid)
         List<ProcessingOutput> outputs = recipe.results();
-        int outputX = 90;
+        int outputX = inputX + 18 + 6 + 24 + 6;  // 73
         int outputY = 8;
 
         for (int i = 0; i < Math.min(outputs.size(), 4); i++) {

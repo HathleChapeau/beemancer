@@ -341,7 +341,7 @@ public class CodexBookScreen extends Screen {
         }
 
         int startX = rightPageX + RIGHT_PAGE_EXTRA_MARGIN + (pageWidth - totalWidth) / 2;
-        int baseY = bookY + BOOK_HEIGHT - MARGIN_BOTTOM - 34;
+        int baseY = bookY + BOOK_HEIGHT - MARGIN_BOTTOM - 50;
 
         int currentX = startX;
         for (int i = 0; i < stickyNotes.size(); i++) {
@@ -469,7 +469,7 @@ public class CodexBookScreen extends Screen {
                     if (i < stickyNotes.size() - 1) totalWidth += gap;
                 }
                 int startX = rightPageX + RIGHT_PAGE_EXTRA_MARGIN + (pageWidth - totalWidth) / 2;
-                int baseY = bookY + BOOK_HEIGHT - MARGIN_BOTTOM - 34;
+                int baseY = bookY + BOOK_HEIGHT - MARGIN_BOTTOM - 50;
 
                 int currentX = startX;
                 for (int i = 0; i < stickyNotes.size(); i++) {

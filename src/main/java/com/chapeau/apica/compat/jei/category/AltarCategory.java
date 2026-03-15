@@ -56,15 +56,15 @@ public class AltarCategory implements IRecipeCategory<AltarRecipe> {
     private static final int HEIGHT = 100;
 
     private static final int CENTER_X = 40;
-    private static final int CENTER_Y = 35;
+    private static final int CENTER_Y = 28;
     private static final int PEDESTAL_RADIUS = 24;
 
     // Couleur texte standard Minecraft (gris fonce)
     private static final int TEXT_COLOR = 0x404040;
 
-    // Texture arrow vanilla (furnace)
-    private static final ResourceLocation ARROW_TEXTURE = ResourceLocation.withDefaultNamespace(
-            "textures/gui/sprites/container/furnace/burn_progress.png");
+    // Vanilla furnace GUI texture (256x256)
+    private static final ResourceLocation FURNACE_TEXTURE = ResourceLocation.withDefaultNamespace(
+            "textures/gui/container/furnace.png");
 
     private final IDrawable background;
     private final IDrawable icon;
@@ -74,9 +74,8 @@ public class AltarCategory implements IRecipeCategory<AltarRecipe> {
     public AltarCategory(IGuiHelper guiHelper) {
         this.background = guiHelper.createBlankDrawable(WIDTH, HEIGHT);
         this.icon = guiHelper.createDrawableItemStack(ApicaBlocks.ALTAR_HEART.get().asItem().getDefaultInstance());
-        this.arrow = guiHelper.createDrawable(
-                ResourceLocation.withDefaultNamespace("textures/gui/sprites/container/furnace/arrow.png"),
-                0, 0, 24, 17);
+        // Arrow from furnace GUI at position (79, 34), size 24x17
+        this.arrow = guiHelper.createDrawable(FURNACE_TEXTURE, 79, 34, 24, 17);
         this.title = Component.translatable("gui.apica.jei.altar");
     }
 

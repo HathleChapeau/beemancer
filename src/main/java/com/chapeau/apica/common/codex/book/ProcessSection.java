@@ -83,6 +83,9 @@ public class ProcessSection extends CodexBookSection {
             topSlotOffset = SLOT_SIZE + TOP_SLOT_GAP;
             int arrowCenterX = startX + SLOT_SIZE + gap + arrowRenderedW / 2;
             int topSlotX = arrowCenterX - SLOT_SIZE / 2;
+            // Enable blend before blit (renderItem may have disabled it)
+            com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+            com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
             graphics.blit(CRAFT_SLOT, topSlotX, y, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
             int itemX = topSlotX + (SLOT_SIZE - Math.round(ITEM_RENDER_SIZE * ITEM_SCALE)) / 2;
             int itemY = y + (SLOT_SIZE - Math.round(ITEM_RENDER_SIZE * ITEM_SCALE)) / 2;
@@ -92,6 +95,8 @@ public class ProcessSection extends CodexBookSection {
         int rowY = y + topSlotOffset;
 
         // Input slot + item
+        com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+        com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
         graphics.blit(CRAFT_SLOT, startX, rowY, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
         if (!inputStack.isEmpty()) {
             int itemX = startX + (SLOT_SIZE - Math.round(ITEM_RENDER_SIZE * ITEM_SCALE)) / 2;
@@ -109,6 +114,8 @@ public class ProcessSection extends CodexBookSection {
         graphics.pose().popPose();
 
         // Output slot + item
+        com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+        com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
         int outputX = arrowX + arrowRenderedW + gap;
         graphics.blit(CRAFT_SLOT, outputX, rowY, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
         if (!outputStack.isEmpty()) {
