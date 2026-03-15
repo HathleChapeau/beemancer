@@ -159,7 +159,7 @@ public class AltarCategory implements IRecipeCategory<AltarRecipe> {
                 }
             }
 
-            int pollenY = 67;
+            int pollenY = 75;
             int spacing = 36;
             int totalWidth = entries.size() * spacing - (spacing - 16);
             int startX = (WIDTH - totalWidth) / 2;
@@ -177,7 +177,7 @@ public class AltarCategory implements IRecipeCategory<AltarRecipe> {
 
                 // Render count (standard Minecraft text color)
                 String countStr = "x" + entry.count;
-                guiGraphics.drawString(font, countStr, px + 12, pollenY + 4, TEXT_COLOR, false);
+                guiGraphics.drawString(font, countStr, px + 13, pollenY + 4, TEXT_COLOR, false);
 
                 // Render short name below
                 int nameWidth = font.width(entry.shortName);

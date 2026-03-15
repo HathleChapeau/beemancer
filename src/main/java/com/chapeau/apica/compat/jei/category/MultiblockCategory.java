@@ -57,20 +57,21 @@ import java.util.TreeMap;
 public class MultiblockCategory implements IRecipeCategory<MultiblockInfo> {
 
     private static final int WIDTH = 160;
-    private static final int HEIGHT = 120;
+    private static final int HEIGHT = 130;
     private static final int TEXT_COLOR = 0x404040;
 
     // Isometric rendering constants (from MultiblockSection)
-    private static final float ITEM_SCALE = 1.0f;
+    private static final float ITEM_SCALE = 0.8f;
     private static final int SPACING_X = 9;
     private static final int SPACING_Z = 6;
     private static final int ITEM_SIZE = 16;
+    private static final float Y_OFFSET_MULTIPLIER = 0.7f;
 
     // Ground texture
     private static final ResourceLocation GROUND_TEXTURE = ResourceLocation.fromNamespaceAndPath(
             Apica.MOD_ID, "textures/gui/codex/codex_book/down_multibloc.png");
-    private static final int GROUND_TEX_W = 101;
-    private static final int GROUND_TEX_H = 55;
+    private static final int GROUND_TEX_W = 80;
+    private static final int GROUND_TEX_H = 44;
 
     private final IDrawable background;
     private final IDrawable icon;
@@ -186,7 +187,7 @@ public class MultiblockCategory implements IRecipeCategory<MultiblockInfo> {
         // Calculate rendering position - anchor ground at fixed Y position
         int floorHeight = globalMaxPy - globalMinPy;
         int centerX = WIDTH / 2 - (globalMinPx + globalMaxPx) / 2;
-        int groundBaseY = HEIGHT - 25;  // Fixed ground position (leaves room for text)
+        int groundBaseY = HEIGHT - 60;  // Fixed ground position (leaves room for text)
         int startY = groundBaseY;
 
         // Draw ground texture
@@ -198,7 +199,7 @@ public class MultiblockCategory implements IRecipeCategory<MultiblockInfo> {
                 0, 0, GROUND_TEX_W, GROUND_TEX_H, GROUND_TEX_W, GROUND_TEX_H);
 
         // Render floors from bottom to top
-        int currentY = startY;
+        int currentY = startY + 5;
         float zOffset = 0;
 
         for (int g = floorGroups.size() - 1; g >= 0; g--) {
@@ -207,13 +208,13 @@ public class MultiblockCategory implements IRecipeCategory<MultiblockInfo> {
 
             for (DisplayElement elem : group.elements) {
                 int drawX = centerX + elem.px;
-                int drawY = originY + elem.py;
+                int drawY = originY + (int)(elem.py * Y_OFFSET_MULTIPLIER);
 
                 renderScaledItem(guiGraphics, elem.stack, drawX, drawY, ITEM_SCALE, zOffset);
                 zOffset += 10.0f;
             }
 
-            currentY -= floorHeight - 15;
+            currentY -= floorHeight - (int)(15 * (2 - Y_OFFSET_MULTIPLIER));
         }
 
         RenderSystem.enableBlend();

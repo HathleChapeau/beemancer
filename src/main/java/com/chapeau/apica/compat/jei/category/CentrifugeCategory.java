@@ -97,11 +97,12 @@ public class CentrifugeCategory implements IRecipeCategory<CentrifugeRecipe> {
         List<ProcessingOutput> outputs = recipe.results();
         int outputX = inputX + 18 + 6 + 24 + 6;  // 71
         int outputY = 17;  // Same Y as input (was 8, +9 = half slot size)
+        int length = Math.min(outputs.size(), 4);
 
-        for (int i = 0; i < Math.min(outputs.size(), 4); i++) {
+        for (int i = 0; i < length; i++) {
             ProcessingOutput output = outputs.get(i);
             int x = outputX + (i % 2) * 20;
-            int y = outputY + (i / 2) * 20;
+            int y = outputY + (i / 2) * 20 - ((length > 2)? 6 : 0);
 
             builder.addSlot(RecipeIngredientRole.OUTPUT, x, y)
                     .addItemStack(output.stack());
@@ -138,12 +139,16 @@ public class CentrifugeCategory implements IRecipeCategory<CentrifugeRecipe> {
         List<ProcessingOutput> outputs = recipe.results();
         int outputX = inputX + 18 + 6 + 24 + 6;  // 71
         int outputY = 17;  // Same Y as input
+        int length = Math.min(outputs.size(), 4);
 
-        for (int i = 0; i < Math.min(outputs.size(), 4); i++) {
+        for (int i = 0; i < length; i++) {
             int x = outputX + (i % 2) * 20 - 1;
-            int y = outputY + (i / 2) * 20 - 1;
+            int y = outputY + (i / 2) * 20 - 1 - ((length > 2)? 6 : 0);
             drawSlot(guiGraphics, x, y);
         }
+
+        if(outputs.size() <= 0)
+            drawSlot(guiGraphics, outputX - 1, outputY - 1);
 
         // Draw fluid output slot and amount
         FluidStack fluidOutput = recipe.getFluidOutput();
@@ -159,15 +164,25 @@ public class CentrifugeCategory implements IRecipeCategory<CentrifugeRecipe> {
         }
 
         // Draw chance percentages (centered vertically relative to slot, +2px right)
-        for (int i = 0; i < Math.min(outputs.size(), 4); i++) {
-            ProcessingOutput output = outputs.get(i);
+        if(length > 1){
+            ProcessingOutput output = outputs.get(0);
             if (output.chance() < 1.0f) {
-                int x = outputX + (i % 2) * 20 + 19;  // slot end + 2px margin
-                int y = outputY + (i / 2) * 20 + 5;   // centered: (18 - 9) / 2
+                int x = outputX + 10;  // slot end + 2px margin
+                int y = outputY - 11 - ((length > 2)? 6 : 0);   // centered: (18 - 9) / 2
                 String chanceText = Math.round(output.chance() * 100) + "%";
                 guiGraphics.drawString(mc.font, chanceText, x, y, 0xFF8B8B8B, false);
             }
         }
+        else
+            for (int i = 0; i < length; i++) {
+                ProcessingOutput output = outputs.get(i);
+                if (output.chance() < 1.0f) {
+                    int x = outputX + (i % 2) * 20 + 19;  // slot end + 2px margin
+                    int y = outputY + (i / 2) * 20 + 5 - ((length > 2)? 6 : 0);   // centered: (18 - 9) / 2
+                    String chanceText = Math.round(output.chance() * 100) + "%";
+                    guiGraphics.drawString(mc.font, chanceText, x, y, 0xFF8B8B8B, false);
+                }
+            }
     }
 
     private void drawSlot(GuiGraphics graphics, int x, int y) {
