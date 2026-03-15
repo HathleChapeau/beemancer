@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "apica:block/building/honeyed_plank"
+    "layer0": "apica:item/honeyed_planks_door"
   }
 }

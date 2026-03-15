@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "apica:block/iron"
+    "layer0": "apica:item/iron_foundation_door"
   }
 }
