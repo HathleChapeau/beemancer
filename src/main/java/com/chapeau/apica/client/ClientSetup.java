@@ -824,8 +824,17 @@ public class ClientSetup {
         ResourceLocation magnetTex = ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/item/artifacts/magnet.png");
 
         // Backpack: icone coffre en bas a droite (toujours visible)
+        // + icone slowness en haut a gauche si items a l'interieur
         event.register(ApicaItems.BACKPACK.get(), (graphics, font, stack, xOffset, yOffset) -> {
             GuiRenderHelper.renderBadgeIcon(graphics, chestIcon, xOffset, yOffset, 16, 0.5f, 200);
+            // Affiche icone slowness si backpack contient des items
+            net.minecraft.world.item.component.ItemContainerContents contents =
+                stack.get(net.minecraft.core.component.DataComponents.CONTAINER);
+            if (contents != null && !contents.stream().allMatch(net.minecraft.world.item.ItemStack::isEmpty)) {
+                GuiRenderHelper.renderEffectBadgeTopLeft(graphics,
+                    net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN.value(),
+                    xOffset, yOffset, 0.5f, 200);
+            }
             return false;
         });
 
