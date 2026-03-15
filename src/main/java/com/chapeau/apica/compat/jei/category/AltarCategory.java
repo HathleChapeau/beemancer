@@ -53,7 +53,7 @@ import java.util.Map;
 public class AltarCategory implements IRecipeCategory<AltarRecipe> {
 
     private static final int WIDTH = 160;
-    private static final int HEIGHT = 90;
+    private static final int HEIGHT = 100;
 
     private static final int CENTER_X = 40;
     private static final int CENTER_Y = 28;

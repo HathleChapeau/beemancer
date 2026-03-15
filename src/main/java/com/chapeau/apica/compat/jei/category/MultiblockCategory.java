@@ -44,7 +44,7 @@ import java.util.List;
 public class MultiblockCategory implements IRecipeCategory<MultiblockInfo> {
 
     private static final int WIDTH = 160;
-    private static final int HEIGHT = 80;
+    private static final int HEIGHT = 120;
     private static final int TEXT_COLOR = 0x404040;
 
     private final IDrawable background;
