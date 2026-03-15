@@ -6,7 +6,16 @@
     {
       "type": "text",
       "key": "codex.apica.artifacts.uncrafting_table.lore.p1"
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "altar_craft",
+      "result": "apica:uncrafting_table"
     }
   ],
-  "sticky_notes": []
+  "sticky_notes": [
+    {"craft": "apica:nectar_artifact_core"}
+  ]
 }

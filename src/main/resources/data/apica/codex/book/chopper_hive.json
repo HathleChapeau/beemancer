@@ -22,5 +22,9 @@
       "result": "apica:chopper_hive"
     }
   ],
-  "sticky_notes": []
+  "sticky_notes": [
+    {"craft": "apica:royal_artifact_core"},
+    {"craft": "apica:blank_rune"},
+    {"process": {"input": "minecraft:iron_ingot", "output": "apica:honeyed_iron", "top_slot": "apica:honey_bucket"}}
+  ]
 }

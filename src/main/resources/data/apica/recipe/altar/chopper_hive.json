@@ -1,0 +1,16 @@
+{
+  "type": "apica:altar",
+  "center_item": { "item": "apica:royal_artifact_core" },
+  "pedestal_items": [
+    { "item": "apica:iron_foundation" },
+    { "item": "apica:honeyed_iron" },
+    { "item": "apica:honeyed_iron" },
+    { "item": "apica:blank_rune" },
+    { "item": "apica:blank_rune" }
+  ],
+  "pollen": {
+    "apica:tree_pollen": 24,
+    "apica:pollen_of_wind": 13
+  },
+  "result": { "id": "apica:chopper_hive" }
+}

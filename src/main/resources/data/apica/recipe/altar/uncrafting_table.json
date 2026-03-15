@@ -1,0 +1,17 @@
+{
+  "type": "apica:altar",
+  "center_item": { "item": "apica:nectar_artifact_core" },
+  "pedestal_items": [
+    { "item": "minecraft:crafting_table" },
+    { "item": "minecraft:crafting_table" },
+    { "item": "minecraft:redstone_block" },
+    { "item": "apica:iron_foundation" },
+    { "item": "apica:iron_foundation" }
+  ],
+  "pollen": {
+    "apica:pollen_of_light": 24,
+    "apica:pollen_of_darkness": 36,
+    "apica:crystal_pollen": 12
+  },
+  "result": { "id": "apica:uncrafting_table" }
+}

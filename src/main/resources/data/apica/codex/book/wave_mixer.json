@@ -26,5 +26,8 @@
       "result": "apica:wave_mixer"
     }
   ],
-  "sticky_notes": []
+  "sticky_notes": [
+    {"craft": "apica:nectar_artifact_core"},
+    {"craft": "apica:blank_rune"}
+  ]
 }
