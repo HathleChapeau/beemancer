@@ -22,6 +22,7 @@
 package com.chapeau.apica.common.codex.book;
 
 import com.chapeau.apica.Apica;
+import com.chapeau.apica.common.item.debug.DebugWandItem;
 import com.chapeau.apica.core.recipe.ApicaRecipeTypes;
 import com.chapeau.apica.core.recipe.type.AltarRecipe;
 import com.google.gson.JsonObject;
@@ -115,7 +116,7 @@ public class AltarCraftSection extends CodexBookSection {
         renderSlotWithItem(graphics, resultStack, resultX, resultY);
 
         if (!pollenEntries.isEmpty()) {
-            int pollenY = crossCenterY + CROSS_SPACING + SLOT_SIZE + 8;
+            int pollenY = crossCenterY + CROSS_SPACING + SLOT_SIZE + 6;
             int totalPollenWidth = pollenEntries.size() * POLLEN_SPACING - (POLLEN_SPACING - POLLEN_POT_SLOT_W);
             int pollenStartX = x + (pageWidth - totalPollenWidth) / 2 - 4;
 
@@ -132,8 +133,8 @@ public class AltarCraftSection extends CodexBookSection {
                 String countStr = "x" + entry.count;
                 graphics.drawString(font, countStr, px + 14, pollenY + 5, 0xFF8B6914, false);
                 int nameWidth = font.width(entry.shortName);
-                int nameX = px + POLLEN_POT_SLOT_W / 2 - nameWidth / 2;
-                graphics.drawString(font, entry.shortName, nameX, pollenY + POLLEN_POT_SLOT_H + 2, 0xFF8B6914, false);
+                int nameX = 1 + px + POLLEN_POT_SLOT_W / 2 - nameWidth / 2;
+                graphics.drawString(font, entry.shortName, nameX, pollenY + POLLEN_POT_SLOT_H - 1, 0xFF8B6914, false);
             }
         }
     }
