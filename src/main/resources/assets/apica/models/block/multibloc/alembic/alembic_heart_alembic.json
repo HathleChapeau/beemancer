@@ -1,9 +1,9 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "ring": "apica:block/altar/honey_crystal",
-    "block": "apica:block/altar/honey_crystal",
-    "particle": "apica:block/altar/honey_crystal"
+    "ring": "minecraft:block/gold_block",
+    "block": "minecraft:block/gold_block",
+    "particle": "minecraft:block/gold_block"
   },
   "elements": [
     {
