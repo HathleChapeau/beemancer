@@ -68,6 +68,7 @@ import net.minecraft.world.entity.Entity;
 public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
 
     private final ModelPart root;
+    private final ModelPart bone;
     public final ModelPart bodyCorpus;
     public final ModelPart bodyStripe;
     public final ModelPart eyes;
@@ -95,7 +96,8 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         this.root = bodyRoot;
         this.bodyType = bodyType;
 
-        ModelPart bone = bodyRoot.getChild("bone");
+        this.bone = bodyRoot.getChild("bone");
+        ModelPart bone = this.bone;
         this.bodyCorpus = bone.getChild("body_corpus");
         this.bodyStripe = bone.getChild("body_stripe");
         this.eyes = bone.getChild("eyes");
@@ -259,6 +261,34 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
 
     public ModelPart getRightWing() { return rightWing; }
     public ModelPart getLeftWing() { return leftWing; }
+
+    /** Retourne le ModelPart bone principal (pour le pitch du corps). */
+    public ModelPart getBone() { return bone; }
+
+    /**
+     * Applique une rotation pitch au corps de l'abeille.
+     * Positif = inclinaison vers l'avant (vol).
+     *
+     * @param pitch angle en radians
+     */
+    public void setBodyPitch(float pitch) {
+        bone.xRot = pitch;
+    }
+
+    /**
+     * Reset toutes les rotations du modele a zero.
+     * Utile avant d'appliquer un nouvel etat d'animation.
+     */
+    public void resetPose() {
+        bone.xRot = 0f;
+        bone.yRot = 0f;
+        bone.zRot = 0f;
+        rightWing.zRot = 0f;
+        leftWing.zRot = 0f;
+        frontLegs.xRot = 0f;
+        middleLegs.xRot = 0f;
+        backLegs.xRot = 0f;
+    }
 
     /** Anime les ailes avec vitesse et amplitude configurables. */
     public void animateWings(float ageInTicks, float speed, float amplitude, float upBias) {

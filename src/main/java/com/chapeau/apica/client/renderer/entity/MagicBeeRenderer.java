@@ -21,6 +21,8 @@
  */
 package com.chapeau.apica.client.renderer.entity;
 
+import com.chapeau.apica.client.animation.bee.BeeAnimationState;
+import com.chapeau.apica.client.animation.bee.BeeModelAnimator;
 import com.chapeau.apica.client.model.ApicaBeeModel;
 import com.chapeau.apica.common.block.beecreator.BeeAntennaType;
 import com.chapeau.apica.common.block.beecreator.BeeBodyType;
@@ -62,6 +64,9 @@ public class MagicBeeRenderer extends MobRenderer<MagicBeeEntity, ApicaBeeModel<
     BeeStingerType currentStingerType = BeeStingerType.DEFAULT;
     BeeAntennaType currentAntennaType = BeeAntennaType.DEFAULT;
 
+    /** Animator pour les animations de l'abeille. */
+    private final BeeModelAnimator animator = BeeModelAnimator.createFlying();
+
     public MagicBeeRenderer(EntityRendererProvider.Context context) {
         super(context, buildDefaultModel(context), 0.4f);
         this.addLayer(new MagicBeeRenderLayer(this));
@@ -84,7 +89,36 @@ public class MagicBeeRenderer extends MobRenderer<MagicBeeEntity, ApicaBeeModel<
             this.model = speciesModel;
         }
 
+        // Determine animation state based on entity behavior
+        float ageInTicks = bee.tickCount + partialTick;
+        BeeAnimationState targetState = determineAnimationState(bee);
+        animator.setState(targetState, ageInTicks);
+
+        // Apply animations to model before render
+        animator.animate(model, ageInTicks, partialTick);
+        model.setBodyPitch(animator.getCurrentBodyPitch());
+
         super.render(bee, entityYaw, partialTick, poseStack, buffer, packedLight);
+    }
+
+    /**
+     * Determine l'etat d'animation selon le comportement de l'abeille.
+     */
+    private BeeAnimationState determineAnimationState(MagicBeeEntity bee) {
+        // Enraged = vol rapide
+        if (bee.isEnraged()) {
+            return BeeAnimationState.FLYING_FAST;
+        }
+        // Au sol = idle (rare pour les abeilles)
+        if (bee.onGround() && bee.getDeltaMovement().horizontalDistanceSqr() < 0.001) {
+            return BeeAnimationState.IDLE;
+        }
+        // En mouvement = vol
+        if (bee.getDeltaMovement().horizontalDistanceSqr() > 0.001) {
+            return BeeAnimationState.FLYING;
+        }
+        // Stationnaire = hovering
+        return BeeAnimationState.HOVERING;
     }
 
     /**
