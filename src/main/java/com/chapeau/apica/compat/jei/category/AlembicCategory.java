@@ -43,7 +43,7 @@ import java.util.List;
 public class AlembicCategory implements IRecipeCategory<DistillingRecipe> {
 
     private static final int WIDTH = 130;
-    private static final int HEIGHT = 40;
+    private static final int HEIGHT = 50;
 
     // Layout constants for equal spacing
     private static final int MARGIN = 6;
@@ -125,10 +125,11 @@ public class AlembicCategory implements IRecipeCategory<DistillingRecipe> {
     @Override
     public void draw(DistillingRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
         net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        List<FluidIngredient> inputs = recipe.fluidIngredients();
 
         // Draw fluid input slots
         drawSlot(guiGraphics, FLUID1_X - 1, SLOT_Y - 1);
-        if (recipe.fluidIngredients().size() > 1) {
+        if (inputs.size() > 1) {
             drawSlot(guiGraphics, FLUID2_X - 1, SLOT_Y - 1);
         }
 
@@ -141,6 +142,27 @@ public class AlembicCategory implements IRecipeCategory<DistillingRecipe> {
 
         // Draw arrow
         arrow.draw(guiGraphics, ARROW_X, SLOT_Y);
+
+        // Draw fluid amounts below slots
+        if (inputs.size() > 0) {
+            String amount1 = inputs.get(0).amount() + " mB";
+            int textWidth1 = mc.font.width(amount1);
+            int textX1 = FLUID1_X + (SLOT_SIZE - textWidth1) / 2;
+            guiGraphics.drawString(mc.font, amount1, textX1, SLOT_Y + SLOT_SIZE + 2, 0x404040, false);
+        }
+        if (inputs.size() > 1) {
+            String amount2 = inputs.get(1).amount() + " mB";
+            int textWidth2 = mc.font.width(amount2);
+            int textX2 = FLUID2_X + (SLOT_SIZE - textWidth2) / 2;
+            guiGraphics.drawString(mc.font, amount2, textX2, SLOT_Y + SLOT_SIZE + 2, 0x404040, false);
+        }
+
+        // Output fluid amount
+        FluidStack output = recipe.getFluidOutput();
+        String amountOut = output.getAmount() + " mB";
+        int textWidthOut = mc.font.width(amountOut);
+        int textXOut = OUTPUT_X + (SLOT_SIZE - textWidthOut) / 2;
+        guiGraphics.drawString(mc.font, amountOut, textXOut, SLOT_Y + SLOT_SIZE + 2, 0x404040, false);
     }
 
     private void drawSlot(GuiGraphics graphics, int x, int y) {

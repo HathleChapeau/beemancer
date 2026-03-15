@@ -142,19 +142,25 @@ public class CentrifugeCategory implements IRecipeCategory<CentrifugeRecipe> {
             drawSlot(guiGraphics, x, y);
         }
 
-        // Draw fluid output slot
+        // Draw fluid output slot and amount
         FluidStack fluidOutput = recipe.getFluidOutput();
         if (!fluidOutput.isEmpty()) {
             int fluidX = outputX + 38 + 6;  // After items grid + gap
             drawSlot(guiGraphics, fluidX - 1, inputY - 1);
+
+            // Draw fluid amount below slot
+            String amountText = fluidOutput.getAmount() + " mB";
+            int textWidth = mc.font.width(amountText);
+            int textX = fluidX + (18 - textWidth) / 2;
+            guiGraphics.drawString(mc.font, amountText, textX, inputY + 18 + 2, 0x404040, false);
         }
 
-        // Draw chance percentages
+        // Draw chance percentages (centered vertically relative to slot, +2px right)
         for (int i = 0; i < Math.min(outputs.size(), 4); i++) {
             ProcessingOutput output = outputs.get(i);
             if (output.chance() < 1.0f) {
-                int x = outputX + (i % 2) * 20 + 17;
-                int y = outputY + (i / 2) * 20 + 9;
+                int x = outputX + (i % 2) * 20 + 19;  // slot end + 2px margin
+                int y = outputY + (i / 2) * 20 + 5;   // centered: (18 - 9) / 2
                 String chanceText = Math.round(output.chance() * 100) + "%";
                 guiGraphics.drawString(mc.font, chanceText, x, y, 0xFF8B8B8B, false);
             }

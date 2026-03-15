@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building_blocks",
+  "key": {
+    "I": {
+      "item": "apica:iron_foundation"
+    }
+  },
+  "pattern": [
+    "III",
+    "III"
+  ],
+  "result": {
+    "id": "apica:iron_foundation_pane",
+    "count": 16
+  }
+}

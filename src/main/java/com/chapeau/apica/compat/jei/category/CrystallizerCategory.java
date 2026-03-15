@@ -40,10 +40,12 @@ import org.jetbrains.annotations.Nullable;
 public class CrystallizerCategory implements IRecipeCategory<CrystallizingRecipe> {
 
     private static final int WIDTH = 100;
-    private static final int HEIGHT = 40;
+    private static final int HEIGHT = 50;
 
     // Layout constants for equal spacing
-    private static final int MARGIN = 6;
+    // Content: SLOT(18) + GAP(12) + ARROW(24) + GAP(12) + SLOT(18) = 84
+    // Margins: (100 - 84) / 2 = 8
+    private static final int MARGIN = 8;
     private static final int GAP = 12;
     private static final int SLOT_SIZE = 18;
     private static final int ARROW_WIDTH = 24;
@@ -108,12 +110,21 @@ public class CrystallizerCategory implements IRecipeCategory<CrystallizingRecipe
 
     @Override
     public void draw(CrystallizingRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+
         // Draw slot backgrounds
         drawSlot(guiGraphics, FLUID_X - 1, SLOT_Y - 1);
         drawSlot(guiGraphics, OUTPUT_X - 1, SLOT_Y - 1);
 
         // Draw arrow (vanilla furnace arrow texture)
         arrow.draw(guiGraphics, ARROW_X, SLOT_Y);
+
+        // Draw fluid amount below fluid slot
+        int fluidAmount = recipe.fluidIngredient().amount();
+        String amountText = fluidAmount + " mB";
+        int textWidth = mc.font.width(amountText);
+        int textX = FLUID_X + (SLOT_SIZE - textWidth) / 2;
+        guiGraphics.drawString(mc.font, amountText, textX, SLOT_Y + SLOT_SIZE + 2, 0x404040, false);
     }
 
     private void drawSlot(GuiGraphics graphics, int x, int y) {

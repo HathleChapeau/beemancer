@@ -159,7 +159,7 @@ public class AltarCategory implements IRecipeCategory<AltarRecipe> {
                 }
             }
 
-            int pollenY = 68;
+            int pollenY = 67;
             int spacing = 36;
             int totalWidth = entries.size() * spacing - (spacing - 16);
             int startX = (WIDTH - totalWidth) / 2;
