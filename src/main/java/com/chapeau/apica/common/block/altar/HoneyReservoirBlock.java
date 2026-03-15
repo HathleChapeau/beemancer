@@ -124,9 +124,11 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         MultiblockProperty mb = state.getValue(MULTIBLOCK);
         return switch (mb) {
-            case ALEMBIC -> getAlembicLateralShape(state.getValue(FACING));
-            case ALEMBIC_0 -> SHAPE_ALEMBIC_BOTTOM;
-            case ALEMBIC_1 -> getAlembicLateralShape(state.getValue(FACING));
+            // ALEMBIC (lateraux) = simple colonne (input reservoirs)
+            case ALEMBIC -> SHAPE_ALEMBIC_BOTTOM;
+            // ALEMBIC_0 (bottom) = avec tubes/frames (output reservoir)
+            case ALEMBIC_0 -> getAlembicLateralShape(state.getValue(FACING));
+            case ALEMBIC_1 -> SHAPE_ALEMBIC_BOTTOM;
             default -> SHAPE;
         };
     }

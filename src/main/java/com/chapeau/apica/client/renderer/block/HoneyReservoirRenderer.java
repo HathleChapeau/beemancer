@@ -124,9 +124,11 @@ public class HoneyReservoirRenderer implements BlockEntityRenderer<HoneyReservoi
         VertexConsumer consumer = buffer.getBuffer(RenderType.translucent());
 
         // Rendu spécifique selon le type de multibloc
+        // ALEMBIC (lateraux) = simple colonne haute (input)
+        // ALEMBIC_0 (bottom) = cube court avec tubes (output)
         switch (multiblock) {
-            case ALEMBIC, ALEMBIC_1 -> renderAlembicLateralFluid(poseStack, consumer, sprite, fillRatio);
-            case ALEMBIC_0 -> renderAlembicBottomFluid(poseStack, consumer, sprite, fillRatio);
+            case ALEMBIC, ALEMBIC_1 -> renderAlembicBottomFluid(poseStack, consumer, sprite, fillRatio);
+            case ALEMBIC_0 -> renderAlembicLateralFluid(poseStack, consumer, sprite, fillRatio);
             default -> {
                 if (formed) {
                     renderFormedFluid(poseStack, consumer, sprite, fillRatio);
@@ -264,8 +266,8 @@ public class HoneyReservoirRenderer implements BlockEntityRenderer<HoneyReservoi
     }
 
     /**
-     * Rend le fluide pour les réservoirs latéraux de l'Alembic (ALEMBIC, ALEMBIC_1).
-     * Glass: [2, 2, 2] à [14, 14, 14] - fluide à l'intérieur avec marge de 1px.
+     * Rend le fluide pour le réservoir bottom de l'Alembic (ALEMBIC_0).
+     * Utilise le modèle tubes: Glass [2, 2, 2] à [14, 14, 14] - fluide à l'intérieur avec marge de 1px.
      */
     private void renderAlembicLateralFluid(PoseStack poseStack, VertexConsumer consumer, TextureAtlasSprite sprite,
                                             float fillRatio) {
@@ -284,8 +286,8 @@ public class HoneyReservoirRenderer implements BlockEntityRenderer<HoneyReservoi
     }
 
     /**
-     * Rend le fluide pour le réservoir du bas de l'Alembic (ALEMBIC_0).
-     * Glass: [2, 4, 2] à [14, 24, 14] - colonne haute, fluide à l'intérieur.
+     * Rend le fluide pour les réservoirs latéraux de l'Alembic (ALEMBIC, ALEMBIC_1).
+     * Utilise le modèle colonne: Glass [2, 4, 2] à [14, 24, 14] - colonne haute, fluide à l'intérieur.
      */
     private void renderAlembicBottomFluid(PoseStack poseStack, VertexConsumer consumer, TextureAtlasSprite sprite,
                                            float fillRatio) {

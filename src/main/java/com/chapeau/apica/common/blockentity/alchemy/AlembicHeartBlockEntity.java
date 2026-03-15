@@ -221,15 +221,15 @@ public class AlembicHeartBlockEntity extends BlockEntity implements MultiblockCo
                 level.setBlock(worldPosition, state.setValue(AlembicHeartBlock.MULTIBLOCK, MultiblockProperty.ALEMBIC), 3);
             }
             // Mapping des proprietes MULTIBLOCK pour l'Alembic:
-            // - Reservoir bottom (Y=-1): ALEMBIC_0 (avec tubes de sortie)
-            // - Reservoirs lateraux (Y=0, X!=0): ALEMBIC (simple colonne)
+            // - Reservoir bottom (Y=-1): ALEMBIC_0 (modele tubes/frames pour OUTPUT nectar)
+            // - Reservoirs lateraux (Y=0, X!=0): ALEMBIC (modele colonne simple pour INPUT honey/royal jelly)
             // - Glass et RoyalGold: ALEMBIC
             MultiblockFormationHelper.setFormedOnStructureBlocks(level, worldPosition, getPattern(),
                 offset -> {
                     if (offset.getY() == -1 && offset.getX() == 0) {
-                        return MultiblockProperty.ALEMBIC_0; // Reservoir bottom avec tubes
+                        return MultiblockProperty.ALEMBIC_0; // Bottom reservoir (OUTPUT, modele tubes)
                     }
-                    return MultiblockProperty.ALEMBIC; // Tous les autres (lateraux, glass, royal gold)
+                    return MultiblockProperty.ALEMBIC; // Lateraux (INPUT, modele colonne) + autres blocs
                 },
                 multiblockRotation);
 
