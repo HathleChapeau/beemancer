@@ -356,12 +356,14 @@ public class Apica {
         for (int i = 0; i < AccessoryPlayerData.SLOT_COUNT; i++) {
             ItemStack stack = data.getAccessory(i);
             if (stack.isEmpty()) continue;
+            String speciesId = CompanionBeeItem.getSpeciesId(stack);
+            if (speciesId == null) speciesId = "meadow";
             if (stack.getItem() instanceof BeeMagnetItem) {
-                BeeMagnetItem.spawnCompanionBee(player, i);
+                BeeMagnetItem.spawnCompanionBee(player, i, speciesId);
             } else if (stack.getItem() instanceof BackpackItem) {
-                BackpackItem.spawnCompanionBee(player, i);
+                BackpackItem.spawnCompanionBee(player, i, speciesId);
             } else if (stack.getItem() instanceof CompanionBeeItem) {
-                CompanionBeeItem.spawnCompanionBee(player, i);
+                CompanionBeeItem.spawnCompanionBee(player, i, speciesId);
             }
         }
     }
