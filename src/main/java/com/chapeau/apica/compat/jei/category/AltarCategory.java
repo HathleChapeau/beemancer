@@ -65,7 +65,7 @@ public class AltarCategory implements IRecipeCategory<AltarRecipe> {
 
     public AltarCategory(IGuiHelper guiHelper) {
         this.background = guiHelper.createBlankDrawable(WIDTH, HEIGHT);
-        this.icon = guiHelper.createDrawableItemStack(ApicaBlocks.ALTAR_HEART.asStack());
+        this.icon = guiHelper.createDrawableItemStack(ApicaBlocks.ALTAR_HEART.get().asItem().getDefaultInstance());
         this.title = Component.translatable("gui.apica.jei.altar");
     }
 

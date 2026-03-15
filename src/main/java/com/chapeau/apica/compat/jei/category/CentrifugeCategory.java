@@ -49,7 +49,7 @@ public class CentrifugeCategory implements IRecipeCategory<CentrifugeRecipe> {
 
     public CentrifugeCategory(IGuiHelper guiHelper) {
         this.background = guiHelper.createBlankDrawable(WIDTH, HEIGHT);
-        this.icon = guiHelper.createDrawableItemStack(ApicaBlocks.MANUAL_CENTRIFUGE.asStack());
+        this.icon = guiHelper.createDrawableItemStack(ApicaBlocks.MANUAL_CENTRIFUGE.get().asItem().getDefaultInstance());
         this.title = Component.translatable("gui.apica.jei.centrifuge");
     }
 

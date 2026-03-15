@@ -102,23 +102,23 @@ public class ApicaJeiPlugin implements IModPlugin {
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
         // Infuser catalyst
         registration.addRecipeCatalyst(
-                ApicaBlocks.INFUSER.asStack(),
+                ApicaBlocks.INFUSER.get().asItem().getDefaultInstance(),
                 ApicaJeiRecipeTypes.INFUSING
         );
 
         // Centrifuge catalysts
         registration.addRecipeCatalyst(
-                ApicaBlocks.MANUAL_CENTRIFUGE.asStack(),
+                ApicaBlocks.MANUAL_CENTRIFUGE.get().asItem().getDefaultInstance(),
                 ApicaJeiRecipeTypes.CENTRIFUGE
         );
         registration.addRecipeCatalyst(
-                ApicaBlocks.POWERED_CENTRIFUGE.asStack(),
+                ApicaBlocks.POWERED_CENTRIFUGE.get().asItem().getDefaultInstance(),
                 ApicaJeiRecipeTypes.CENTRIFUGE
         );
 
         // Altar catalyst
         registration.addRecipeCatalyst(
-                ApicaBlocks.ALTAR_HEART.asStack(),
+                ApicaBlocks.ALTAR_HEART.get().asItem().getDefaultInstance(),
                 ApicaJeiRecipeTypes.ALTAR
         );
         registration.addRecipeCatalyst(

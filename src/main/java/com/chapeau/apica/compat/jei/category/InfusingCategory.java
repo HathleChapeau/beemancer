@@ -48,7 +48,7 @@ public class InfusingCategory implements IRecipeCategory<InfusingRecipe> {
 
     public InfusingCategory(IGuiHelper guiHelper) {
         this.background = guiHelper.createBlankDrawable(WIDTH, HEIGHT);
-        this.icon = guiHelper.createDrawableItemStack(ApicaBlocks.INFUSER.asStack());
+        this.icon = guiHelper.createDrawableItemStack(ApicaBlocks.INFUSER.get().asItem().getDefaultInstance());
         this.title = Component.translatable("gui.apica.jei.infusing");
     }
 
