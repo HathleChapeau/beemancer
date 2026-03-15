@@ -54,7 +54,7 @@ public class AltarCraftSection extends CodexBookSection {
     private static final int ARROW_WIDTH = 20;
     private static final int POLLEN_SPACING = 36;
     private static final int POLLEN_ROW_HEIGHT = 20;
-    private static final int POLLEN_NAME_OFFSET = 5;
+    private static final int POLLEN_NAME_OFFSET = 2;
     private static final int SECTION_HEIGHT = CROSS_SPACING * 2 + SLOT_SIZE + POLLEN_ROW_HEIGHT + POLLEN_NAME_OFFSET + 12;
 
     private final String resultItem;
