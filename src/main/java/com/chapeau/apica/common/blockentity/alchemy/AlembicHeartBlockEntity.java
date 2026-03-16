@@ -91,32 +91,18 @@ public class AlembicHeartBlockEntity extends BlockEntity implements MultiblockCo
         new BlockPos(1, 0, 0)     // Droit (royal jelly input)
     };
 
-    // Configuration IO declarative : quelles faces exposent quoi
-    // L'Alembic est 3 blocs sur X, 1 bloc sur Z. Les faces NORTH/SOUTH sont le "devant/derriere" (etroit).
-    // INPUT seulement sur les faces externes (WEST pour left, EAST pour right), pas sur devant/derriere.
+    /**
+     * Configuration IO: INPUT sur les côtés horizontaux des réservoirs latéraux,
+     * OUTPUT sur les côtés horizontaux du réservoir bottom.
+     * Pattern identique à Centrifuge: BlockIORule.sides() pour compatibilité avec toutes rotations.
+     */
     private static final MultiblockIOConfig IO_CONFIG = MultiblockIOConfig.builder()
-        // Heart (0,0,0) : directional per-face
-        .fluid(0, 0, 0, BlockIORule.builder()
-            .down(IOMode.OUTPUT)
-            .up(IOMode.INPUT)
-            .face(Direction.NORTH, IOMode.NONE)  // Front - pas d'IO
-            .face(Direction.SOUTH, IOMode.NONE)  // Back - pas d'IO
-            .face(Direction.EAST, IOMode.INPUT)
-            .face(Direction.WEST, IOMode.INPUT)
-            .build())
-        // Reservoir bas (0,-1,0) : nectar output sur EAST/WEST seulement (pas devant/derriere)
-        .fluid(0, -1, 0, BlockIORule.builder()
-            .face(Direction.EAST, IOMode.OUTPUT)
-            .face(Direction.WEST, IOMode.OUTPUT)
-            .build())
-        // Reservoir gauche (-1,0,0) : honey input sur WEST seulement (face externe)
-        .fluid(-1, 0, 0, BlockIORule.builder()
-            .face(Direction.WEST, IOMode.INPUT)
-            .build())
-        // Reservoir droit (1,0,0) : royal jelly input sur EAST seulement (face externe)
-        .fluid(1, 0, 0, BlockIORule.builder()
-            .face(Direction.EAST, IOMode.INPUT)
-            .build())
+        // Reservoir gauche (-1,0,0) : honey input sur tous les côtés horizontaux
+        .fluid(-1, 0, 0, BlockIORule.sides(IOMode.INPUT))
+        // Reservoir droit (1,0,0) : royal jelly input sur tous les côtés horizontaux
+        .fluid(1, 0, 0, BlockIORule.sides(IOMode.INPUT))
+        // Reservoir bas (0,-1,0) : nectar output sur tous les côtés horizontaux
+        .fluid(0, -1, 0, BlockIORule.sides(IOMode.OUTPUT))
         .build();
 
     private boolean formed = false;
@@ -309,35 +295,32 @@ public class AlembicHeartBlockEntity extends BlockEntity implements MultiblockCo
     @Nullable
     public IFluidHandler getFluidHandlerForBlock(BlockPos worldPos, @Nullable Direction face) {
         if (!formed) return null;
+
         IOMode mode = IO_CONFIG.getFluidMode(worldPosition, worldPos, face, multiblockRotation);
         if (mode == null || mode == IOMode.NONE) return null;
-        // Inverse-rotate the world offset to get back to pattern coordinates for tank selection
+
+        // Inverse-rotate pour obtenir l'offset en coordonnées pattern
         Vec3i worldOffset = worldPos.subtract(worldPosition);
         Vec3i patternOffset = MultiblockPattern.rotateY(worldOffset, (4 - multiblockRotation) & 3);
-        FluidTank tank = getAlembicTankForOffset(patternOffset, face);
-        if (tank == null) return null;
+
+        // Sélection du tank selon l'offset pattern
+        FluidTank tank;
+        if (patternOffset.getY() == -1) {
+            tank = nectarTank;      // Réservoir bas → nectar
+        } else if (patternOffset.getX() == -1) {
+            tank = honeyTank;       // Réservoir gauche → honey
+        } else if (patternOffset.getX() == 1) {
+            tank = royalJellyTank;  // Réservoir droit → royal jelly
+        } else {
+            return null;
+        }
+
         return switch (mode) {
             case INPUT -> SplitFluidHandler.inputOnly(tank);
             case OUTPUT -> SplitFluidHandler.outputOnly(tank);
             case BOTH -> tank;
             default -> null;
         };
-    }
-
-    /**
-     * Mappe une position relative et une face au tank correspondant.
-     * Le heart a un mapping per-face, les reservoirs ont un mapping par position.
-     */
-    private FluidTank getAlembicTankForOffset(Vec3i offset, @Nullable Direction face) {
-        if (offset.equals(Vec3i.ZERO)) {
-            if (face == Direction.DOWN) return nectarTank;
-            if (face == Direction.UP) return royalJellyTank;
-            return honeyTank;
-        }
-        if (offset.getY() == -1) return nectarTank;
-        if (offset.getX() == -1) return honeyTank;
-        if (offset.getX() == 1) return royalJellyTank;
-        return null;
     }
 
     // ==================== Processing ====================

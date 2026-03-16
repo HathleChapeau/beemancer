@@ -283,14 +283,26 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
     /**
      * Rend le nametag au-dessus d'Api comme une entite renommee vanilla.
      * Style: fond noir semi-transparent, texte blanc, billboard face au joueur.
+     * Visible uniquement quand le joueur regarde Api.
      */
     private void renderNameTag(ApiBlockEntity be, Component name, float scale,
                                PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         var minecraft = Minecraft.getInstance();
+
+        // Afficher uniquement si le joueur regarde ce bloc
+        if (minecraft.hitResult == null ||
+            minecraft.hitResult.getType() != net.minecraft.world.phys.HitResult.Type.BLOCK) {
+            return;
+        }
+        var blockHit = (net.minecraft.world.phys.BlockHitResult) minecraft.hitResult;
+        if (!blockHit.getBlockPos().equals(be.getBlockPos())) {
+            return;
+        }
+
         var camera = minecraft.gameRenderer.getMainCamera();
 
         // Hauteur au-dessus du bloc (s'adapte a la taille d'Api)
-        float height = scale * 0.7f + 0.3f;
+        float height = scale * 0.8f + 0.5f;
 
         poseStack.pushPose();
 
