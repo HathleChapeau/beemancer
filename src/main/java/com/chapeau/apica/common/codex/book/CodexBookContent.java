@@ -38,12 +38,15 @@ public class CodexBookContent {
     private final List<CodexBookSection> sections;
     private final List<StickyNote> stickyNotes;
     private final StickyNotesDisplay stickyNotesDisplay;
+    private final List<TextArrow> textArrows;
 
-    public CodexBookContent(String nodeId, List<CodexBookSection> sections, List<StickyNote> stickyNotes, StickyNotesDisplay stickyNotesDisplay) {
+    public CodexBookContent(String nodeId, List<CodexBookSection> sections, List<StickyNote> stickyNotes,
+                            StickyNotesDisplay stickyNotesDisplay, List<TextArrow> textArrows) {
         this.nodeId = nodeId;
         this.sections = Collections.unmodifiableList(sections);
         this.stickyNotes = Collections.unmodifiableList(stickyNotes);
         this.stickyNotesDisplay = stickyNotesDisplay;
+        this.textArrows = Collections.unmodifiableList(textArrows);
     }
 
     public String getNodeId() {
@@ -62,6 +65,10 @@ public class CodexBookContent {
         return stickyNotesDisplay;
     }
 
+    public List<TextArrow> getTextArrows() {
+        return textArrows;
+    }
+
     /**
      * Crée un contenu par défaut (page vierge) avec uniquement un HeaderSection.
      * @param nodeId L'identifiant du node
@@ -70,7 +77,7 @@ public class CodexBookContent {
     public static CodexBookContent createDefault(String nodeId) {
         List<CodexBookSection> defaultSections = new ArrayList<>();
         defaultSections.add(new HeaderSection());
-        return new CodexBookContent(nodeId, defaultSections, List.of(), StickyNotesDisplay.SIDE);
+        return new CodexBookContent(nodeId, defaultSections, List.of(), StickyNotesDisplay.SIDE, List.of());
     }
 
     /**
@@ -119,6 +126,14 @@ public class CodexBookContent {
             }
         }
 
-        return new CodexBookContent(nodeId, sections, stickyNotes, display);
+        List<TextArrow> textArrows = new ArrayList<>();
+        if (json.has("text_arrows")) {
+            JsonArray arrowsArray = json.getAsJsonArray("text_arrows");
+            for (JsonElement element : arrowsArray) {
+                textArrows.add(TextArrow.fromJson(element.getAsJsonObject()));
+            }
+        }
+
+        return new CodexBookContent(nodeId, sections, stickyNotes, display, textArrows);
     }
 }

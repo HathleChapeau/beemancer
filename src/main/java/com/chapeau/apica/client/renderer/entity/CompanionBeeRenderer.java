@@ -21,6 +21,8 @@
  */
 package com.chapeau.apica.client.renderer.entity;
 
+import com.chapeau.apica.client.animation.bee.BeeAnimationState;
+import com.chapeau.apica.client.animation.bee.BeeModelAnimator;
 import com.chapeau.apica.client.model.ApicaBeeModel;
 import com.chapeau.apica.common.block.beecreator.BeeAntennaType;
 import com.chapeau.apica.common.block.beecreator.BeeBodyType;
@@ -70,10 +72,17 @@ public class CompanionBeeRenderer extends MobRenderer<CompanionBeeEntity, ApicaB
 
     private final ItemRenderer itemRenderer;
 
+    /** Animator pour les animations du companion bee. */
+    private final BeeModelAnimator animator;
+
     public CompanionBeeRenderer(EntityRendererProvider.Context context) {
         super(context, buildDefaultModel(context), 0.15f);
         this.itemRenderer = context.getItemRenderer();
         this.addLayer(new CompanionBeeRenderLayer(this));
+
+        // Companion bees start in COMPANION state (fast wing flapping)
+        this.animator = new BeeModelAnimator();
+        this.animator.setStateImmediate(BeeAnimationState.COMPANION);
     }
 
     @Override
@@ -94,8 +103,12 @@ public class CompanionBeeRenderer extends MobRenderer<CompanionBeeEntity, ApicaB
             this.model = speciesModel;
         }
 
-        // Anime les ailes et pattes avant super.render
-        animateCompanionBee(bee, partialTick);
+        // Determine animation state and apply
+        float ageInTicks = bee.tickCount + partialTick;
+        BeeAnimationState targetState = determineAnimationState(bee);
+        animator.setState(targetState, ageInTicks);
+        animator.animate(model, ageInTicks, partialTick);
+        model.setBodyPitch(animator.getCurrentBodyPitch());
 
         super.render(bee, entityYaw, partialTick, poseStack, buffer, packedLight);
 
@@ -112,13 +125,15 @@ public class CompanionBeeRenderer extends MobRenderer<CompanionBeeEntity, ApicaB
     }
 
     /**
-     * Anime les ailes et pattes du companion bee.
-     * Vitesse et amplitude elevees pour un battement rapide de mini-abeille.
+     * Determine l'etat d'animation selon le comportement du companion.
      */
-    private void animateCompanionBee(CompanionBeeEntity bee, float partialTick) {
-        float ageInTicks = bee.tickCount + partialTick;
-        this.model.animateWings(ageInTicks, 2.0F, 0.15F, 0.05F);
-        this.model.animateLegs(0.5F);
+    private BeeAnimationState determineAnimationState(CompanionBeeEntity bee) {
+        // Si le companion se deplace rapidement vers le joueur, utiliser COMPANION_FAST
+        if (bee.getDeltaMovement().horizontalDistanceSqr() > 0.01) {
+            return BeeAnimationState.COMPANION_FAST;
+        }
+        // Sinon, vol normal de companion
+        return BeeAnimationState.COMPANION;
     }
 
     @Override

@@ -37,6 +37,7 @@ import com.chapeau.apica.common.codex.book.CraftSection;
 import com.chapeau.apica.common.codex.book.HeaderSection;
 import com.chapeau.apica.common.codex.book.ProcessSection;
 import com.chapeau.apica.common.codex.book.StickyNote;
+import com.chapeau.apica.common.codex.book.TextArrow;
 import com.chapeau.apica.client.gui.screen.codex.ResonationNoteRenderer;
 import com.chapeau.apica.common.item.debug.DebugWandItem;
 import com.chapeau.apica.common.quest.Quest;
@@ -119,6 +120,7 @@ public class CodexBookScreen extends Screen {
     private List<CodexBookSection> noteCraftSections = List.of();
     private int openedNoteIndex = -1;
     private CodexBookContent.StickyNotesDisplay stickyNotesDisplay = CodexBookContent.StickyNotesDisplay.SIDE;
+    private List<TextArrow> textArrows = List.of();
 
     public CodexBookScreen(CodexNode node, CodexPage returnPage) {
         super(Component.translatable("screen.apica.codex_book"));
@@ -157,6 +159,7 @@ public class CodexBookScreen extends Screen {
         rightSections = split.get(1);
         stickyNotes = content.getStickyNotes();
         stickyNotesDisplay = content.getStickyNotesDisplay();
+        textArrows = content.getTextArrows();
         resolveNoteData();
         openedNoteIndex = -1;
 
@@ -201,6 +204,11 @@ public class CodexBookScreen extends Screen {
         if (!rightSections.isEmpty()) {
             renderPageSections(graphics, rightSections,
                     rightPageX + RIGHT_PAGE_EXTRA_MARGIN, contentTopY, pageWidth, nodeTitle, relativeDay, completedQuests);
+        }
+
+        // Text arrows (par-dessus les sections)
+        if (!textArrows.isEmpty()) {
+            renderTextArrows(graphics, contentTopY);
         }
 
         // Bouton retour
@@ -249,6 +257,22 @@ public class CodexBookScreen extends Screen {
             RenderSystem.defaultBlendFunc();
             section.render(graphics, font, scaledX, currentY, scaledWidth, nodeTitle, relativeDay);
             currentY += height;
+        }
+
+        graphics.pose().popPose();
+    }
+
+    // ==================== Text Arrows ====================
+
+    private void renderTextArrows(GuiGraphics graphics, int contentTopY) {
+        graphics.pose().pushPose();
+        graphics.pose().scale(CONTENT_SCALE, CONTENT_SCALE, 1.0f);
+
+        for (TextArrow arrow : textArrows) {
+            int pageX = "right".equalsIgnoreCase(arrow.page())
+                    ? rightPageX + RIGHT_PAGE_EXTRA_MARGIN
+                    : leftPageX;
+            arrow.render(graphics, font, pageX, contentTopY, CONTENT_SCALE);
         }
 
         graphics.pose().popPose();

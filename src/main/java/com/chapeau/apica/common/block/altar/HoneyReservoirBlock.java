@@ -134,13 +134,13 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
     }
 
     /**
-     * Retourne la VoxelShape pour les réservoirs latéraux selon le FACING.
-     * Les frames sont sur E/W pour FACING=WEST/EAST, sur N/S pour FACING=NORTH/SOUTH.
+     * Retourne la VoxelShape pour le réservoir bottom (ALEMBIC_0) selon le FACING.
+     * Le modèle est rotaté de 90° supplémentaire dans le blockstate, donc on inverse E/W et N/S.
      */
     private static VoxelShape getAlembicLateralShape(Direction facing) {
         return switch (facing) {
-            case NORTH, SOUTH -> SHAPE_ALEMBIC_LATERAL_NS;
-            default -> SHAPE_ALEMBIC_LATERAL_EW;
+            case NORTH, SOUTH -> SHAPE_ALEMBIC_LATERAL_EW;
+            default -> SHAPE_ALEMBIC_LATERAL_NS;
         };
     }
 

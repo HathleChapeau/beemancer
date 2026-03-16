@@ -49,7 +49,19 @@ public enum BeeAnimationState {
      * Etat de vol stationnaire: battements normaux mais pas de pitch.
      * Pour le hovering sur place.
      */
-    HOVERING(1.8f, 0.12f, 0.05f, 0f, 0.5236f);
+    HOVERING(1.8f, 0.12f, 0.05f, 0f, 0.5236f),
+
+    /**
+     * Etat companion: battements rapides, amplitude elevee, pas de pitch.
+     * Pour les mini-abeilles compagnon (scale 0.4).
+     */
+    COMPANION(2.0f, 0.15f, 0.05f, 0f, 0.5f),
+
+    /**
+     * Etat companion en poursuite: battements tres rapides.
+     * Quand le companion court apres le joueur.
+     */
+    COMPANION_FAST(2.8f, 0.18f, 0.08f, 0.15f, 0.6f);
 
     /** Vitesse de battement des ailes (cycles par tick). */
     public final float wingSpeed;

@@ -1,0 +1,33 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.alchemy.centrifuge_heart.lore.p1"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.alchemy.centrifuge_heart.lore.p2"
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "multiblock",
+      "pattern": "centrifuge_multiblock",
+      "controller": "apica:centrifuge_heart",
+      "padding_y": 10
+    }
+  ],
+  "text_arrows": [
+    {"x": 25, "y": 38, "direction": "right", "text": "IN", "page": "right"},
+    {"x": 110, "y": 90, "direction": "left", "text": "OUT", "page": "right"}
+  ],
+  "sticky_notes": [
+    {"craft": "apica:centrifuge_heart", "type": "altar"},
+    {"craft": "apica:iron_foundation"},
+    {"craft": "apica:honey_reservoir"}
+  ]
+}
