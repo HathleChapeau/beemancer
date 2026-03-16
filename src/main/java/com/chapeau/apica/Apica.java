@@ -427,21 +427,26 @@ public class Apica {
                 (be, side) -> be.getHoneyTank()
         );
 
+        /**
+         * ╔══════════════════════════════════════════════════════════════════════╗
+         * ║   ⚠️⚠️⚠️ HONEY RESERVOIR = PROXY PUR - JAMAIS DE TANK LOCAL ⚠️⚠️⚠️   ║
+         * ║                                                                      ║
+         * ║   Le HoneyReservoir ne stocke JAMAIS de fluide.                     ║
+         * ║   Il délègue UNIQUEMENT au contrôleur multibloc.                    ║
+         * ║   Si pas de contrôleur → null (pas de capability).                  ║
+         * ╚══════════════════════════════════════════════════════════════════════╝
+         */
         event.registerBlockEntity(
                 Capabilities.FluidHandler.BLOCK,
                 ApicaBlockEntities.HONEY_RESERVOIR.get(),
                 (be, side) -> {
-                    // Si le reservoir est lié à un controleur multibloc, déléguer entièrement
-                    if (be.getControllerPos() != null) {
-                        var provider = be.findCapabilityProvider();
-                        if (provider != null) {
-                            return provider.getFluidHandlerForBlock(be.getBlockPos(), side);
-                        }
-                        // Lié mais controleur indisponible: ne PAS exposer le tank propre
-                        return null;
+                    // PROXY UNIQUEMENT - déléguer au contrôleur multibloc
+                    var provider = be.findCapabilityProvider();
+                    if (provider != null) {
+                        return provider.getFluidHandlerForBlock(be.getBlockPos(), side);
                     }
-                    // Reservoir standalone (altar, etc.): expose son propre tank
-                    return be;
+                    // ⚠️ JAMAIS exposer de tank local - retourner null ⚠️
+                    return null;
                 }
         );
 

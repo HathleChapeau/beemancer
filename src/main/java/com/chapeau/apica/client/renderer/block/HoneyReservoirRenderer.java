@@ -92,7 +92,12 @@ public class HoneyReservoirRenderer implements BlockEntityRenderer<HoneyReservoi
             renderFormedModel(blockEntity, poseStack, buffer, packedLight, packedOverlay, spreadX, spreadZ);
         }
 
-        // Rendre le fluide - pour Alembic, on query le controller
+        /**
+         * ╔══════════════════════════════════════════════════════════════════════╗
+         * ║   ⚠️ LE RESERVOIR NE STOCKE JAMAIS DE FLUIDE LOCALEMENT ⚠️          ║
+         * ║   Toutes les données fluide viennent du CONTRÔLEUR multibloc.       ║
+         * ╚══════════════════════════════════════════════════════════════════════╝
+         */
         FluidStack fluidStack;
         float fillRatio;
 
@@ -104,12 +109,14 @@ public class HoneyReservoirRenderer implements BlockEntityRenderer<HoneyReservoi
             }
             fluidStack = alembicData.fluidStack;
             fillRatio = alembicData.fillRatio;
+        } else if (multiblock == MultiblockProperty.ALTAR || multiblock == MultiblockProperty.EXTRACTOR) {
+            // Ces contrôleurs doivent implémenter MultiblockCapabilityProvider
+            // avec des tanks centralisés pour permettre le rendu fluide.
+            // Pour l'instant, pas de rendu.
+            return;
         } else {
-            fluidStack = blockEntity.getFluid();
-            if (fluidStack.isEmpty()) {
-                return;
-            }
-            fillRatio = (float) blockEntity.getFluidAmount() / HoneyReservoirBlockEntity.CAPACITY;
+            // NONE (standalone) - pas de contrôleur = pas de fluide
+            return;
         }
 
         TextureAtlasSprite sprite = RenderHelper.getFluidSprite(fluidStack.getFluid());

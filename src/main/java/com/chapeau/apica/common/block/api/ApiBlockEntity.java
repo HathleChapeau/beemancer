@@ -709,4 +709,17 @@ public class ApiBlockEntity extends BlockEntity {
     public Packet<ClientGamePacketListener> getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
     }
+
+    /**
+     * Parse un nom custom depuis JSON de maniere securisee.
+     * Retourne null si le parsing echoue.
+     */
+    @Nullable
+    private static Component parseCustomNameSafe(String json, HolderLookup.Provider registries) {
+        try {
+            return Component.Serializer.fromJson(json, registries);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

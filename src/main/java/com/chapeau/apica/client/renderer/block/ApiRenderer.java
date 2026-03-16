@@ -14,6 +14,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
@@ -24,11 +25,13 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.client.model.data.ModelData;
+import org.joml.Matrix4f;
 
 /**
  * Render Api avec parties separees pour animation.
@@ -73,10 +76,12 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
     private static final float IDLE_CYCLE = 60f;
 
     private final BlockRenderDispatcher blockRenderer;
+    private final Font font;
     private final RandomSource random = RandomSource.create();
 
     public ApiRenderer(BlockEntityRendererProvider.Context context) {
         this.blockRenderer = Minecraft.getInstance().getBlockRenderer();
+        this.font = context.getFont();
     }
 
     @Override
@@ -138,6 +143,11 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
                    scale, yRot, bodyPitch, bodyRoll, frame.bodyY,
                    LEG_RIGHT_PIVOT_X, LEG_RIGHT_PIVOT_Y, LEG_RIGHT_PIVOT_Z,
                    frame.legRightPitch, frame.legRightRoll);
+
+        // === NAMETAG ===
+        if (be.getCustomName() != null) {
+            renderNameTag(be, be.getCustomName(), scale, poseStack, buffer, packedLight);
+        }
     }
 
     private void renderBody(BakedModel model, ApiBlockEntity be, PoseStack poseStack,
@@ -264,6 +274,51 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
         consumer.addVertex(pose, maxX, y, minZ).setColor(255, 255, 255, 255)
             .setUv(u1, v0).setOverlay(packedOverlay).setLight(packedLight)
             .setNormal(pose, 0, 1, 0);
+
+        poseStack.popPose();
+    }
+
+    // ==================== NAMETAG ====================
+
+    /**
+     * Rend le nametag au-dessus d'Api comme une entite renommee vanilla.
+     * Style: fond noir semi-transparent, texte blanc, billboard face au joueur.
+     */
+    private void renderNameTag(ApiBlockEntity be, Component name, float scale,
+                               PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
+        var minecraft = Minecraft.getInstance();
+        var camera = minecraft.gameRenderer.getMainCamera();
+
+        // Hauteur au-dessus du bloc (s'adapte a la taille d'Api)
+        float height = scale * 0.7f + 0.3f;
+
+        poseStack.pushPose();
+
+        // Position au centre du bloc, au-dessus d'Api
+        poseStack.translate(0.5, height, 0.5);
+
+        // Billboard: face toujours a la camera
+        poseStack.mulPose(Axis.YP.rotationDegrees(-camera.getYRot()));
+        poseStack.mulPose(Axis.XP.rotationDegrees(camera.getXRot()));
+
+        // Scale du texte (meme taille que les entites vanilla)
+        float textScale = 0.025f;
+        poseStack.scale(-textScale, -textScale, textScale);
+
+        Matrix4f matrix = poseStack.last().pose();
+
+        // Dimensions du texte
+        int textWidth = font.width(name);
+        float halfWidth = -textWidth / 2f;
+
+        // Fond noir semi-transparent (comme vanilla)
+        int bgColor = (int)(Minecraft.getInstance().options.getBackgroundOpacity(0.25f) * 255.0f) << 24;
+        font.drawInBatch(name, halfWidth, 0, 0x20FFFFFF, false, matrix, buffer,
+                Font.DisplayMode.SEE_THROUGH, bgColor, packedLight);
+
+        // Texte blanc visible
+        font.drawInBatch(name, halfWidth, 0, 0xFFFFFFFF, false, matrix, buffer,
+                Font.DisplayMode.NORMAL, 0, packedLight);
 
         poseStack.popPose();
     }

@@ -35,15 +35,15 @@ public enum BeeAnimationState {
 
     /**
      * Etat de vol: ailes battantes, leger pitch vers l'avant, pattes repliees.
-     * Parametres calibres pour un vol naturel d'abeille (proche vanilla).
+     * Valeurs proches vanilla: speed ~2.1, amplitude = pi*0.15 (~0.47 rad).
      */
-    FLYING(1.8f, 0.12f, 0.05f, 0.1f, 0.7854f),
+    FLYING(2.1f, 0.47f, 0f, 0.1f, 0.7854f),
 
     /**
      * Etat de vol stationnaire: battements normaux, meme pitch que FLYING.
      * Pour le hovering sur place.
      */
-    HOVERING(1.8f, 0.12f, 0.05f, 0.1f, 0.5236f);
+    HOVERING(2.1f, 0.47f, 0f, 0.1f, 0.5236f);
 
     /** Vitesse de battement des ailes (cycles par tick). */
     public final float wingSpeed;

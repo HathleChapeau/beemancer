@@ -1,23 +1,46 @@
 /**
  * ============================================================
  * [HoneyReservoirBlockEntity.java]
- * Description: BlockEntity pour le réservoir de fluide de l'Honey Altar
+ * Description: Interface de délégation de fluide vers un contrôleur multibloc
  * ============================================================
+ *
+ * ╔══════════════════════════════════════════════════════════════════════════╗
+ * ║                    ⚠️⚠️⚠️ RÈGLE ABSOLUE CRITIQUE ⚠️⚠️⚠️                    ║
+ * ╠══════════════════════════════════════════════════════════════════════════╣
+ * ║                                                                          ║
+ * ║   LE HONEY RESERVOIR NE DOIT **JAMAIS** STOCKER DE FLUIDE LOCALEMENT    ║
+ * ║                                                                          ║
+ * ║   LE HONEY RESERVOIR NE DOIT **JAMAIS** STOCKER DE FLUIDE LOCALEMENT    ║
+ * ║                                                                          ║
+ * ║   LE HONEY RESERVOIR NE DOIT **JAMAIS** STOCKER DE FLUIDE LOCALEMENT    ║
+ * ║                                                                          ║
+ * ║   LE HONEY RESERVOIR NE DOIT **JAMAIS** STOCKER DE FLUIDE LOCALEMENT    ║
+ * ║                                                                          ║
+ * ║   LE HONEY RESERVOIR NE DOIT **JAMAIS** STOCKER DE FLUIDE LOCALEMENT    ║
+ * ║                                                                          ║
+ * ╠══════════════════════════════════════════════════════════════════════════╣
+ * ║                                                                          ║
+ * ║   Ce bloc est un PROXY PUR vers le contrôleur multibloc.                ║
+ * ║   - Quand formé: délègue TOUT au contrôleur via getFluidHandlerForBlock ║
+ * ║   - Quand non-formé: N'EXPOSE AUCUNE CAPABILITY (retourne null)         ║
+ * ║   - Le contrôleur possède TOUS les tanks                                 ║
+ * ║   - Ce bloc ne fait que rediriger les requêtes                          ║
+ * ║                                                                          ║
+ * ║   VIOLATION DE CETTE RÈGLE = BUG CRITIQUE                               ║
+ * ║                                                                          ║
+ * ╚══════════════════════════════════════════════════════════════════════════╝
  *
  * DÉPENDANCES:
  * ------------------------------------------------------------
  * | Dépendance                    | Raison                | Utilisation                    |
  * |-------------------------------|----------------------|--------------------------------|
- * | ApicaBlockEntities        | Type registration    | super()                        |
- * | ApicaFluids               | Fluides acceptés     | isFluidValid                   |
+ * | ApicaBlockEntities            | Type registration    | super()                        |
  * | MultiblockController          | Multiblock check     | isPartOfFormedMultiblock       |
  * | MultiblockCapabilityProvider  | Délégation caps      | findCapabilityProvider         |
- * | MultiblockController          | Vérif formed         | findCapabilityProvider         |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
  * - HoneyReservoirBlock.java
- * - HoneyCrystalBlockEntity.java (query reservoirs)
  * - Apica.java (capability delegation lambdas)
  *
  * ============================================================
@@ -27,7 +50,6 @@ package com.chapeau.apica.common.blockentity.altar;
 import com.chapeau.apica.core.multiblock.MultiblockCapabilityProvider;
 import com.chapeau.apica.core.multiblock.MultiblockController;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
-import com.chapeau.apica.core.registry.ApicaFluids;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -36,20 +58,38 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
 import javax.annotation.Nullable;
 
 /**
- * Stocke jusqu'à 4000mB de miel, royal jelly ou nectar.
- * Un seul type de fluide à la fois.
+ * ╔══════════════════════════════════════════════════════════════════════════╗
+ * ║   PROXY PUR - AUCUN STOCKAGE LOCAL - DÉLÉGATION UNIQUEMENT              ║
+ * ╚══════════════════════════════════════════════════════════════════════════╝
+ *
+ * Interface visuelle et de capability vers un contrôleur multibloc.
+ * NE STOCKE JAMAIS de fluide - délègue tout au contrôleur.
  */
-public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHandler, com.chapeau.apica.core.util.IDrainable {
-    public static final int CAPACITY = 4000;
+public class HoneyReservoirBlockEntity extends BlockEntity {
 
-    private final FluidTank fluidTank;
+    /**
+     * ╔══════════════════════════════════════════════════════════════════════╗
+     * ║   ⚠️⚠️⚠️ AUCUN TANK LOCAL - INTERDIT - VOIR EN-TÊTE ⚠️⚠️⚠️           ║
+     * ║                                                                      ║
+     * ║   NE JAMAIS AJOUTER de FluidTank ici.                               ║
+     * ║   Le stockage est EXCLUSIVEMENT dans le contrôleur multibloc.       ║
+     * ║   Ce bloc est un PROXY, pas un conteneur.                           ║
+     * ║                                                                      ║
+     * ║   Les champs visualFluid* ci-dessous sont un CACHE DE RENDU,        ║
+     * ║   PAS un stockage. Ils sont mis à jour par le contrôleur pour       ║
+     * ║   l'affichage client-side uniquement.                               ║
+     * ╚══════════════════════════════════════════════════════════════════════╝
+     */
+
+    /**
+     * Capacité VISUELLE pour le calcul du fillRatio dans le renderer.
+     * Ce n'est PAS une capacité de stockage - juste une référence pour l'affichage.
+     */
+    public static final int VISUAL_CAPACITY = 4000;
 
     // Position du contrôleur multibloc (pour délégation de capabilities)
     @Nullable
@@ -59,39 +99,54 @@ public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHand
     private float formedSpreadX = 0.0f;
     private float formedSpreadZ = 0.0f;
 
+    /**
+     * ⚠️ CACHE VISUEL UNIQUEMENT - PAS UN STOCKAGE ⚠️
+     * Ces champs sont synchronisés par le contrôleur pour le rendu client.
+     * Le fluide "réel" est dans le contrôleur, pas ici.
+     */
+    private net.neoforged.neoforge.fluids.FluidStack visualFluid = net.neoforged.neoforge.fluids.FluidStack.EMPTY;
+    private float visualFillRatio = 0f;
+
     public HoneyReservoirBlockEntity(BlockPos pos, BlockState state) {
         super(ApicaBlockEntities.HONEY_RESERVOIR.get(), pos, state);
-        this.fluidTank = new FluidTank(CAPACITY) {
-            @Override
-            public boolean isFluidValid(FluidStack stack) {
-                return stack.getFluid() == ApicaFluids.HONEY_SOURCE.get()
-                    || stack.getFluid() == ApicaFluids.ROYAL_JELLY_SOURCE.get()
-                    || stack.getFluid() == ApicaFluids.NECTAR_SOURCE.get();
-            }
-
-            @Override
-            protected void onContentsChanged() {
-                setChanged();
-                if (level != null && !level.isClientSide()) {
-                    level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-                }
-            }
-        };
+        // ⚠️ PAS DE TANK - PROXY UNIQUEMENT ⚠️
     }
 
     public void serverTick() {
-        // Pas de logique tick pour l'instant
+        // Pas de logique tick - proxy pur
+    }
+
+    // ==================== Cache visuel (rendu uniquement) ====================
+
+    /**
+     * ⚠️ APPELÉ PAR LE CONTRÔLEUR UNIQUEMENT ⚠️
+     * Met à jour le cache visuel pour le rendu client.
+     * Ce n'est PAS un stockage fonctionnel.
+     */
+    public void setVisualFluid(net.neoforged.neoforge.fluids.FluidStack fluid, float fillRatio) {
+        this.visualFluid = fluid.copy();
+        this.visualFillRatio = fillRatio;
+        setChanged();
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
     }
 
     /**
-     * Calcule le ratio de remplissage (0.0 à 1.0) pour le renderer.
+     * Pour le renderer uniquement - retourne le cache visuel.
      */
-    public float getFillRatio() {
-        if (fluidTank.isEmpty()) return 0f;
-        return (float) fluidTank.getFluidAmount() / CAPACITY;
+    public net.neoforged.neoforge.fluids.FluidStack getVisualFluid() {
+        return visualFluid;
     }
 
-    // --- Controller delegation ---
+    /**
+     * Pour le renderer uniquement - retourne le ratio de remplissage visuel.
+     */
+    public float getVisualFillRatio() {
+        return visualFillRatio;
+    }
+
+    // ==================== Controller delegation ====================
 
     public void setControllerPos(@Nullable BlockPos pos) {
         this.controllerPos = pos;
@@ -147,44 +202,7 @@ public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHand
         return false;
     }
 
-    // --- IFluidHandler implementation ---
-
-    @Override
-    public int getTanks() {
-        return 1;
-    }
-
-    @Override
-    public FluidStack getFluidInTank(int tank) {
-        return fluidTank.getFluid();
-    }
-
-    @Override
-    public int getTankCapacity(int tank) {
-        return CAPACITY;
-    }
-
-    @Override
-    public boolean isFluidValid(int tank, FluidStack stack) {
-        return fluidTank.isFluidValid(stack);
-    }
-
-    @Override
-    public int fill(FluidStack resource, FluidAction action) {
-        return fluidTank.fill(resource, action);
-    }
-
-    @Override
-    public FluidStack drain(FluidStack resource, FluidAction action) {
-        return fluidTank.drain(resource, action);
-    }
-
-    @Override
-    public FluidStack drain(int maxDrain, FluidAction action) {
-        return fluidTank.drain(maxDrain, action);
-    }
-
-    // --- Spread (Storage Controller multibloc) ---
+    // ==================== Spread (Storage Controller multibloc) ====================
 
     public float getFormedSpreadX() {
         return formedSpreadX;
@@ -203,32 +221,13 @@ public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHand
         }
     }
 
-    // --- Accessors ---
-
-    public FluidTank getFluidTank() {
-        return fluidTank;
-    }
-
-    @Override
-    public FluidTank getDrainableTank() { return fluidTank; }
-
-    @Override
-    public String getDrainableEmptyName() { return "Reservoir"; }
-
-    public int getFluidAmount() {
-        return fluidTank.getFluidAmount();
-    }
-
-    public FluidStack getFluid() {
-        return fluidTank.getFluid();
-    }
-
-    // --- NBT ---
+    // ==================== NBT ====================
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-        tag.put("Fluid", fluidTank.writeToNBT(registries, new CompoundTag()));
+        // ⚠️ PAS DE SAUVEGARDE DE FLUIDE FONCTIONNEL - PROXY UNIQUEMENT ⚠️
+        // Le cache visuel n'est PAS sauvegardé - il sera re-synchonisé par le contrôleur
         if (controllerPos != null) {
             tag.putLong("ControllerPos", controllerPos.asLong());
         }
@@ -243,18 +242,16 @@ public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHand
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        if (tag.contains("Fluid")) {
-            fluidTank.readFromNBT(registries, tag.getCompound("Fluid"));
-        }
+        // ⚠️ PAS DE CHARGEMENT DE FLUIDE FONCTIONNEL - PROXY UNIQUEMENT ⚠️
         controllerPos = tag.contains("ControllerPos") ? BlockPos.of(tag.getLong("ControllerPos")) : null;
         formedSpreadX = tag.getFloat("FormedSpreadX");
         formedSpreadZ = tag.getFloat("FormedSpreadZ");
+        // visualFluid sera re-sync par le contrôleur au prochain tick
     }
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = super.getUpdateTag(registries);
-        tag.put("Fluid", fluidTank.writeToNBT(registries, new CompoundTag()));
         if (controllerPos != null) {
             tag.putLong("ControllerPos", controllerPos.asLong());
         }
@@ -264,7 +261,28 @@ public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHand
         if (formedSpreadZ != 0.0f) {
             tag.putFloat("FormedSpreadZ", formedSpreadZ);
         }
+        // Cache visuel pour le rendu client-side
+        if (!visualFluid.isEmpty()) {
+            tag.put("VisualFluid", visualFluid.save(registries));
+            tag.putFloat("VisualFillRatio", visualFillRatio);
+        }
         return tag;
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        super.handleUpdateTag(tag, registries);
+        controllerPos = tag.contains("ControllerPos") ? BlockPos.of(tag.getLong("ControllerPos")) : null;
+        formedSpreadX = tag.getFloat("FormedSpreadX");
+        formedSpreadZ = tag.getFloat("FormedSpreadZ");
+        // Cache visuel pour le rendu
+        if (tag.contains("VisualFluid")) {
+            visualFluid = net.neoforged.neoforge.fluids.FluidStack.parseOptional(registries, tag.getCompound("VisualFluid"));
+            visualFillRatio = tag.getFloat("VisualFillRatio");
+        } else {
+            visualFluid = net.neoforged.neoforge.fluids.FluidStack.EMPTY;
+            visualFillRatio = 0f;
+        }
     }
 
     @Nullable
