@@ -105,10 +105,6 @@ public class MagicBeeRenderer extends MobRenderer<MagicBeeEntity, ApicaBeeModel<
      * Determine l'etat d'animation selon le comportement de l'abeille.
      */
     private BeeAnimationState determineAnimationState(MagicBeeEntity bee) {
-        // Enraged = vol rapide
-        if (bee.isEnraged()) {
-            return BeeAnimationState.FLYING_FAST;
-        }
         // Au sol = idle (rare pour les abeilles)
         if (bee.onGround() && bee.getDeltaMovement().horizontalDistanceSqr() < 0.001) {
             return BeeAnimationState.IDLE;

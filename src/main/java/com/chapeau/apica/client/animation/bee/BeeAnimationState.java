@@ -34,34 +34,16 @@ public enum BeeAnimationState {
     IDLE(0f, 0f, 0f, 0f, 0f),
 
     /**
-     * Etat de vol: ailes battantes, pitch vers l'avant, pattes repliees.
-     * Parametres calibres pour un vol naturel d'abeille.
+     * Etat de vol: ailes battantes, leger pitch vers l'avant, pattes repliees.
+     * Parametres calibres pour un vol naturel d'abeille (proche vanilla).
      */
-    FLYING(1.8f, 0.12f, 0.05f, 0.2618f, 0.7854f),
+    FLYING(1.8f, 0.12f, 0.05f, 0.1f, 0.7854f),
 
     /**
-     * Etat de vol rapide: battements plus rapides, pitch plus prononce.
-     * Pour les phases d'acceleration ou de poursuite.
-     */
-    FLYING_FAST(2.5f, 0.15f, 0.08f, 0.35f, 0.7854f),
-
-    /**
-     * Etat de vol stationnaire: battements normaux mais pas de pitch.
+     * Etat de vol stationnaire: battements normaux, meme pitch que FLYING.
      * Pour le hovering sur place.
      */
-    HOVERING(1.8f, 0.12f, 0.05f, 0f, 0.5236f),
-
-    /**
-     * Etat companion: battements rapides, amplitude elevee, pas de pitch.
-     * Pour les mini-abeilles compagnon (scale 0.4).
-     */
-    COMPANION(2.0f, 0.15f, 0.05f, 0f, 0.5f),
-
-    /**
-     * Etat companion en poursuite: battements tres rapides.
-     * Quand le companion court apres le joueur.
-     */
-    COMPANION_FAST(2.8f, 0.18f, 0.08f, 0.15f, 0.6f);
+    HOVERING(1.8f, 0.12f, 0.05f, 0.1f, 0.5236f);
 
     /** Vitesse de battement des ailes (cycles par tick). */
     public final float wingSpeed;

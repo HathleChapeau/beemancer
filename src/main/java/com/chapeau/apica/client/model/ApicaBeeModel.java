@@ -79,13 +79,16 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
     public final ModelPart backLegs;
 
     private final ModelPart wingRoot;
+    private final ModelPart wingBone;
     private final ModelPart rightWing;
     private final ModelPart leftWing;
 
     private final ModelPart stingerRoot;
+    private final ModelPart stingerBone;
     private final ModelPart stinger;
 
     private final ModelPart antennaRoot;
+    private final ModelPart antennaBone;
     private final ModelPart leftAntenna;
     private final ModelPart rightAntenna;
 
@@ -108,15 +111,16 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         this.backLegs = bone.getChild("back_legs");
 
         this.wingRoot = wingRoot;
-        ModelPart wingBone = wingRoot.getChild("bone");
+        this.wingBone = wingRoot.getChild("bone");
         this.rightWing = wingBone.getChild("right_wing");
         this.leftWing = wingBone.getChild("left_wing");
 
         this.stingerRoot = stingerRoot;
-        this.stinger = stingerRoot.getChild("bone").getChild("stinger");
+        this.stingerBone = stingerRoot.getChild("bone");
+        this.stinger = stingerBone.getChild("stinger");
 
         this.antennaRoot = antennaRoot;
-        ModelPart antennaBone = antennaRoot.getChild("bone");
+        this.antennaBone = antennaRoot.getChild("bone");
         this.leftAntenna = antennaBone.getChild("left_antenna");
         this.rightAntenna = antennaBone.getChild("right_antenna");
 
@@ -267,12 +271,16 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
 
     /**
      * Applique une rotation pitch au corps de l'abeille.
+     * Pitch toutes les parties (corps, ailes, stinger, antennes) ensemble.
      * Positif = inclinaison vers l'avant (vol).
      *
      * @param pitch angle en radians
      */
     public void setBodyPitch(float pitch) {
         bone.xRot = pitch;
+        wingBone.xRot = pitch;
+        stingerBone.xRot = pitch;
+        antennaBone.xRot = pitch;
     }
 
     /**
@@ -283,6 +291,9 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         bone.xRot = 0f;
         bone.yRot = 0f;
         bone.zRot = 0f;
+        wingBone.xRot = 0f;
+        stingerBone.xRot = 0f;
+        antennaBone.xRot = 0f;
         rightWing.zRot = 0f;
         leftWing.zRot = 0f;
         frontLegs.xRot = 0f;

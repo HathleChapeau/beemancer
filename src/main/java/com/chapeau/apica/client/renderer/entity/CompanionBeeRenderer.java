@@ -80,9 +80,9 @@ public class CompanionBeeRenderer extends MobRenderer<CompanionBeeEntity, ApicaB
         this.itemRenderer = context.getItemRenderer();
         this.addLayer(new CompanionBeeRenderLayer(this));
 
-        // Companion bees start in COMPANION state (fast wing flapping)
+        // Companion bees start in HOVERING state
         this.animator = new BeeModelAnimator();
-        this.animator.setStateImmediate(BeeAnimationState.COMPANION);
+        this.animator.setStateImmediate(BeeAnimationState.HOVERING);
     }
 
     @Override
@@ -128,12 +128,12 @@ public class CompanionBeeRenderer extends MobRenderer<CompanionBeeEntity, ApicaB
      * Determine l'etat d'animation selon le comportement du companion.
      */
     private BeeAnimationState determineAnimationState(CompanionBeeEntity bee) {
-        // Si le companion se deplace rapidement vers le joueur, utiliser COMPANION_FAST
-        if (bee.getDeltaMovement().horizontalDistanceSqr() > 0.01) {
-            return BeeAnimationState.COMPANION_FAST;
+        // En mouvement = vol
+        if (bee.getDeltaMovement().horizontalDistanceSqr() > 0.001) {
+            return BeeAnimationState.FLYING;
         }
-        // Sinon, vol normal de companion
-        return BeeAnimationState.COMPANION;
+        // Stationnaire = hovering
+        return BeeAnimationState.HOVERING;
     }
 
     @Override
