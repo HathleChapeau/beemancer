@@ -181,11 +181,8 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
             return ItemInteractionResult.SUCCESS;
         }
 
-        // Shift+clic droit avec main vide = vider le réservoir
-        if (player.isShiftKeyDown() && stack.isEmpty()) {
-            com.chapeau.apica.core.util.IDrainable.tryDrain(level, pos, player, reservoir);
-            return ItemInteractionResult.SUCCESS;
-        }
+        // Le réservoir est un PROXY - pas de drain direct
+        // Le fluide est stocké dans le contrôleur, pas ici
 
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }

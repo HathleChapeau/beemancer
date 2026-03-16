@@ -147,22 +147,12 @@ public class StorageMultiblockManager {
 
             boolean changed = false;
 
-            // --- Reservoir: controllerPos + spread + honey transfer + facing ---
+            // --- Reservoir: controllerPos + spread + facing ---
+            // ⚠️ Les réservoirs sont des PROXIES - pas de stockage local ⚠️
             if (state.getBlock() instanceof HoneyReservoirBlock) {
                 BlockEntity be = parent.getLevel().getBlockEntity(blockPos);
                 if (be instanceof HoneyReservoirBlockEntity reservoirBe) {
                     if (formed) {
-                        // Transferer le miel existant du reservoir vers le buffer du controller
-                        int existingHoney = reservoirBe.getFluidAmount();
-                        if (existingHoney > 0) {
-                            int space = parent.getHoneyCapacity() - parent.getHoneyStored();
-                            int toTransfer = Math.min(existingHoney, space);
-                            if (toTransfer > 0) {
-                                reservoirBe.getFluidTank().drain(toTransfer,
-                                    net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
-                                parent.setHoneyStored(parent.getHoneyStored() + toTransfer);
-                            }
-                        }
                         reservoirBe.setControllerPos(parent.getBlockPos());
                         float spreadX = rotatedOffset.getX() * 1.0f / 16.0f;
                         float spreadZ = rotatedOffset.getZ() * 1.0f / 16.0f;
