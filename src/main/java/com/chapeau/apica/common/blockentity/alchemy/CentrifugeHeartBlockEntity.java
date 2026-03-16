@@ -395,45 +395,44 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
     }
 
     /**
-     * Met à jour les niveaux visuels des reservoirs du multibloc.
+     * Met à jour le CACHE VISUEL des reservoirs du multibloc.
      * - Reservoirs du haut (Y+1): affichent le niveau du fuelTank (entree)
      * - Reservoirs du bas (Y-1): affichent le niveau du outputTank (sortie)
      * Chaque reservoir affiche 1/4 de la capacité totale du tank.
+     *
+     * ⚠️ Les reservoirs NE STOCKENT PAS de fluide - ce sont des PROXIES.
+     * On met à jour uniquement le CACHE VISUEL pour le rendu.
      */
     private void updateReservoirLevels() {
         if (level == null) return;
 
-        // Calcul des quantités par reservoir (4 reservoirs par tank)
+        // Calcul des quantités par reservoir (4 reservoirs par niveau)
         int fuelPerReservoir = fuelTank.getFluidAmount() / 4;
         int outputPerReservoir = outputTank.getFluidAmount() / 4;
+        float fuelRatio = (float) fuelPerReservoir / HoneyReservoirBlockEntity.VISUAL_CAPACITY;
+        float outputRatio = (float) outputPerReservoir / HoneyReservoirBlockEntity.VISUAL_CAPACITY;
 
-        // Mise à jour des reservoirs fuel (haut)
+        // Mise à jour du cache visuel des reservoirs fuel (haut)
         for (BlockPos offset : FUEL_RESERVOIR_OFFSETS) {
             Vec3i rotatedOffset = MultiblockPattern.rotateY(offset, multiblockRotation);
             BlockPos reservoirPos = worldPosition.offset(rotatedOffset);
             if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
-                FluidTank tank = reservoir.getFluidTank();
-                FluidStack currentFluid = fuelTank.getFluid();
-
-                // Synchronise le niveau visuel
-                tank.setFluid(currentFluid.isEmpty()
+                FluidStack visualFluid = fuelTank.getFluid().isEmpty()
                     ? FluidStack.EMPTY
-                    : currentFluid.copyWithAmount(Math.min(fuelPerReservoir, HoneyReservoirBlockEntity.CAPACITY)));
+                    : fuelTank.getFluid().copyWithAmount(Math.min(fuelPerReservoir, HoneyReservoirBlockEntity.VISUAL_CAPACITY));
+                reservoir.setVisualFluid(visualFluid, Math.min(1f, fuelRatio));
             }
         }
 
-        // Mise à jour des reservoirs output (bas)
+        // Mise à jour du cache visuel des reservoirs output (bas)
         for (BlockPos offset : OUTPUT_RESERVOIR_OFFSETS) {
             Vec3i rotatedOffset = MultiblockPattern.rotateY(offset, multiblockRotation);
             BlockPos reservoirPos = worldPosition.offset(rotatedOffset);
             if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
-                FluidTank tank = reservoir.getFluidTank();
-                FluidStack currentFluid = outputTank.getFluid();
-
-                // Synchronise le niveau visuel
-                tank.setFluid(currentFluid.isEmpty()
+                FluidStack visualFluid = outputTank.getFluid().isEmpty()
                     ? FluidStack.EMPTY
-                    : currentFluid.copyWithAmount(Math.min(outputPerReservoir, HoneyReservoirBlockEntity.CAPACITY)));
+                    : outputTank.getFluid().copyWithAmount(Math.min(outputPerReservoir, HoneyReservoirBlockEntity.VISUAL_CAPACITY));
+                reservoir.setVisualFluid(visualFluid, Math.min(1f, outputRatio));
             }
         }
     }

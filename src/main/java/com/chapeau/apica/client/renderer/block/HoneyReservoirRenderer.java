@@ -80,10 +80,8 @@ public class HoneyReservoirRenderer implements BlockEntityRenderer<HoneyReservoi
         float spreadZ = blockEntity.getFormedSpreadZ();
         boolean hasSpread = spreadX != 0.0f || spreadZ != 0.0f;
 
-        // Ne rien rendre pour les reservoirs qui ne stockent pas de fluide localement
-        // Centrifuge/Infuser: invisible. Storage: intermediaire pur (delegation vers controller).
-        if (multiblock == MultiblockProperty.CENTRIFUGE || multiblock == MultiblockProperty.INFUSER
-                || multiblock == MultiblockProperty.STORAGE || multiblock == MultiblockProperty.STORAGE_TOP) {
+        // Storage: intermediaire pur (delegation vers controller, pas de rendu direct)
+        if (multiblock == MultiblockProperty.STORAGE || multiblock == MultiblockProperty.STORAGE_TOP) {
             return;
         }
 
@@ -109,10 +107,17 @@ public class HoneyReservoirRenderer implements BlockEntityRenderer<HoneyReservoi
             }
             fluidStack = alembicData.fluidStack;
             fillRatio = alembicData.fillRatio;
-        } else if (multiblock == MultiblockProperty.ALTAR || multiblock == MultiblockProperty.EXTRACTOR) {
-            // Ces contrôleurs doivent implémenter MultiblockCapabilityProvider
-            // avec des tanks centralisés pour permettre le rendu fluide.
-            // Pour l'instant, pas de rendu.
+        } else if (multiblock == MultiblockProperty.EXTRACTOR
+                || multiblock == MultiblockProperty.CENTRIFUGE
+                || multiblock == MultiblockProperty.INFUSER) {
+            // Ces multiblocs utilisent le cache visuel synchronisé par leur contrôleur
+            fluidStack = blockEntity.getVisualFluid();
+            if (fluidStack.isEmpty()) {
+                return;
+            }
+            fillRatio = blockEntity.getVisualFillRatio();
+        } else if (multiblock == MultiblockProperty.ALTAR) {
+            // Altar n'utilise pas de fluide dans ses recettes, pas de rendu
             return;
         } else {
             // NONE (standalone) - pas de contrôleur = pas de fluide

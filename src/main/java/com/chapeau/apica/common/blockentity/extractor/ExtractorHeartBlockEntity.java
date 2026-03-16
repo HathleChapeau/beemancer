@@ -34,16 +34,22 @@ import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.chapeau.apica.core.gene.BeeGeneData;
 import com.chapeau.apica.core.gene.Gene;
 import com.chapeau.apica.core.gene.GeneCategory;
+import com.chapeau.apica.core.multiblock.BlockIORule;
+import com.chapeau.apica.core.multiblock.IOMode;
+import com.chapeau.apica.core.multiblock.MultiblockCapabilityProvider;
 import com.chapeau.apica.core.multiblock.MultiblockController;
 import com.chapeau.apica.core.multiblock.MultiblockEvents;
 import com.chapeau.apica.core.multiblock.MultiblockFormationHelper;
+import com.chapeau.apica.core.multiblock.MultiblockIOConfig;
 import com.chapeau.apica.core.multiblock.MultiblockPattern;
 import com.chapeau.apica.core.multiblock.MultiblockPatterns;
 import com.chapeau.apica.core.multiblock.MultiblockValidator;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.chapeau.apica.core.registry.ApicaFluids;
 import com.chapeau.apica.core.registry.ApicaItems;
+import com.chapeau.apica.core.util.SplitFluidHandler;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
@@ -56,6 +62,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -65,11 +72,12 @@ import java.util.List;
  * BlockEntity du cœur de l'extracteur d'essence.
  * Consomme du miel pour extraire des essences des abeilles.
  */
-public class ExtractorHeartBlockEntity extends BlockEntity implements MultiblockController {
+public class ExtractorHeartBlockEntity extends BlockEntity implements MultiblockController, MultiblockCapabilityProvider {
 
     private static final int HONEY_CONSUMPTION_PER_TICK = 10; // mB par seconde
     private static final double ESSENCE_DROP_CHANCE = 0.05; // 5% par seconde
     private static final int TICK_INTERVAL = 1200; // Toutes les minutes
+    private static final int TANK_CAPACITY = 16000; // 4 réservoirs x 4000mB
 
     // Poids des essences par niveau
     private static final int WEIGHT_LESSER = 8;
@@ -77,9 +85,37 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
     private static final int WEIGHT_GREATER = 2;
     private static final int WEIGHT_PERFECT = 1;
 
+    /**
+     * Configuration IO: les réservoirs acceptent INPUT sur leurs faces externes (N/S/E/W).
+     * L'Extractor consomme du honey depuis son tank centralisé.
+     */
+    private static final MultiblockIOConfig IO_CONFIG = MultiblockIOConfig.builder()
+        // Réservoirs (Y+1): INPUT honey sur toutes les faces horizontales
+        .fluid(0, 1, -1, BlockIORule.sides(IOMode.INPUT))  // Nord
+        .fluid(0, 1, 1, BlockIORule.sides(IOMode.INPUT))   // Sud
+        .fluid(1, 1, 0, BlockIORule.sides(IOMode.INPUT))   // Est
+        .fluid(-1, 1, 0, BlockIORule.sides(IOMode.INPUT))  // Ouest
+        .build();
+
     private boolean extractorFormed = false;
     private int multiblockRotation = 0;
     private int tickCounter = 0;
+
+    /**
+     * Tank centralisé pour le honey. Les réservoirs sont des PROXIES.
+     * ⚠️ Le stockage est ICI, pas dans les réservoirs. ⚠️
+     */
+    private final FluidTank honeyTank = new FluidTank(TANK_CAPACITY) {
+        @Override
+        public boolean isFluidValid(FluidStack stack) {
+            return stack.getFluid() == ApicaFluids.HONEY_SOURCE.get();
+        }
+        @Override
+        protected void onContentsChanged() {
+            setChanged();
+            updateReservoirVisuals();
+        }
+    };
 
     // Positions relatives des pedestals (Y-2)
     private static final BlockPos[] PEDESTAL_OFFSETS = {
@@ -280,41 +316,64 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
         return empty;
     }
 
-    // ==================== Reservoir/Honey Access ====================
+    // ==================== Centralized Honey Tank ====================
 
+    /**
+     * Retourne le montant total de honey dans le tank centralisé.
+     * ⚠️ Le stockage est dans le contrôleur, PAS dans les réservoirs. ⚠️
+     */
     private int getTotalHoney() {
-        if (level == null) return 0;
-        int total = 0;
-        for (BlockPos offset : RESERVOIR_OFFSETS) {
-            Vec3i rotatedOffset = MultiblockPattern.rotateY(offset, multiblockRotation);
-            BlockPos reservoirPos = worldPosition.offset(rotatedOffset);
-            BlockEntity be = level.getBlockEntity(reservoirPos);
-            if (be instanceof HoneyReservoirBlockEntity reservoir) {
-                FluidStack fluid = reservoir.getFluid();
-                if (fluid.getFluid() == ApicaFluids.HONEY_SOURCE.get()) {
-                    total += fluid.getAmount();
-                }
-            }
-        }
-        return total;
+        return honeyTank.getFluidAmount();
     }
 
+    /**
+     * Consomme du honey depuis le tank centralisé.
+     * ⚠️ Le stockage est dans le contrôleur, PAS dans les réservoirs. ⚠️
+     */
     private void consumeHoney(int amount) {
-        if (level == null) return;
-        int remaining = amount;
+        honeyTank.drain(amount, IFluidHandler.FluidAction.EXECUTE);
+    }
+
+    /**
+     * Met à jour le cache visuel des réservoirs pour le rendu.
+     * Appelé quand le tank change.
+     */
+    private void updateReservoirVisuals() {
+        if (level == null || !extractorFormed) return;
+
+        int honeyPerReservoir = honeyTank.getFluidAmount() / 4;
+        float fillRatio = (float) honeyPerReservoir / HoneyReservoirBlockEntity.VISUAL_CAPACITY;
+
         for (BlockPos offset : RESERVOIR_OFFSETS) {
-            if (remaining <= 0) break;
             Vec3i rotatedOffset = MultiblockPattern.rotateY(offset, multiblockRotation);
             BlockPos reservoirPos = worldPosition.offset(rotatedOffset);
-            BlockEntity be = level.getBlockEntity(reservoirPos);
-            if (be instanceof HoneyReservoirBlockEntity reservoir) {
-                FluidStack fluid = reservoir.getFluid();
-                if (fluid.getFluid() == ApicaFluids.HONEY_SOURCE.get()) {
-                    FluidStack drained = reservoir.drain(remaining, IFluidHandler.FluidAction.EXECUTE);
-                    remaining -= drained.getAmount();
-                }
+            if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
+                FluidStack visualFluid = honeyTank.getFluid().isEmpty()
+                    ? FluidStack.EMPTY
+                    : honeyTank.getFluid().copyWithAmount(Math.min(honeyPerReservoir, HoneyReservoirBlockEntity.VISUAL_CAPACITY));
+                reservoir.setVisualFluid(visualFluid, Math.min(1f, fillRatio));
             }
         }
+    }
+
+    // ==================== MultiblockCapabilityProvider ====================
+
+    @Override
+    @Nullable
+    public IFluidHandler getFluidHandlerForBlock(BlockPos worldPos, @Nullable Direction face) {
+        if (!extractorFormed) return null;
+        IOMode mode = IO_CONFIG.getFluidMode(worldPosition, worldPos, face, multiblockRotation);
+        if (mode == null || mode == IOMode.NONE) return null;
+        return switch (mode) {
+            case INPUT -> SplitFluidHandler.inputOnly(honeyTank);
+            case OUTPUT -> SplitFluidHandler.outputOnly(honeyTank);
+            case BOTH -> honeyTank;
+            default -> null;
+        };
+    }
+
+    public FluidTank getHoneyTank() {
+        return honeyTank;
     }
 
     // ==================== MultiblockController ====================
@@ -483,6 +542,7 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
         super.saveAdditional(tag, registries);
         tag.putBoolean("ExtractorFormed", extractorFormed);
         tag.putInt("MultiblockRotation", multiblockRotation);
+        tag.put("HoneyTank", honeyTank.writeToNBT(registries, new CompoundTag()));
     }
 
     @Override
@@ -490,6 +550,9 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
         super.loadAdditional(tag, registries);
         extractorFormed = tag.getBoolean("ExtractorFormed");
         multiblockRotation = tag.getInt("MultiblockRotation");
+        if (tag.contains("HoneyTank")) {
+            honeyTank.readFromNBT(registries, tag.getCompound("HoneyTank"));
+        }
     }
 
     @Override

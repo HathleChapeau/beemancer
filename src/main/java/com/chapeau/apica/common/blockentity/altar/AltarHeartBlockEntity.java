@@ -58,7 +58,6 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.material.Fluid;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -223,40 +222,6 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
 
         Apica.LOGGER.debug("Altar validation failed at {}", worldPosition);
         return false;
-    }
-
-    /**
-     * Récupère les 4 réservoirs du multiblock formé.
-     * @return Liste des HoneyReservoirBlockEntity (peut être vide si non formé)
-     */
-    public List<HoneyReservoirBlockEntity> getReservoirs() {
-        List<HoneyReservoirBlockEntity> reservoirs = new ArrayList<>();
-        if (!altarFormed || level == null) return reservoirs;
-
-        for (BlockPos offset : RESERVOIR_OFFSETS) {
-            Vec3i rotatedOffset = MultiblockPattern.rotateY(offset, multiblockRotation);
-            BlockEntity be = level.getBlockEntity(worldPosition.offset(rotatedOffset));
-            if (be instanceof HoneyReservoirBlockEntity reservoir) {
-                reservoirs.add(reservoir);
-            }
-        }
-
-        return reservoirs;
-    }
-
-    /**
-     * Calcule le total de fluide d'un type spécifique dans tous les réservoirs.
-     * @param fluidType Le type de fluide à compter
-     * @return Le montant total en mB
-     */
-    public int getTotalFluidAmount(Fluid fluidType) {
-        int total = 0;
-        for (HoneyReservoirBlockEntity reservoir : getReservoirs()) {
-            if (!reservoir.getFluid().isEmpty() && reservoir.getFluid().getFluid() == fluidType) {
-                total += reservoir.getFluidAmount();
-            }
-        }
-        return total;
     }
 
     /**

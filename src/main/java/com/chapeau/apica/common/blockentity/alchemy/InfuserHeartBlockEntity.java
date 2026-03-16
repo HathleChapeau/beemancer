@@ -356,35 +356,38 @@ public class InfuserHeartBlockEntity extends BlockEntity implements MultiblockCo
     }
 
     /**
-     * Met a jour les niveaux visuels des reservoirs du multibloc.
+     * Met a jour le CACHE VISUEL des reservoirs du multibloc.
      * - Reservoirs du haut (Y+1): affichent le niveau du honeyTank (entree)
      * - Reservoirs du bas (Y-1): vides (l'infuser n'a pas de tank de sortie fluide)
      * Chaque reservoir affiche 1/4 de la capacite totale du tank.
+     *
+     * ⚠️ Les reservoirs NE STOCKENT PAS de fluide - ce sont des PROXIES.
+     * On met à jour uniquement le CACHE VISUEL pour le rendu.
      */
     private void updateReservoirLevels() {
         if (level == null) return;
 
         int honeyPerReservoir = honeyTank.getFluidAmount() / 4;
+        float honeyRatio = (float) honeyPerReservoir / HoneyReservoirBlockEntity.VISUAL_CAPACITY;
 
-        // Mise a jour des reservoirs input (haut): affichent le miel
+        // Mise a jour du cache visuel des reservoirs input (haut): affichent le miel
         for (BlockPos offset : INPUT_RESERVOIR_OFFSETS) {
             Vec3i rotatedOffset = MultiblockPattern.rotateY(offset, multiblockRotation);
             BlockPos reservoirPos = worldPosition.offset(rotatedOffset);
             if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
-                FluidTank tank = reservoir.getFluidTank();
-                FluidStack currentFluid = honeyTank.getFluid();
-                tank.setFluid(currentFluid.isEmpty()
+                FluidStack visualFluid = honeyTank.getFluid().isEmpty()
                     ? FluidStack.EMPTY
-                    : currentFluid.copyWithAmount(Math.min(honeyPerReservoir, HoneyReservoirBlockEntity.CAPACITY)));
+                    : honeyTank.getFluid().copyWithAmount(Math.min(honeyPerReservoir, HoneyReservoirBlockEntity.VISUAL_CAPACITY));
+                reservoir.setVisualFluid(visualFluid, Math.min(1f, honeyRatio));
             }
         }
 
-        // Mise a jour des reservoirs output (bas): vides (pas de output tank fluide)
+        // Mise a jour du cache visuel des reservoirs output (bas): vides
         for (BlockPos offset : OUTPUT_RESERVOIR_OFFSETS) {
             Vec3i rotatedOffset = MultiblockPattern.rotateY(offset, multiblockRotation);
             BlockPos reservoirPos = worldPosition.offset(rotatedOffset);
             if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
-                reservoir.getFluidTank().setFluid(FluidStack.EMPTY);
+                reservoir.setVisualFluid(FluidStack.EMPTY, 0f);
             }
         }
     }
